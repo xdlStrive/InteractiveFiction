@@ -3,21 +3,21 @@ const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt"); // 引入bcrypt
 const moment = require('moment'); // 引入moment
 
-// 连接到mongoDB的todo数据库
+// 连接到mongoDB的InteractiveFiction数据库
 // 该地址格式：mongodb://[username:password@]host:port/database[?options]
 // 默认port为27017
 
+mongoose.set('useCreateIndex', true);
+mongoose.connect('mongodb://root:198300@47.97.230.150/IF?authSource=admin', {
+  useNewUrlParser: true, 
+  useUnifiedTopology: true
+  }); 
+
 // mongoose.set('useCreateIndex', true);
-// mongoose.connect('mongodb://root:198300@localhost/WAG?authSource=admin', { 
+// mongoose.connect('mongodb://localhost/WAG', {
 //   useNewUrlParser: true, 
 //   useUnifiedTopology: true 
-//   }); 
-
-mongoose.set('useCreateIndex', true);
-mongoose.connect('mongodb://localhost/WAG', {
-  useNewUrlParser: true, 
-  useUnifiedTopology: true 
-}); 
+// }); 
 
 const db = mongoose.connection;
 db.on('error', () => { // 监听是否有异常
