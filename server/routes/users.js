@@ -1,0 +1,98 @@
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const userModel = mongoose.model('users');
+const URL = require('url');
+
+//注册接口
+router.post('/create', function (req, res) {
+  // console.log(req.body.username, req.body.password, req.body.email)
+  new userModel({
+    username: req.body.username,
+    password: req.body.password,
+    email: req.body.email,
+    create_time: Date.now()
+  }).save(function (err, user) {
+    // res.redirect('/'); //res.redirect和res.send不能同时写，因为这两个方法的后面都不能写其他方法
+    res.send(user);
+  });
+});
+
+//登录接口
+router.post('/login', function (req, res) {
+  userModel.findOne({
+    username: req.body.username
+  }, function (err, obj) {
+    // console.log(obj)
+    if (obj === null) {
+      return res.status(422).send({ message: "您输入的用户名有误" })
+    }
+    // const isPass = bcrypt.compareSync(req.body.password, obj.password)  //将前端传入的密码和数据库中保存的密码进行比对
+    // if (!isPass) {  //如果比对不匹配
+    //   return res.status(422).send({ message: "您输入的密码不正确" })
+    // }
+    const token = jwt.sign({  //比对成功则进行token签名
+      id: String(obj._id)  //第一个参数为要签名的字段，最好为唯一的主键
+    }, 'secret')  //第二个参数为秘钥
+    res.status(201).send({ 'code': 20000, 'msg': '登录成功', 'token': token })  //返回给前端
+  })
+
+})
+
+//用户信息接口
+router.get("/profile", async (req, res) => {
+  const raw = String(req.headers.authorization) //获取前端请求头中的token
+  // jwt.verify(raw, 'secret', (error, decoded) => {
+  //   if(error) {
+  //     console.log(error.message)
+  //     return
+  //   }
+  // })
+  //解密token，第二个参数是秘钥
+  const { id } = jwt.verify(raw, 'secret')
+  //根据解密的id去查找对应的用户
+  const us = await userModel.findById(id);
+  res.send({ 'code': 20000, 'data': us })
+})
+
+//查询接口
+router.get('/search', function (req, res, next) {
+  userModel.find().sort('create_time').exec(function (err, data, count) {
+    res.send(data);
+  })
+});
+
+//修改接口
+router.get('/find', function (req, res) {
+  // var params = URL.parse(req.url.true).query;
+  userModel.find({ username: req.query.id }, function (err, data) {
+    var str = { length: data.length };
+    res.send(data);
+  })
+})
+
+//更新接口
+router.post('/update', function (req, res) {
+  userModel.findById(req.body._id, function (err, data) {
+    data.content = req.body.content;
+    data.updated_at = Date.now();
+    data.save();
+  })
+  res.redirect('/'); //返回首页
+})
+
+//删除接口
+router.get('/delete', function (req, res) {
+
+  var params = URL.parse(req.url, true).query;
+
+  userModel.findById(params.id, function (err, data) {
+    data.remove(function (err, data) {
+      res.redirect('/'); //返回首页
+    })
+  })
+})
+
+module.exports = router;

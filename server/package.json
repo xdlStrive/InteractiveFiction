@@ -1,0 +1,29 @@
+{
+  "name": "website",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
+  "dependencies": {
+    "@alicloud/pop-core": "^1.7.9",
+    "bcrypt": "^3.0.7",
+    "body-parser": "^1.19.0",
+    "connect-history-api-fallback": "^1.6.0",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "ejs": "~2.6.1",
+    "express": "~4.16.1",
+    "express-formidable": "^1.2.0",
+    "http-errors": "~1.6.3",
+    "moment": "^2.24.0",
+    "mongodb": "^3.3.4",
+    "mongoose": "^5.7.11",
+    "morgan": "~1.9.1",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "webpack": "^4.41.2"
+  }
+}
