@@ -6,7 +6,6 @@ const moment = require('moment'); // 引入moment
 // 连接到mongoDB的InteractiveFiction数据库
 // 该地址格式：mongodb://[username:password@]host:port/database[?options]
 // 默认port为27017
-
 mongoose.set('useCreateIndex', true);
 mongoose.connect('mongodb://root:198300@47.97.230.150/IF?authSource=admin', {
   useNewUrlParser: true, 
@@ -27,8 +26,8 @@ db.once('open', () => { // 监听一次打开
   console.log('成功连接数据库!');
 });
 
-// 在这里创建你的模式和模型
-const UserSchema = new mongoose.Schema({  // 用户模型
+// 用户模型
+const UserSchema = new mongoose.Schema({  
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   email: String,
@@ -39,14 +38,101 @@ const UserSchema = new mongoose.Schema({  // 用户模型
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 });
 
-const SelectSchema = new mongoose.Schema({  // 选择模型
-  select_id: { type: Number, index: true, unique: true },
-  options: [],
-  type: String,
+// 创建用户时加密密码
+UserSchema.pre('save', function (next) {
+  let user = this;
+  if (!user.isModified('password')) return next();
+  bcrypt.genSalt(5, function (err, salt) {
+    if (err) return next(err);
+    bcrypt.hash(user.password, salt, function (err, hash) {
+      if (err) return next(err);
+      user.password = hash;
+      next();
+    });
+  });
+});
+
+// 选择支模型
+const SelectSchema = new mongoose.Schema({ 
+  select_id: { type: Number, index: true, unique: true }, // 选择支的id
+  type: String, // 选择支的类型（一般选项、重要抉择、bad-end选项）
+  options: [], // 选择支的选项数组
+  next_content: Number,
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 });
 
-let testModel = mongoose.model('select', SelectSchema, 'selects'); // model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
+// model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
+let testModel = mongoose.model('select', SelectSchema, 'selects');
+
+// 段落模型
+const paragraphSchema = new mongoose.Schema({ 
+  paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
+  chapter_id: Number, // 所属章节的ID
+  content: String,  // 段落内容
+  select_id: Number, // 段落后关联选项id数组
+  bulletComment: [], // 关联弹幕的id数组
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+});
+
+// 章节模型
+const ChapterSchema = new mongoose.Schema({
+  chapter_id: { type: Number, index: true, unique: true }, // 章节id
+  volume_id: Number, // 所属的卷的id
+  title: String, // 章节标题
+  paragraph_list: [], // 章节所有段落id数组
+  author: { type: Schema.Types.ObjectId },  // 作者，与UserSchema模型进行关联
+  chapter_comment: [], // 章节评论id
+  pageviews: { type: Number, default: 0 }, // 默认值为0
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+});
+
+// 弹幕模型
+const bulletCommentSchema = new mongoose.Schema({
+  select_id: { type: Number, index: true, unique: true },
+  options: [],
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+});
+
+// 章节评论模型
+const chapterCommentSchema = new mongoose.Schema({
+  select_id: { type: Number, index: true, unique: true },
+  options: [],
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+});
+
+// 分卷模型
+const VolumeSchema = new mongoose.Schema({ 
+  volume_id: { type: Number, index: true, unique: true }, // 卷id
+  title: String, // 卷名
+  chapter_list: [], // 该卷所有的章节id数组
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+});
+
+// ChapterSchema.set('toJSON', { getters: true })
+
+// 时间轴模型
+const TimelineSchema = new mongoose.Schema({  
+  timeline_id: Number,
+  title: String,
+  desc: String,
+  creator_id: Schema.Types.ObjectId,
+  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+});
+
+// 计数器模型
+const CounterSchema = new mongoose.Schema({  
+  counter_id: String,
+  counter_num: Number,
+  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+});
+
+module.exports = mongoose.model('users', UserSchema, 'users');
+module.exports = mongoose.model('volume', VolumeSchema, 'volumes');
+module.exports = mongoose.model('chapter', ChapterSchema, 'chapters');
+module.exports = mongoose.model('paragraphs', paragraphSchema, 'paragraphs');
+module.exports = mongoose.model('timeline', TimelineSchema, 'timeline');
+module.exports = mongoose.model('counter', CounterSchema, 'counters');
+
 
 // let testData = new testModel({
 //   select_id: 11,
@@ -59,29 +145,9 @@ let testModel = mongoose.model('select', SelectSchema, 'selects'); // model的�
 //   })
 // })
 
-const bulletCommentSchema = new mongoose.Schema({  // 弹幕模型
-  select_id: { type: Number, index: true, unique: true },
-  options: [],
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
 
-const chapterCommentSchema = new mongoose.Schema({  // 章节评论模型
-  select_id: { type: Number, index: true, unique: true },
-  options: [],
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
-
-const paragraphSchema = new mongoose.Schema({ // 段落模型
-  paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
-  chapter_id: Number, // 所属章节的ID
-  content: String,  // 段落内容
-  select_id: [], // 段落后关联选项数组
-  bulletComment: [], // 关联弹幕的字段
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
 
 // let ParagraphModle = mongoose.model('paragraphs', paragraphSchema, 'paragraphs');
-
 // let ParagraphData = new ParagraphModle({
 //   paragraph_id: 0,
 //   content: '这是测试的第一自然段',
@@ -109,61 +175,7 @@ const paragraphSchema = new mongoose.Schema({ // 段落模型
 //       create_time: 0
 //     }
 //   }
-  
+
 // ], (err, docs) => {
 //   console.log(JSON.stringify(docs));
 // })
-
-const ChapterSchema = new mongoose.Schema({ // 章节模型
-  chapter_id: { type: Number, index: true, unique: true },
-  volume_id: Number,
-  title: String,
-  paragraph_list: [],
-  author: { type: Schema.Types.ObjectId },  // 与UserSchema模型进行关联
-  chapter_comment: [],
-  pageviews: { type: Number, default: 0 }, // 默认值为0
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
-
-const VolumeSchema = new mongoose.Schema({ // 分卷模型
-  volume_id: { type: Number, index: true, unique: true },
-  title: String,
-  chapter_list: [],
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
-
-// ChapterSchema.set('toJSON', { getters: true })
-
-UserSchema.pre('save', function(next) {
-  var user = this;
-  if(!user.isModified('password')) return next();
-  bcrypt.genSalt(5, function(err, salt){
-    if(err) return next(err);
-    bcrypt.hash(user.password, salt, function(err, hash) {
-      if(err) return next(err);
-      user.password = hash;
-      next();
-    });
-  });
-});
-
-const TimelineSchema = new mongoose.Schema({  // 时间轴模型
-  timeline_id: Number,
-  title: String,
-  desc: String,
-  creator_id: Schema.Types.ObjectId,
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
-
-const CounterSchema = new mongoose.Schema({  // 计数器模型
-  counter_id: String,
-  counter_num: Number,
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
-
-module.exports = mongoose.model('users', UserSchema, 'users');
-module.exports = mongoose.model('volume', VolumeSchema, 'volumes');
-module.exports = mongoose.model('chapter', ChapterSchema, 'chapters');
-module.exports = mongoose.model('paragraphs', paragraphSchema, 'paragraphs');
-module.exports = mongoose.model('timeline', TimelineSchema, 'timeline');
-module.exports = mongoose.model('counter', CounterSchema, 'counters');
