@@ -12,6 +12,7 @@ const alyapiRouter = require('./routes/alyapi');
 const volumeRouter = require('./routes/volume');
 const chapterRouter = require('./routes/chapter');
 const paragraphRouter = require('./routes/paragraph');
+const selectRouter = require('./routes/select');
 const timelineRouter = require('./routes/timeline');
 
 const ejs = require('ejs');
@@ -45,6 +46,7 @@ app.use('/alyapi', alyapiRouter);
 app.use('/volume', volumeRouter);
 app.use('/chapter', chapterRouter);
 app.use('/paragraph', paragraphRouter);
+app.use('/select', selectRouter);
 app.use('/timeline', timelineRouter);
 
 // 404错误处理中间件

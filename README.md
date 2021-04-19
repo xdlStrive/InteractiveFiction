@@ -1,4 +1,5 @@
 # Interactive Fiction
+
 a online interactive fiction system project
 
 安装提示

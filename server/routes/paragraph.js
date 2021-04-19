@@ -9,6 +9,7 @@ router.post('/add', (req, res) => {
   CounterModel.findOneAndUpdate({ counter_id: 'paragraph' }, {
     $inc: { counter_num: 1 }
   }, {
+    'upsert': true,
     'new': true
   }, (err, doc) => {
     if (err) {

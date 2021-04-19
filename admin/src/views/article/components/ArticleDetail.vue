@@ -43,18 +43,41 @@
           <tinymce ref="tinymce" v-model="currentParagraph" :height="200" />
         </el-form-item>
         <el-form-item class="articleBtnGroup">
-          <el-button type="warning" @click="selectFormVisible = true">新增选项</el-button>
+          <el-button type="danger" @click="relationFormVisible = true">关联选择</el-button>
+          <el-button type="warning" @click="selectFormVisible = true">新增选择</el-button>
           <el-button type="primary" @click="nextParagraph">下一段</el-button>
           <el-button type="success" @click="submitChapter">提交本章</el-button>
         </el-form-item>
       </el-form>
-      <el-dialog title="新增选项" :visible.sync="selectFormVisible" width="30%">
+      <el-dialog title="关联选择" :visible.sync="relationFormVisible" @close="relationSelectClose" width="40%">
         <el-form label-width="80px">
+          <el-form-item label="搜索选择">
+            <el-input placeholder="请输入关键字" v-model="relationForm.searchTerms" class="input-with-select">
+              <el-button slot="append" icon="el-icon-search" @click="searchSelect"></el-button>
+            </el-input>
+          </el-form-item>
+          <ul>
+            <li v-for="(item, index) in relationList" :key="index">
+              <el-form-item :label="item.labelName">
+                <el-input v-model="item.inputValue" />
+              </el-form-item>
+            </li>
+          </ul>
+          <el-form-item class="addSelectBox">
+            <el-button type="primary" @click="addSelectInput">关联选择</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+      <el-dialog title="新增选择" :visible.sync="selectFormVisible" @close="newSelectClose" width="40%" >
+        <el-form label-width="80px">
+          <el-form-item label="选择描述">
+            <el-input v-model="selectForm.note" placeholder="用于关联选择时模糊搜索"></el-input>
+          </el-form-item>
           <el-form-item label="选择类型">
             <el-radio-group v-model="selectForm.selectType">
-              <el-radio label="普通选择" />
-              <el-radio label="重要选择" />
-              <el-radio label="badend选择" />
+              <el-radio :label="0">普通选择</el-radio>
+              <el-radio :label="1">重要选择</el-radio>
+              <el-radio :label="2">bad-end选择</el-radio>
             </el-radio-group>
           </el-form-item>
           <ul>
@@ -66,7 +89,7 @@
           </ul>
           <el-form-item class="addSelectBox">
             <el-button type="primary" @click="addSelectInput">增加选项</el-button>
-            <el-button type="success" @click="submitSelect">提交</el-button>
+            <el-button type="success" @click="submitSelect">提交选择</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -81,6 +104,8 @@ import { addVolume } from '@/api/volume'
 import { fetchChapterList } from '@/api/chapter'
 import { addChapter } from '@/api/chapter'
 import { addParagraph } from '@/api/paragraph'
+import { newSelect } from '@/api/select'
+import { searchSelect } from '@/api/select'
 
 const defaultData = {
   title: '',
@@ -122,9 +147,14 @@ export default {
       currentParagraph: '',
       paragraphText: '',
 
+      relationFormVisible: false,
+      relationForm: {
+        searchTerms: ''
+      },
       selectFormVisible: false,
       selectForm: {
-        selectType: '普通选择'
+        note: '',
+        selectType: 0
       },
       selectInputList: [{
         labelName: '选项一',
@@ -134,6 +164,7 @@ export default {
         labelName: '选项二',
         inputValue: ''
       }],
+      relationList: [],
       selectID: []
     }
   },
@@ -155,7 +186,6 @@ export default {
         volume_id: node.data.volume_id
       }
       fetchChapterList(params).then(res => {
-        console.log(res.code)
         if (res.code === 20000) {
           this.chapterList = res.data
         }
@@ -240,6 +270,18 @@ export default {
     modifyParagraph() { // 修改段落
 
     },
+    searchSelect() { // 搜索选项
+      const searchTerms = this.relationForm.searchTerms
+      searchSelect(searchTerms).then(res => {
+        if (res.code === 20000) {
+          console.log(res.data)
+          this.relationList = res.data.options
+        }
+      })
+    },
+    relationSelectClose() { // 关联选择弹窗的关闭事件
+      this.relationList = []
+    },
     addSelectInput() { // 增加选项方法
       const selectInputNum = this.selectInputList.length
       if (selectInputNum === 2) {
@@ -259,8 +301,25 @@ export default {
         })
       }
     },
-    submitSelect() { // 提交选择
-
+    submitSelect() { // 新增选择方法
+      const selectParams = {
+        note: this.selectForm.note, // 选择支的描述（用于关联选择时的模糊搜索）
+        type: this.selectForm.selectType, // 选择支的类型（一般选项、重要抉择、bad-end选项）
+        options: this.selectInputList
+      }
+      newSelect(selectParams).then(res => {
+        console.log(res.data)
+        if (res.code === 20000) {
+          this.selectFormVisible = false
+          this.$message({
+            type: 'success',
+            message: '新增选项成功！'
+          })
+        }
+      })
+    },
+    newSelectClose() { // 新增选择弹窗的关闭事件
+      this.selectInputList = this.selectInputList.slice(0, 2)
     },
     nextParagraph() { // 下一段按钮处理事件
       this.addParagraphFun()
@@ -286,9 +345,6 @@ export default {
     },
     submitChapter() { // 提交本章
 
-    },
-    handleClose(tag) {
-      this.postData.tags.splice(this.postData.tags.indexOf(tag), 1)
     },
     showInput() {
       this.inputVisible = true

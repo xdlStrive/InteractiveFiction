@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt"); // 引入bcrypt
 const moment = require('moment'); // 引入moment
 
-// 连接到mongoDB的InteractiveFiction数据库
+// 连接到在线服务器的mongoDB的InteractiveFiction数据库
 // 该地址格式：mongodb://[username:password@]host:port/database[?options]
 // 默认port为27017
 mongoose.set('useCreateIndex', true);
@@ -56,8 +56,8 @@ UserSchema.pre('save', function (next) {
 const SelectSchema = new mongoose.Schema({ 
   select_id: { type: Number, index: true, unique: true }, // 选择支的id
   type: String, // 选择支的类型（一般选项、重要抉择、bad-end选项）
+  note: String, // 选择支的描述（用于关联选择时的模糊搜索）
   options: [], // 选择支的选项数组
-  next_content: Number,
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 });
 
@@ -68,8 +68,8 @@ let testModel = mongoose.model('select', SelectSchema, 'selects');
 const paragraphSchema = new mongoose.Schema({ 
   paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
   chapter_id: Number, // 所属章节的ID
-  content: String,  // 段落内容
-  select_id: Number, // 段落后关联选项id数组
+  select_id: [], // 段落关联的选项的id数组
+  content: [],  // 段落内容
   bulletComment: [], // 关联弹幕的id数组
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 });
@@ -126,10 +126,12 @@ const CounterSchema = new mongoose.Schema({
   create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 });
 
+// model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
 module.exports = mongoose.model('users', UserSchema, 'users');
 module.exports = mongoose.model('volume', VolumeSchema, 'volumes');
 module.exports = mongoose.model('chapter', ChapterSchema, 'chapters');
 module.exports = mongoose.model('paragraphs', paragraphSchema, 'paragraphs');
+module.exports = mongoose.model('select', SelectSchema, 'selects');
 module.exports = mongoose.model('timeline', TimelineSchema, 'timeline');
 module.exports = mongoose.model('counter', CounterSchema, 'counters');
 
