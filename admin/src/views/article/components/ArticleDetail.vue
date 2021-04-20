@@ -76,8 +76,8 @@
           <el-form-item label="选择类型">
             <el-radio-group v-model="selectForm.selectType">
               <el-radio :label="0">普通选择</el-radio>
-              <el-radio :label="1">重要选择</el-radio>
-              <el-radio :label="2">bad-end选择</el-radio>
+              <el-radio :label="1">重要抉择</el-radio>
+              <el-radio :label="2">bad-end 结局</el-radio>
             </el-radio-group>
           </el-form-item>
           <ul>

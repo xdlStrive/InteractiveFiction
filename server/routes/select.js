@@ -34,4 +34,13 @@ router.get('/search', (req, res) => {
   })
 })
 
+// 获取选择列表
+router.get('/fetchList', (req, res) => {
+  selectModel.find({}, (err, docs) => {
+    if (err) throw err;
+    console.log(docs[0].create_time)
+    res.json({ code: 20000, msg: '获取列表数据成功！', data: docs})
+  })
+})
+
 module.exports = router;

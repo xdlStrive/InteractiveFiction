@@ -81,6 +81,20 @@ export const constantRoutes = [
     ]
   },
 
+  // 选择列表
+  {
+    path: '/select',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'select',
+        component: () => import('@/views/select/index'),
+        meta: { title: '选择列表', icon: 'list' }
+      }
+    ]
+  },
+
   // 组件
   {
     path: '/example',

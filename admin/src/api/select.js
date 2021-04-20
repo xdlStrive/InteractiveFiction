@@ -16,3 +16,11 @@ export function searchSelect(data) {
     method: 'get'
   })
 }
+
+// 获取选择列表数据
+export function fetchListData() {
+  return request({
+    url: '/select/fetchList',
+    method: 'get'
+  })
+}

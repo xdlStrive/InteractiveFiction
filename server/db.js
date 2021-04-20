@@ -35,8 +35,12 @@ const UserSchema = new mongoose.Schema({
   nickname: String, // 昵称
   avatar: String, // 头像
   archive: String,  // 存档
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+  create_time: { 
+    type: Date, 
+    default: Date.now, 
+    get: v => moment(v).format('YYYY-MM-DD HH:mm:ss') 
+  }
+}).set('toJSON', { getters: true });
 
 // 创建用户时加密密码
 UserSchema.pre('save', function (next) {
@@ -58,12 +62,21 @@ const SelectSchema = new mongoose.Schema({
   type: String, // 选择支的类型（一般选项、重要抉择、bad-end选项）
   note: String, // 选择支的描述（用于关联选择时的模糊搜索）
   options: [], // 选择支的选项数组
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+  create_time: {
+    type: Date, 
+    default: Date.now, 
+    get: v => moment(v).format('YYYY-MM-DD HH:mm') 
+  }
+}).set('toJSON', { getters: true });
+//SelectSchema.set('toJSON', { getters: true });
+//mongoose.Schema.prototype.set('toJSON', { getters: true });
+console.log(mongoose.Schema.prototype.set)
 
 // model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
-let testModel = mongoose.model('select', SelectSchema, 'selects');
-
+// let testModel = mongoose.model('select', SelectSchema, 'selects');
+// let test = new testModel();
+// test.create_time = "2021-04-20T09:41:38.427+0000"
+// console.log(test.create_time)
 // 段落模型
 const paragraphSchema = new mongoose.Schema({ 
   paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
@@ -71,7 +84,7 @@ const paragraphSchema = new mongoose.Schema({
   select_id: [], // 段落关联的选项的id数组
   content: [],  // 段落内容
   bulletComment: [], // 关联弹幕的id数组
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 });
 
 // 章节模型
@@ -83,30 +96,30 @@ const ChapterSchema = new mongoose.Schema({
   author: { type: Schema.Types.ObjectId },  // 作者，与UserSchema模型进行关联
   chapter_comment: [], // 章节评论id
   pageviews: { type: Number, default: 0 }, // 默认值为0
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+}).set('toJSON', { getters: true });
 
 // 弹幕模型
 const bulletCommentSchema = new mongoose.Schema({
   select_id: { type: Number, index: true, unique: true },
   options: [],
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+}).set('toJSON', { getters: true });
 
 // 章节评论模型
 const chapterCommentSchema = new mongoose.Schema({
   select_id: { type: Number, index: true, unique: true },
   options: [],
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+}).set('toJSON', { getters: true });
 
 // 分卷模型
 const VolumeSchema = new mongoose.Schema({ 
   volume_id: { type: Number, index: true, unique: true }, // 卷id
   title: String, // 卷名
   chapter_list: [], // 该卷所有的章节id数组
-  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+}).set('toJSON', { getters: true });
 
 // ChapterSchema.set('toJSON', { getters: true })
 
@@ -117,14 +130,14 @@ const TimelineSchema = new mongoose.Schema({
   desc: String,
   creator_id: Schema.Types.ObjectId,
   create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+}).set('toJSON', { getters: true });
 
 // 计数器模型
 const CounterSchema = new mongoose.Schema({  
   counter_id: String,
   counter_num: Number,
   create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+}).set('toJSON', { getters: true });
 
 // model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
 module.exports = mongoose.model('users', UserSchema, 'users');
