@@ -49,29 +49,36 @@
           <el-button type="success" @click="submitChapter">提交本章</el-button>
         </el-form-item>
       </el-form>
-      <el-dialog title="关联选择" :visible.sync="relationFormVisible" @close="relationSelectClose" width="40%">
+      <el-dialog title="关联选择" :visible.sync="relationFormVisible" width="40%" @close="relationSelectClose">
         <el-form label-width="80px">
           <el-form-item label="搜索选择">
-            <el-input placeholder="请输入关键字" v-model="relationForm.searchTerms" class="input-with-select">
-              <el-button slot="append" icon="el-icon-search" @click="searchSelect"></el-button>
+            <el-input v-model="relationForm.searchTerms" placeholder="请输入关键字" class="input-with-select">
+              <el-button slot="append" icon="el-icon-search" @click="searchSelect" />
             </el-input>
           </el-form-item>
           <ul>
             <li v-for="(item, index) in relationList" :key="index">
               <el-form-item :label="item.labelName">
-                <el-input v-model="item.inputValue" />
+                <span>{{ item.inputValue }}</span>
+                <el-button type="primary" style="margin-left: 20px;" @click="addRelatedParagraphs(item.inputValue, index)">新增段落</el-button>
               </el-form-item>
             </li>
           </ul>
           <el-form-item class="addSelectBox">
-            <el-button type="primary" @click="addSelectInput">关联选择</el-button>
+            <el-button type="primary" @click="addParagraphFun('plural')">关联选择</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
-      <el-dialog title="新增选择" :visible.sync="selectFormVisible" @close="newSelectClose" width="40%" >
+      <el-dialog :title="dialogTitle" :visible.sync="addFormVisible" width="50%" @close="addRelationClose">
+        <tinymce ref="tinymce" v-model="relationParagraph" :height="200" />
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="submitSelectText">提交</el-button>
+        </span>
+      </el-dialog>
+      <el-dialog title="新增选择" :visible.sync="selectFormVisible" width="40%" @close="newSelectClose">
         <el-form label-width="80px">
           <el-form-item label="选择描述">
-            <el-input v-model="selectForm.note" placeholder="用于关联选择时模糊搜索"></el-input>
+            <el-input v-model="selectForm.note" placeholder="用于关联选择时模糊搜索" />
           </el-form-item>
           <el-form-item label="选择类型">
             <el-radio-group v-model="selectForm.selectType">
@@ -88,7 +95,7 @@
             </li>
           </ul>
           <el-form-item class="addSelectBox">
-            <el-button type="primary" @click="addSelectInput">增加选项</el-button>
+            <el-button type="primary" style="margin-right: 40px;" @click="addSelectInput">增加选项</el-button>
             <el-button type="success" @click="submitSelect">提交选择</el-button>
           </el-form-item>
         </el-form>
@@ -145,12 +152,18 @@ export default {
       paragraphList: [],
       paragraphIDList: [],
       currentParagraph: '',
-      paragraphText: '',
-
+      currentParagraphList: [],
+      // 关联选项弹窗
       relationFormVisible: false,
       relationForm: {
         searchTerms: ''
       },
+      // 新增关联选项的段落弹窗
+      addFormVisible: false,
+      dialogTitle: '',
+      selectIndex: 0,
+      relationParagraph: '',
+      // 新增选项弹窗
       selectFormVisible: false,
       selectForm: {
         note: '',
@@ -182,7 +195,7 @@ export default {
   },
   methods: {
     fetchChapterListFun(node, resolve) { // 获取章节列表
-      let params = {
+      const params = {
         volume_id: node.data.volume_id
       }
       fetchChapterList(params).then(res => {
@@ -242,14 +255,15 @@ export default {
         }
       })
     },
-    addParagraphFun() { // 新增段落
+    addParagraphFun(type) { // 新增段落
       const paragraphParams = {
         chapter_id: this.chapterID,
-        content: this.currentParagraph,
+        content: [this.currentParagraph],
         select_id: this.selectID
       }
-      console.log(this.chapterID)
-
+      if (type === 'plural') {
+        paragraphParams.content = this.currentParagraphList
+      }
       addParagraph(paragraphParams).then(res => { // 新增段落
         console.log(res.data)
         if (res.code === 20000) {
@@ -278,6 +292,19 @@ export default {
           this.relationList = res.data.options
         }
       })
+    },
+    addRelatedParagraphs(titleText, index) { // 新增选项关联的段落
+      this.dialogTitle = titleText
+      this.addFormVisible = true
+      this.selectIndex = index
+    },
+    submitSelectText() { // 提交关联选项的段落
+      this.currentParagraphList[this.selectIndex] = this.relationParagraph
+      console.log(this.currentParagraphList)
+      this.addFormVisible = false
+    },
+    addRelationClose() { // 新增关联段落弹窗关闭事件
+      this.$refs.tinymce.setContent('')
     },
     relationSelectClose() { // 关联选择弹窗的关闭事件
       this.relationList = []
@@ -322,7 +349,7 @@ export default {
       this.selectInputList = this.selectInputList.slice(0, 2)
     },
     nextParagraph() { // 下一段按钮处理事件
-      this.addParagraphFun()
+      this.addParagraphFun('single')
 
       // if (this.chapterID === '') {
       //   const chapterParams = {
