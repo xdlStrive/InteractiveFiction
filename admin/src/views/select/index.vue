@@ -50,9 +50,7 @@ export default {
   },
   methods: {
     fetchList() { // 获取选择列表数据
-      console.log(1)
       fetchListData().then(res => {
-        console.log(2)
         if (res.code === 20000) {
           console.log(res.data)
           this.dataList = res.data

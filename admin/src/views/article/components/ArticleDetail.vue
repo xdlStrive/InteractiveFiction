@@ -60,12 +60,12 @@
             <li v-for="(item, index) in relationList" :key="index">
               <el-form-item :label="item.labelName">
                 <span>{{ item.inputValue }}</span>
-                <el-button type="primary" style="margin-left: 20px;" @click="addRelatedParagraphs(item.inputValue, index)">新增段落</el-button>
+                <el-button :ref="'btnStatus' + index" type="primary" style="margin-left: 20px;" @click="addRelatedParagraphs(item.inputValue, index)">新增关联段落</el-button>
               </el-form-item>
             </li>
           </ul>
           <el-form-item class="addSelectBox">
-            <el-button type="primary" @click="addParagraphFun('plural')">关联选择</el-button>
+            <el-button type="primary" @click="addParagraphFun('plural')">提交关联段落</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -158,6 +158,7 @@ export default {
       relationForm: {
         searchTerms: ''
       },
+      relationBtnStatus: 0,
       // 新增关联选项的段落弹窗
       addFormVisible: false,
       dialogTitle: '',
@@ -178,7 +179,7 @@ export default {
         inputValue: ''
       }],
       relationList: [],
-      selectID: []
+      selectID: 0
     }
   },
   created() {
@@ -218,7 +219,6 @@ export default {
       fetchVolumeList(params).then(res => {
         if (res.code === 20000) {
           this.volumeList = res.data
-          console.log(this.volumeList)
         }
       })
     },
@@ -258,12 +258,13 @@ export default {
     addParagraphFun(type) { // 新增段落
       const paragraphParams = {
         chapter_id: this.chapterID,
-        content: [this.currentParagraph],
-        select_id: this.selectID
+        content: [this.currentParagraph]
       }
       if (type === 'plural') {
         paragraphParams.content = this.currentParagraphList
+        paragraphParams.select_id = this.selectID
       }
+      console.log(paragraphParams)
       addParagraph(paragraphParams).then(res => { // 新增段落
         console.log(res.data)
         if (res.code === 20000) {
@@ -288,15 +289,24 @@ export default {
       const searchTerms = this.relationForm.searchTerms
       searchSelect(searchTerms).then(res => {
         if (res.code === 20000) {
-          console.log(res.data)
-          this.relationList = res.data.options
+          if (res.data !== null) {
+            this.relationList = res.data.options
+            this.selectID = res.data.select_id
+          } else {
+            this.$message({
+              type: 'warning',
+              message: res.msg
+            })
+          }
         }
       })
     },
     addRelatedParagraphs(titleText, index) { // 新增选项关联的段落
+      this.$refs['btnStatus' + index][0].$el.innerText = '修改关联段落'
       this.dialogTitle = titleText
       this.addFormVisible = true
       this.selectIndex = index
+      this.$refs.tinymce.setContent(this.currentParagraphList[index] ? this.currentParagraphList[index] : '')
     },
     submitSelectText() { // 提交关联选项的段落
       this.currentParagraphList[this.selectIndex] = this.relationParagraph

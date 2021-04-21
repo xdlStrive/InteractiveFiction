@@ -134,7 +134,7 @@ export const constantRoutes = [
 
   // 外链
   {
-    path: 'external-link',
+    path: '/external-link',
     component: Layout,
     children: [
       {

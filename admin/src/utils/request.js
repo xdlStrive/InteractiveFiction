@@ -45,7 +45,6 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     // 如果自定义code不是20000，则将其判断为错误
-    console.log(res.code)
     if (res.code !== 20000) {
       Message({
         message: res.message || 'Error',

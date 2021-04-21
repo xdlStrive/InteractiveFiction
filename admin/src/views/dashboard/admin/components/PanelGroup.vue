@@ -104,9 +104,8 @@ export default {
         StartTime: this.startTime
       }
       getCPUUtilizationLast(params).then(res => {
-        console.log(res.data)
-        let jsonDataOutside = JSON.parse(res.data)
-        let jsonDataInside = JSON.parse(jsonDataOutside.Datapoints)
+        const jsonDataOutside = JSON.parse(res.data)
+        const jsonDataInside = JSON.parse(jsonDataOutside.Datapoints)
         this.currentCPUUtilization = jsonDataInside[0].Average
       })
     },

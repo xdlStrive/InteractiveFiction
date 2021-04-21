@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import echarts from 'echarts'
+import * as echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
 import resize from './mixins/resize'
 
@@ -91,18 +91,13 @@ export default {
           }
         },
         legend: {
-          data: ['平均占用率1', '最高占用率']
+          data: ['平均占用率', '最高占用率']
         },
         series: [{
           name: '平均占用率',
-          itemStyle: {
-            normal: {
-              color: '#EF8B88',
-              lineStyle: {
-                color: '#EF8B88',
-                width: 2
-              }
-            }
+          lineStyle: {
+            color: '#EF8B88',
+            width: 2
           },
           smooth: true,
           type: 'line',
@@ -114,17 +109,12 @@ export default {
           name: '最高占用率',
           smooth: true,
           type: 'line',
-          itemStyle: {
-            normal: {
-              color: '#3888fa',
-              lineStyle: {
-                color: '#3888fa',
-                width: 2
-              },
-              areaStyle: {
-                color: '#f3f8ff'
-              }
-            }
+          lineStyle: {
+            color: '#3888fa',
+            width: 2
+          },
+          areaStyle: {
+            color: '#f3f8ff'
           },
           data: actualData,
           animationDuration: 2800,

@@ -33,7 +33,10 @@ const UserSchema = new mongoose.Schema({
   email: String,
   roles: String,  // 权限（必须）
   nickname: String, // 昵称
-  avatar: String, // 头像
+  avatar: { // 头像
+    type: String,
+    default: 'public/images/default.gif'
+  },
   archive: String,  // 存档
   create_time: { 
     type: Date, 
@@ -69,8 +72,6 @@ const SelectSchema = new mongoose.Schema({
   }
 }).set('toJSON', { getters: true });
 //SelectSchema.set('toJSON', { getters: true });
-//mongoose.Schema.prototype.set('toJSON', { getters: true });
-console.log(mongoose.Schema.prototype.set)
 
 // model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
 // let testModel = mongoose.model('select', SelectSchema, 'selects');
@@ -81,7 +82,7 @@ console.log(mongoose.Schema.prototype.set)
 const paragraphSchema = new mongoose.Schema({ 
   paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
   chapter_id: Number, // 所属章节的ID
-  select_id: [], // 段落关联的选项的id数组
+  select_id: String, // 段落关联的选项的id数组
   content: [],  // 段落内容
   bulletComment: [], // 关联弹幕的id数组
   create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }

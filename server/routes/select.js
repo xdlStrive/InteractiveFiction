@@ -30,7 +30,11 @@ router.get('/search', (req, res) => {
   const regexp = new RegExp(req.query.note, 'i')
   selectModel.findOne({note: { $regex: regexp }}, (err, docs) => {
     if (err) throw err;
-    res.json({ code: 20000, msg: '查询成功！', data: docs })
+    if (docs !== null) {
+      res.json({ code: 20000, msg: '查询成功！', data: docs })
+    } else {
+      res.json({ code: 20000, msg: '未查询到相关选择', data: docs })
+    }
   })
 })
 
