@@ -14,7 +14,8 @@ router.post('/add', (req, res) => {
       counter_num: 1
     }
   }, {
-    'new': true // 返回更新后的数据，否则返回的是更新前的数据
+    upsert: true,
+    new: true // 返回更新后的数据，否则返回的是更新前的数据
   }, (err, doc) => {
     if (err) {
       console.log(err);
@@ -23,6 +24,7 @@ router.post('/add', (req, res) => {
     new ChapterModel({ // 新增章节
       chapter_id: doc.counter_num,
       volume_id: req.body.volume_id,
+      title: req.body.title,
       author: req.body.creator_id, // 与user进行关联
     }).save((err, docs) => {
       if (err) {
@@ -57,10 +59,9 @@ router.post('/modify', (req, res) => {
   })
 })
 
-// 查询文章接口
-router.get('/list', (req, res) => {
+// 查询全部文章列表接口
+router.get('/allChapterList', (req, res) => {
   ChapterModel.find({}, {
-    _id: 0,
     chapter_id: 1,
     title: 1
   }).sort({
@@ -76,10 +77,67 @@ router.get('/list', (req, res) => {
       }
     } catch (err) {
       res.json({
-        code: 1,
+        code: 20000,
         message: '后端出错',
         data: err
       })
+    }
+  })
+})
+
+// 查询单卷文章列表接口
+router.get('/volumesList', (req, res) => {
+  ChapterModel.aggregate([ // 管道聚合函数
+    {
+      $match: {
+        volume_id: Number(req.query.volume_id) // req的数据类型都是string，所以需要转换为number类型才能查询
+      }
+    }, {
+      $project: {
+          _id: 0,
+          chapter_id: 1,
+          title: 1
+      }
+    }, {
+      $addFields: { // 往查询结果里新增字段
+        leaf: true
+      }
+    }
+  ], (err, docs) => {
+    if (!err && docs) {
+      console.log(docs)
+      return res.json({ code: 20000, msg: '章节列表获取成功！', data: docs })
+    }
+  })
+})
+
+// 查询一章文章接口
+router.get('/oneChapter', (req, res) => {
+  ChapterModel.aggregate([
+    {
+      $match: {
+        chapter_id: Number(req.query.chapter_id)
+      }
+    },{ 
+      $unwind: '$paragraph_list'
+    }, {
+      $lookup: {
+        from: 'paragraphs',
+        localField: 'paragraph_list',
+        foreignField: 'paragraph_id',
+        as: 'paragraph_list'
+      }
+    }, {
+      $project: {
+        _id: 0,
+        chapter_id: 1,
+        title: 1,
+        paragraph_list: 1
+      }
+    }
+  ], (err, doc) => {
+    if (!err && doc) {
+      return res.json({ code: 20000, msg: '章节获取成功！', data: doc })
     }
   })
 })
@@ -130,27 +188,43 @@ router.post('/document', function (req, res) {
   })
 });
 
-// 获取博文列表接口
-router.get('/list', function(req, res) {
-    let pageNum = req.query.pageNum,
-        pageSize = req.query.pageSize;
+// 获取章节列表接口
+router.get('/list', function (req, res) {
+  let pageNum = req.query.pageNum,
+    pageSize = req.query.pageSize;
 
-    ChapterModel.countDocuments((err, count) => { // 查询出结果返回
-        ChapterModel.find({},{ content: 0 })  // 不取content字段
-            .populate({ path: 'author', select: { username: 1, avatar: 1 } })  // 关联查询user表里的数据
-            .skip((pageNum - 1) * pageSize)
-            // .limit(pageSize)
-            .sort({ '_id': -1 }) // 降序
-            .exec((err, doc) => {
-                try {
-                    if (!err && doc) {
-                        return res.json({ code: 20000, totalCount: count, msg: '列表获取成功', data: doc })
-                    }
-                } catch (err) {
-                    res.json({ code: 1, message: '后端出错' })
-                }
+  ChapterModel.countDocuments((err, count) => { // 查询出结果返回
+    ChapterModel.find({}, {
+        content: 0
+      }) // 不取content字段
+      .populate({
+        path: 'author',
+        select: {
+          username: 1,
+          avatar: 1
+        }
+      }) // 关联查询user表里的数据
+      .skip((pageNum - 1) * pageSize)
+      // .limit(pageSize)
+      .sort({ '_id': -1 }) // 降序
+      .exec((err, doc) => {
+        try {
+          if (!err && doc) {
+            return res.json({
+              code: 20000,
+              totalCount: count,
+              msg: '列表获取成功',
+              data: doc
             })
-    })
+          }
+        } catch (err) {
+          res.json({
+            code: 1,
+            message: '后端出错'
+          })
+        }
+      })
+  })
 })
 
 //获取博文接口

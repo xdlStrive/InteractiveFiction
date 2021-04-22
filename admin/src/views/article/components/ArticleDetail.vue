@@ -2,29 +2,43 @@
   <el-container>
     <el-aside class="leftBox">
       <el-tree
-        :data="volumeList"
+        :props="props"
+        :load="fetchChapterListFun"
+        :default-expanded-keys="[1]"
         node-key="volume_id"
         lazy
-        :load="fetchChapterListFun"
-        :render-content="treeAction"
+        accordion
+        highlight-current
+        @node-expand="openNode"
+        @node-click="handleNodeClick"
         class="treeBox"
       />
       <div class="treeBtnGroup">
-        <el-button type="primary" icon="el-icon-plus" @click="addVolumeFormVisible= true">新增卷</el-button>
-        <el-button type="success" icon="el-icon-plus" @click="addChapterFun">新增章节</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="addVolumeFormVisible = true">新增卷</el-button>
+        <el-button type="success" icon="el-icon-plus" @click="addChapterFormVisible = true">新增章节</el-button>
       </div>
       <el-dialog title="新增卷" :visible.sync="addVolumeFormVisible" width="25%">
         <el-form label-width="80px">
           <el-form-item label="卷名">
-            <el-input v-model="volumeTitle" />
+            <el-input v-model="newVolumeTitle" />
           </el-form-item>
           <el-form-item class="addSelectBox">
             <el-button type="primary" @click="addVolumeFun">提交</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
+      <el-dialog title="新增章节" :visible.sync="addChapterFormVisible" width="25%">
+        <el-form label-width="80px">
+          <el-form-item label="章节名">
+            <el-input v-model="newChapterTitle" />
+          </el-form-item>
+          <el-form-item class="addSelectBox">
+            <el-button type="primary" @click="addChapterFun">提交</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
     </el-aside>
-    <el-main>
+    <el-main v-if="editTextVisible">
       <el-form class="articleForm" label-width="80px">
         <el-form-item label="章节标题" class="articleTitleInput">
           <el-input v-model="chapterTitle" />
@@ -108,7 +122,8 @@
 import Tinymce from '@/components/Tinymce'
 import { fetchVolumeList } from '@/api/volume'
 import { addVolume } from '@/api/volume'
-import { fetchChapterList } from '@/api/chapter'
+import { fetchVolumesChapterList } from '@/api/chapter'
+import { fetchOneChapter } from '@/api/chapter'
 import { addChapter } from '@/api/chapter'
 import { addParagraph } from '@/api/paragraph'
 import { newSelect } from '@/api/select'
@@ -133,17 +148,22 @@ export default {
   },
   data() {
     return {
-      inputVisible: false,
-      inputValue: '',
-      postData: Object.assign({}, defaultData),
-      reviseID: '',
-      dialogVisible: false,
-      temRoute: {},
+      // 树部分
+      props: {
+        label: 'title', // 这里设置的值需要与后台传回的值一一对应
+        children: '',
+        isLeaf: 'leaf'
+      },
+      editTextVisible: false,
+      treeNode: {},
+      treeResolve: {},
       // 卷部分
       volumeList: [],
       addVolumeFormVisible: false,
-      volumeTitle: '',
-      currentVolumeID: 0,
+      addChapterFormVisible: false,
+      newVolumeTitle: '',
+      newChapterTitle: '',
+      currentVolumeID: 1,
       // 章节部分
       chapterTitle: '',
       chapterID: '',
@@ -170,6 +190,7 @@ export default {
         note: '',
         selectType: 0
       },
+      inputValue: '',
       selectInputList: [{
         labelName: '选项一',
         inputValue: ''
@@ -183,71 +204,90 @@ export default {
     }
   },
   created() {
-    if (this.isRevise) {
-      const id = this.$route.params && this.$route.params.id
-      this.fetchData(id)
-      this.reviseID = id
-      this.btnState = { upload: false, revise: true }
-    }
     this.tempRoute = Object.assign({}, this.$route)
-
-    this.fetchVolumeListFun()
-    this.fetchChapter()
   },
   methods: {
-    fetchChapterListFun(node, resolve) { // 获取章节列表
-      const params = {
-        volume_id: node.data.volume_id
-      }
-      fetchChapterList(params).then(res => {
-        if (res.code === 20000) {
-          this.chapterList = res.data
-        }
-      })
+    openNode(data) {  // 绑定树形卷的展开事件
+      this.currentVolumeID = data.volume_id
+      console.log(this.currentVolumeID)
     },
-    treeAction(h, { node, data, store }) {
-      return (
-        <div class='custom-tree-node'>
-          <span>{ data.title }</span>
-        </div>
-      )
+    handleNodeClick(data, node) { // 树形节点点击事件
+      console.log(data)
+      console.log(node)
+      if (node.level === 2) {
+        this.fetchChapter(data.chapter_id)
+      }
     },
     fetchVolumeListFun() { // 获取卷列表
-      const params = {
-        volume_id: 1
-      }
-      fetchVolumeList(params).then(res => {
-        if (res.code === 20000) {
-          this.volumeList = res.data
-        }
-      })
+      return new Promise((resolve => {
+        fetchVolumeList().then(res => {
+          if (res.code === 20000) {
+            this.volumeList = res.data
+            resolve()
+          }
+        })
+      }))
     },
     addVolumeFun() { // 新增卷方法
       const params = {
-        title: this.volumeTitle
+        title: this.newVolumeTitle
       }
       addVolume(params).then(res => {
-        console.log(res.code)
         if (res.code === 20000) {
           this.$message({
             type: 'success',
             message: res.msg
           })
+          this.fetchVolumeListFun() // 刷新卷列表
+          this.addVolumeFormVisible = false
+
+          this.treeNode.childNodes = [] // 刷新左侧树
+          this.fetchChapterListFun(this.treeNode, this.treeResolve)
         }
       })
     },
+    async fetchChapterListFun(node, resolve) { // 获取章节列表
+      if (node.level === 0) {
+        this.treeNode = node
+        this.treeResolve = resolve
+        await this.fetchVolumeListFun()
+        return resolve(this.volumeList)
+      } else {
+        const params = {
+          volume_id: node.data.volume_id
+        }
+        fetchVolumesChapterList(params).then(res => {
+          if (res.code === 20000) {
+            this.chapterList = res.data
+          }
+          return resolve(res.data)
+        })
+      }
+    },
     fetchChapter(chapterID) { // 获取章节
-
+      const params = {
+        chapter_id: chapterID
+      }
+      fetchOneChapter(params).then(res => {
+        if (res.code === 20000) {
+          this.editTextVisible = true
+        }
+      })
     },
     addChapterFun() { // 新增章节
       const chapterParams = {
         volume_id: this.currentVolumeID,
-        creator_id: this.$store.state.user.id
+        creator_id: this.$store.state.user.id,
+        title: this.newChapterTitle
       }
       addChapter(chapterParams).then(res => {
-        console.log(res.data)
         if (res.code === 20000) {
           this.chapterID = res.data.chapter_id
+          this.addChapterFormVisible = false
+          this.editTextVisible = true
+          this.chapterTitle = res.data.title
+          this.treeNode.childNodes = [] // 刷新左侧树
+          this.fetchChapterListFun(this.treeNode, this.treeResolve)
           this.$message({
             type: 'success',
             message: '新增章节成功！'
@@ -381,72 +421,11 @@ export default {
       // }
     },
     submitChapter() { // 提交本章
-
-    },
-    showInput() {
-      this.inputVisible = true
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus()
-      })
-    },
-    handleInputConfirm() {
-      const inputValue = this.inputValue
-      if (inputValue) {
-        this.postData.tags.push(inputValue)
+      if (this.$refs.tinymce.value !== '') {  // 如果富文本编辑器还有未提交的内容，则先提交段落
+        addParagraphFun('single')
       }
-      console.log(this.postData.tags)
-      this.inputVisible = false
-      this.inputValue = ''
-    },
-    handlePictureCardPreview() {
-      this.dialogVisible = true
+      this.editTextVisible = false  // 隐藏右侧编辑区
     }
-    // upload() {
-    //   const params = {
-    //     title: this.postData.title,
-    //     tags: this.postData.tags,
-    //     coverImg: this.postData.coverImg,
-    //     roundup: this.postData.roundup,
-    //     content: this.postData.content,
-    //     author: store.state.user.id
-    //   }
-    //   postArticle(params).then(res => {
-    //     console.log(res.data)
-    //     this.$notify({
-    //       title: '提交成功',
-    //       message: '发布文章成功！',
-    //       type: 'success',
-    //       duration: 2000
-    //     })
-    //   })
-    // },
-    // fetchData(id) { // 获取当前修改的博文的数据
-    //   const params = { id: id }
-    //   fetchArticle(params).then(res => {
-    //     console.log(res.data)
-    //     this.postData = res.data
-    //   })
-    // },
-    // revise() {
-    //   const params = {
-    //     id: this.reviseID,
-    //     title: this.postData.title,
-    //     tags: this.postData.tags,
-    //     coverImg: this.postData.coverImg,
-    //     roundup: this.postData.roundup,
-    //     content: this.postData.content,
-    //     author: store.state.user.id
-    //   }
-    //   reviseArticle(params).then(res => {
-    //     console.log(res.data)
-    //     this.$notify({
-    //       title: '修改成功',
-    //       message: '修改文章成功！',
-    //       type: 'success',
-    //       duration: 2000
-    //     })
-    //   })
-    // }
   }
 }
 </script>
@@ -455,7 +434,7 @@ export default {
   .leftBox {
     margin: 15px;
     padding: 20px 10px;
-    background: #fbfbfb;
+    background: #f3f3f3;
     box-sizing: border-box;
   }
   .treeBtnGroup {
