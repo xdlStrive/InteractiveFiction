@@ -86,7 +86,7 @@ const paragraphSchema = new mongoose.Schema({
   content: [],  // 段落内容
   bulletComment: [], // 关联弹幕的id数组
   create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
-});
+}).set('toJSON', { getters: true });
 
 // 章节模型
 const ChapterSchema = new mongoose.Schema({

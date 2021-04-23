@@ -16,7 +16,6 @@ router.post('/add', (req, res) => {
       console.log(err);
       return;
     }
-    console.log(typeof req.body.chapter_id)
     new ParagraphModel({    // 新增段落
       paragraph_id: doc.counter_num,
       chapter_id: req.body.chapter_id,

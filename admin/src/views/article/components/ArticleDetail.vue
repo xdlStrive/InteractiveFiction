@@ -9,9 +9,9 @@
         lazy
         accordion
         highlight-current
+        class="treeBox"
         @node-expand="openNode"
         @node-click="handleNodeClick"
-        class="treeBox"
       />
       <div class="treeBtnGroup">
         <el-button type="primary" icon="el-icon-plus" @click="addVolumeFormVisible = true">新增卷</el-button>
@@ -46,9 +46,9 @@
         <el-form-item label="正文" class="textArea">
           <div class="textListBox">
             <ul>
-              <li v-for="(item, index) in paragraphList" :key="index">
-                <div v-html="item.item" />
-                <el-button type="primary" @click="modifyParagraph">修改</el-button>
+              <li v-for="(item, index) in paragraphList" :key="index" class="previewItems">
+                <div v-html="item.item" class="itemTextBox" />
+                <el-button type="primary" @click="modifyParagraph" class="itemEditBtn">修改</el-button>
               </li>
             </ul>
           </div>
@@ -125,17 +125,10 @@ import { addVolume } from '@/api/volume'
 import { fetchVolumesChapterList } from '@/api/chapter'
 import { fetchOneChapter } from '@/api/chapter'
 import { addChapter } from '@/api/chapter'
+import { modifyChapter } from '@/api/chapter'
 import { addParagraph } from '@/api/paragraph'
 import { newSelect } from '@/api/select'
 import { searchSelect } from '@/api/select'
-
-const defaultData = {
-  title: '',
-  tags: [],
-  roundup: '',
-  coverImg: '',
-  content: ''
-}
 
 export default {
   name: 'NewChapter',
@@ -207,26 +200,24 @@ export default {
     this.tempRoute = Object.assign({}, this.$route)
   },
   methods: {
-    openNode(data) {  // 绑定树形卷的展开事件
+    openNode(data) { // 绑定树形卷的展开事件
       this.currentVolumeID = data.volume_id
       console.log(this.currentVolumeID)
     },
     handleNodeClick(data, node) { // 树形节点点击事件
-      console.log(data)
-      console.log(node)
       if (node.level === 2) {
         this.fetchChapter(data.chapter_id)
       }
     },
     fetchVolumeListFun() { // 获取卷列表
-      return new Promise((resolve => {
+      return new Promise(resolve => {
         fetchVolumeList().then(res => {
           if (res.code === 20000) {
             this.volumeList = res.data
             resolve()
           }
         })
-      }))
+      })
     },
     addVolumeFun() { // 新增卷方法
       const params = {
@@ -265,12 +256,20 @@ export default {
       }
     },
     fetchChapter(chapterID) { // 获取章节
+      this.chapterID = chapterID
       const params = {
         chapter_id: chapterID
       }
       fetchOneChapter(params).then(res => {
         if (res.code === 20000) {
           this.editTextVisible = true
+          this.chapterTitle = res.data.title
+          const dataList = []
+          res.data.paragraph_list.forEach((item, index) => {
+            dataList[index] = {item: item.content[0]}
+          })
+          console.log(dataList)
+          this.paragraphList = dataList
         }
       })
     },
@@ -298,15 +297,13 @@ export default {
     addParagraphFun(type) { // 新增段落
       const paragraphParams = {
         chapter_id: this.chapterID,
-        content: [this.currentParagraph]
+        content: this.currentParagraph
       }
       if (type === 'plural') {
         paragraphParams.content = this.currentParagraphList
         paragraphParams.select_id = this.selectID
       }
-      console.log(paragraphParams)
       addParagraph(paragraphParams).then(res => { // 新增段落
-        console.log(res.data)
         if (res.code === 20000) {
           const newParagraphItem = {
             item: this.currentParagraph + ``
@@ -314,12 +311,22 @@ export default {
           this.paragraphList.push(newParagraphItem)
           this.$refs.tinymce.setContent('')
           this.paragraphIDList.push(res.data.paragraph_id)
-          console.log(this.paragraphIDList)
           this.$message({
             type: 'success',
             message: '新增段落成功！'
           })
+          return [res.data.chapter_id, res.data.paragraph_id] // 返回段落id给下面的then方法
         }
+      }).then(value => { // 新增段落后将该段落的id插入所属的章节的段落id数组里
+        const params = {
+          chapter_id: value[0],
+          paragraph_list: [value[1]]
+        }
+        modifyChapter(params).then(res => {
+          if (res.code === 20000) {
+            console.log(res)
+          }
+        })
       })
     },
     modifyParagraph() { // 修改段落
@@ -421,10 +428,10 @@ export default {
       // }
     },
     submitChapter() { // 提交本章
-      if (this.$refs.tinymce.value !== '') {  // 如果富文本编辑器还有未提交的内容，则先提交段落
-        addParagraphFun('single')
+      if (this.$refs.tinymce.value !== '') { // 如果富文本编辑器还有未提交的内容，则先提交段落
+        this.addParagraphFun('single')
       }
-      this.editTextVisible = false  // 隐藏右侧编辑区
+      this.editTextVisible = false // 隐藏右侧编辑区
     }
   }
 }
@@ -449,6 +456,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
   }
+
   .el-form-item__content {
     margin-left: 100px!important;
   }
@@ -462,15 +470,27 @@ export default {
     height: 470px;
     padding: 20px;
     border: 1px solid #C0C4CC;
+    overflow-y: scroll;
   }
-  .textListBox li {
+  .previewItems {
     margin-bottom: 10px;
-    padding-right: 10px;
-    border-right: 1px solid #C0C4CC;
+    padding: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f7f7f7;
+  }
+  .itemTextBox {
+    width: 95%;
   }
   .textListBox p {
+    padding: 0 5px;
     line-height: 24px;
     text-indent: 2rem;
+    font-size: 15px;
+  }
+  .itemEditBtn {
+    padding: 8px 15px;
   }
   .editArea {
     width: 90%;
