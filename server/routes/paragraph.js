@@ -31,4 +31,19 @@ router.post('/add', (req, res) => {
   })
 })
 
+// 修改段落
+router.post('/modify', (req, res) => {
+  const contentIndex = 'content.' + req.body.index
+  ParagraphModel.findOneAndUpdate({ paragraph_id: req.body.paragraph_id }, {
+    $set: {
+      [contentIndex] : req.body.content
+    } 
+  }, { new: true }, (err, doc) => {
+    if (err) {
+      res.json({ code: 20000, msg: err })
+    }
+    res.json({ code: 20000, msg: '修改段落成功！', data: doc })
+  })
+})
+
 module.exports = router;

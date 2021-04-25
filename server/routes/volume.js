@@ -90,7 +90,6 @@ router.get('/list', (req, res) => {
   ], (err, docs) => {
       console.log(err)
       if (!err && docs) {
-        console.log(docs)
         return res.json({ code: 20000, msg: '分卷列表获取成功！', data: docs })
       }
   })

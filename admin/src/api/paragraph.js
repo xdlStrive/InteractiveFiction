@@ -7,3 +7,11 @@ export function addParagraph(data) { // 上传段落接口
     data
   })
 }
+
+export function modifyParagraph(data) {
+  return request({
+    url: '/paragraph/modify',
+    method: 'post',
+    data
+  })
+}

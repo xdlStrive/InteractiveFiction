@@ -47,8 +47,11 @@
           <div class="textListBox">
             <ul>
               <li v-for="(item, index) in paragraphList" :key="index" class="previewItems">
-                <div v-html="item.item" class="itemTextBox" />
-                <el-button type="primary" @click="modifyParagraph" class="itemEditBtn">修改</el-button>
+                <div v-for="(items, indexs) in item.content" :key="indexs" class="itemTextBox">
+                  <el-tag v-if="item.content.length > 1">{{'选项 ' + indexs}}</el-tag>
+                  {{ items }}
+                </div>
+                <el-button type="primary" class="itemEditBtn" @click="modifyParagraphBtn(item.item, index)">修改</el-button>
               </li>
             </ul>
           </div>
@@ -59,7 +62,8 @@
         <el-form-item class="articleBtnGroup">
           <el-button type="danger" @click="relationFormVisible = true">关联选择</el-button>
           <el-button type="warning" @click="selectFormVisible = true">新增选择</el-button>
-          <el-button type="primary" @click="nextParagraph">下一段</el-button>
+          <el-button type="primary" @click="nextParagraph" v-if="submitType">下一段</el-button>
+          <el-button type="primary" @click="modifyParagraphFun()" v-if="!submitType">提交修改</el-button>
           <el-button type="success" @click="submitChapter">提交本章</el-button>
         </el-form-item>
       </el-form>
@@ -127,6 +131,7 @@ import { fetchOneChapter } from '@/api/chapter'
 import { addChapter } from '@/api/chapter'
 import { modifyChapter } from '@/api/chapter'
 import { addParagraph } from '@/api/paragraph'
+import { modifyParagraph } from '@/api/paragraph'
 import { newSelect } from '@/api/select'
 import { searchSelect } from '@/api/select'
 
@@ -165,7 +170,10 @@ export default {
       paragraphList: [],
       paragraphIDList: [],
       currentParagraph: '',
+      currentParagraphID: 0,
       currentParagraphList: [],
+      submitType: true,
+      tagArr: [],
       // 关联选项弹窗
       relationFormVisible: false,
       relationForm: {
@@ -264,12 +272,22 @@ export default {
         if (res.code === 20000) {
           this.editTextVisible = true
           this.chapterTitle = res.data.title
-          const dataList = []
-          res.data.paragraph_list.forEach((item, index) => {
-            dataList[index] = {item: item.content[0]}
-          })
-          console.log(dataList)
-          this.paragraphList = dataList
+          // const dataList = []
+          // res.data.paragraph_list.forEach((item, index) => {
+          //   if (item.content.length > 1) {
+          //     let contents = ''
+          //     item.content.forEach((itmes, indexs) => {
+          //       this.tagArr.push(indexs)
+          //       contents += itmes
+          //       console.log(contents)
+          //     })
+          //     dataList[index] = { id: item.paragraph_id, item: contents }
+          //   } else {
+          //     dataList[index] = { id: item.paragraph_id, item: item.content[0] }
+          //   }
+          // })
+          // console.log(dataList)
+          this.paragraphList = res.data.paragraph_list
         }
       })
     },
@@ -308,7 +326,9 @@ export default {
           const newParagraphItem = {
             item: this.currentParagraph + ``
           }
+          console.log(newParagraphItem)
           this.paragraphList.push(newParagraphItem)
+
           this.$refs.tinymce.setContent('')
           this.paragraphIDList.push(res.data.paragraph_id)
           this.$message({
@@ -324,13 +344,37 @@ export default {
         }
         modifyChapter(params).then(res => {
           if (res.code === 20000) {
-            console.log(res)
+            this.$message({
+              type: 'success',
+              message: res.msg
+            })
           }
         })
       })
     },
-    modifyParagraph() { // 修改段落
-
+    modifyParagraphBtn(content, index) { // 段落的修改按钮事件
+      this.currentParagraphID = this.paragraphList[index].id
+      this.$refs.tinymce.setContent(content)
+      this.submitType = false
+    },
+    modifyParagraphFun() { // 提交修改后的段落
+      const params = {
+        paragraph_id: this.currentParagraphID,
+        index: 0,
+        content: this.$refs.tinymce.value
+      }
+      modifyParagraph(params).then(res => {
+        if (res.code === 20000) {
+          console.log(res)
+          this.submitType = true
+          this.$refs.tinymce.setContent('')
+          this.fetchChapter(res.data.chapter_id) // 刷新章节预览列表
+          this.$message({
+            type: 'success',
+            message: res.msg
+          })
+        }
+      })
     },
     searchSelect() { // 搜索选项
       const searchTerms = this.relationForm.searchTerms
