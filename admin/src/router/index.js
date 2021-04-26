@@ -31,14 +31,12 @@ import Layout from '@/layout'
  * all roles can be accessed
  */
 export const constantRoutes = [
-
   // 登录
   {
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true
   },
-
   // 仪表盘
   {
     path: '/',
@@ -51,7 +49,6 @@ export const constantRoutes = [
       meta: { title: '仪表盘', icon: 'dashboard' }
     }]
   },
-
   // 文章管理
   {
     path: '/article',
@@ -80,7 +77,6 @@ export const constantRoutes = [
       }
     ]
   },
-
   // 选择列表
   {
     path: '/select',
@@ -94,8 +90,18 @@ export const constantRoutes = [
       }
     ]
   },
-
-  // 组件
+  // 用户管理
+  {
+    path: '/userMGT',
+    component: Layout,
+    children: [{
+      path: 'user',
+      name: 'user',
+      component: () => import('@/views/userMGT/user'),
+      meta: { title: '用户管理', icon: 'user' }
+    }]
+  },
+  // 开发记录
   {
     path: '/example',
     component: Layout,
@@ -108,45 +114,22 @@ export const constantRoutes = [
         name: 'Table',
         component: () => import('@/views/timeline/index'),
         meta: { title: '开发时间轴', icon: 'table' }
-      },
-      {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: '树形菜单', icon: 'tree' }
       }
     ]
   },
-
-  // 表单
-  {
-    path: '/form',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: '表单', icon: 'form' }
-      }
-    ]
-  },
-
   // 外链
   {
     path: '/external-link',
     component: Layout,
     children: [
       {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
+        path: 'https://panjiachen.gitee.io/vue-element-admin-site/zh/',
         meta: { title: '外部链接', icon: 'link' }
       }
     ]
   },
-
   // 404页必须放在末尾！！！
   { path: '*', redirect: '/404', hidden: true },
-
   // 404错误
   {
     path: '/404',

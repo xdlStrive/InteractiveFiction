@@ -1,16 +1,14 @@
 <template>
   <div class="app-container">
     <el-table v-loading="listLoading" :data="tableData" stripe border style="width: 100%;">
-      <el-table-column type="index" label="章节序号" width="100" align="center" />
+      <el-table-column type="index" label="章节编号" width="100" align="center" />
       <el-table-column prop="title" label="章节名" min-width="150" />
       <el-table-column prop="roundup" label="摘要" class-name="roundup" min-width="300" />
       <el-table-column prop="author.username" label="作者" width="200" align="center" />
       <el-table-column prop="creationTime" label="发布时间" width="200" align="center" />
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
-          <router-link :to="'/article/revise/'+scope.row.id">
-            <el-button type="primary" size="small" icon="el-icon-edit">修改</el-button>
-          </router-link>
+          <el-button type="primary" size="small" icon="el-icon-edit">修改</el-button>
           <el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -28,8 +26,7 @@
 </template>
 
 <script>
-// import { fetchList } from '@/api/article'
-// import { deleteArticle } from '@/api/article'
+import { fetchAllChapterList } from '@/api/chapter'
 
 export default {
   name: 'ArticleList',
@@ -49,25 +46,25 @@ export default {
     this.getList()
   },
   methods: {
+    getList() {
+      this.listLoading = true
+      const params = {
+        pageNum: this.listQuery.page,
+        pageSize: this.listQuery.limit
+      }
+      fetchAllChapterList(params).then(res => {
+        this.listLoading = false
+        this.tableData = res.data
+        this.total = res.totalCount
+      })
+    },
     handleSizeChange(val) {
       this.listQuery.limit = val
       this.getList()
     },
     handleCurrentChange(val) {
       console.log(val)
-    }
-    // getList() {
-    //   this.listLoading = true
-    //   const params = {
-    //     pageNum: this.listQuery.page,
-    //     pageSize: this.listQuery.limit
-    //   }
-    //   fetchList(params).then(res => {
-    //     this.listLoading = false
-    //     this.tableData = res.data
-    //     this.total = res.totalCount
-    //   })
-    // },
+    },
     // handleDelete(row) {
     //   this.$confirm('此操作将永久删除该文件，是否继续？', '提示', {
     //     confirmButtonText: '确定',
@@ -106,6 +103,5 @@ export default {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    /* white-space: normal; */
   }
 </style>

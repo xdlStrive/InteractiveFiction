@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const formidable = require('formidable');
+// const formidable = require('formidable');
 const ChapterModel = mongoose.model('chapter');
 const CounterModel = mongoose.model('counter');
+
+mongoose.set('useFindAndModify', false)
 
 // 新增章节接口
 router.post('/add', (req, res) => {
@@ -42,11 +44,10 @@ router.post('/add', (req, res) => {
 
 // 修改文章接口
 router.post('/modify', (req, res) => {
-  let options = {
-    $addToSet: {
-      paragraph_list: {
-        $each: req.body.paragraph_list
-      }
+  let options = {}
+  if (req.body.paragraph_list !== undefined) {
+    options.$addToSet.paragraph_list = {
+      $each: req.body.paragraph_list
     }
   }
   if (req.body.title !== undefined) {
@@ -57,6 +58,7 @@ router.post('/modify', (req, res) => {
       $each: req.body.chapter_comment
     }
   }
+  console.log(options)
   ChapterModel.findOneAndUpdate({
     chapter_id: req.body.chapter_id
   }, options, {
@@ -70,27 +72,23 @@ router.post('/modify', (req, res) => {
 
 // 查询全部文章列表接口
 router.get('/allChapterList', (req, res) => {
+  const pageNum = req.query.pageNum,
+    pageSize = req.query.pageSize;
+  console.log(pageNum)
+  console.log(pageSize)
   ChapterModel.find({}, {
     chapter_id: 1,
-    title: 1
-  }).sort({
+    title: 1,
+    _id: 0
+  }).skip((pageNum - 1) * pageSize)
+    // .limit(pageSize)
+    .sort({
     chapter_id: 1
   }).exec((err, doc) => {
-    try {
-      if (!err && doc) {
-        return res.json({
-          code: 20000,
-          msg: '章节列表获取成功！',
-          data: doc
-        })
-      }
-    } catch (err) {
-      res.json({
-        code: 20000,
-        message: '后端出错',
-        data: err
-      })
+    if (err) {
+      res.json({ code: 20000, msg: err })
     }
+    res.json({ code: 20000, msg: '章节列表获取成功！', data: doc })
   })
 })
 

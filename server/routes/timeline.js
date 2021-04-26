@@ -5,12 +5,11 @@ const TimelineModel = mongoose.model('timeline');
 const CounterModel = mongoose.model('counter');
 
 router.post('/create', (req, res) => { // 新增时间轴
-  console.log(req.body.title)
-
   CounterModel.findOneAndUpdate({ counter_id: 'timeline' },{
     $inc: { counter_num: 1 }
   },{
-    'new': true
+    upsert: true,
+    new: true
   },(err, doc) => {
     if(err) {
       console.log(err);
@@ -22,7 +21,7 @@ router.post('/create', (req, res) => { // 新增时间轴
       desc: req.body.desc,
       creator_id: req.body.creator_id
     }).save((err, doc) => {
-      res.send({ code: 20000, msg: '新增成功！' });
+      res.json({ code: 20000, msg: '新增成功！' });
     })
   })
   
@@ -39,9 +38,15 @@ router.get('/fetchList', (req, res) => {
       }
     },{
       $project: {
-        creator_id: 0,
-        __v: 0,
-        _id: 0
+        title: 1,
+        creator: 1,
+        desc: 1,
+        create_time: {
+          $dateToString: { format: '%Y-%m-%d', date: '$create_time' }
+        },
+        detailTime: {
+          $dateToString: { format: '%Y-%m-%d %H:%M:%S', date: '$create_time', timezone: "+08:00" } // timezone调整时区+8小时
+        }
       }
     }
   ], (err, docs) => {

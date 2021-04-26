@@ -27,7 +27,7 @@
         <el-card>
           <h4>{{ activity.title }}</h4>
           <p class="timeline_details">{{ activity.desc }}</p>
-          <p class="timeline_info">by: {{ activity.creator[0].nickname }}  提交于 {{ activity.create_time }}</p>
+          <p class="timeline_info">by: {{ activity.creator[0].nickname }}  提交于 {{ activity.detailTime }}</p>
         </el-card>
       </el-timeline-item>
     </el-timeline>

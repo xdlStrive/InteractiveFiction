@@ -43,15 +43,15 @@
         <el-form-item label="章节标题" class="articleTitleInput">
           <el-input v-model="chapterTitle" />
         </el-form-item>
-        <el-form-item label="正文" class="textArea">
+        <el-form-item label="正文" class="textAreaBox">
           <div class="textListBox">
             <ul>
               <li v-for="(item, index) in paragraphList" :key="index" class="previewItems">
                 <div v-for="(items, indexs) in item.content" :key="indexs" class="itemTextBox">
-                  <el-tag v-if="item.content.length > 1">{{'选项 ' + indexs}}</el-tag>
-                  {{ items }}
+                  <el-tag v-if="item.content.length > 1">{{ '选项 ' + (indexs + 1) }}</el-tag>
+                  <div class="textBox" v-html="items" />
+                  <el-button type="primary" class="itemEditBtn" @click="modifyParagraphBtn(item.content[indexs], index, indexs)">修改</el-button>
                 </div>
-                <el-button type="primary" class="itemEditBtn" @click="modifyParagraphBtn(item.item, index)">修改</el-button>
               </li>
             </ul>
           </div>
@@ -62,8 +62,8 @@
         <el-form-item class="articleBtnGroup">
           <el-button type="danger" @click="relationFormVisible = true">关联选择</el-button>
           <el-button type="warning" @click="selectFormVisible = true">新增选择</el-button>
-          <el-button type="primary" @click="nextParagraph" v-if="submitType">下一段</el-button>
-          <el-button type="primary" @click="modifyParagraphFun()" v-if="!submitType">提交修改</el-button>
+          <el-button v-if="submitType" type="primary" @click="nextParagraph">下一段</el-button>
+          <el-button v-if="!submitType" type="primary" @click="modifyParagraphFun()">提交修改</el-button>
           <el-button type="success" @click="submitChapter">提交本章</el-button>
         </el-form-item>
       </el-form>
@@ -171,6 +171,7 @@ export default {
       paragraphIDList: [],
       currentParagraph: '',
       currentParagraphID: 0,
+      currentParagraphIndex: 0,
       currentParagraphList: [],
       submitType: true,
       tagArr: [],
@@ -240,7 +241,7 @@ export default {
           this.fetchVolumeListFun() // 刷新卷列表
           this.addVolumeFormVisible = false
 
-          this.treeNode.childNodes = [] // 刷新左侧树
+          this.treeNode.childNodes = [] // 刷新左侧树（连下一句一起）
           this.fetchChapterListFun(this.treeNode, this.treeResolve)
         }
       })
@@ -272,22 +273,8 @@ export default {
         if (res.code === 20000) {
           this.editTextVisible = true
           this.chapterTitle = res.data.title
-          // const dataList = []
-          // res.data.paragraph_list.forEach((item, index) => {
-          //   if (item.content.length > 1) {
-          //     let contents = ''
-          //     item.content.forEach((itmes, indexs) => {
-          //       this.tagArr.push(indexs)
-          //       contents += itmes
-          //       console.log(contents)
-          //     })
-          //     dataList[index] = { id: item.paragraph_id, item: contents }
-          //   } else {
-          //     dataList[index] = { id: item.paragraph_id, item: item.content[0] }
-          //   }
-          // })
-          // console.log(dataList)
           this.paragraphList = res.data.paragraph_list
+          console.log(this.paragraphList)
         }
       })
     },
@@ -303,7 +290,7 @@ export default {
           this.addChapterFormVisible = false
           this.editTextVisible = true
           this.chapterTitle = res.data.title
-          this.treeNode.childNodes = [] // 刷新左侧树
+          this.treeNode.childNodes = [] // 刷新左侧树（连下一句一起）
           this.fetchChapterListFun(this.treeNode, this.treeResolve)
           this.$message({
             type: 'success',
@@ -323,14 +310,10 @@ export default {
       }
       addParagraph(paragraphParams).then(res => { // 新增段落
         if (res.code === 20000) {
-          const newParagraphItem = {
-            item: this.currentParagraph + ``
-          }
-          console.log(newParagraphItem)
-          this.paragraphList.push(newParagraphItem)
-
+          this.paragraphList.push(res.data)
           this.$refs.tinymce.setContent('')
           this.paragraphIDList.push(res.data.paragraph_id)
+          this.fetchChapter(res.data.chapter_id)
           this.$message({
             type: 'success',
             message: '新增段落成功！'
@@ -352,15 +335,17 @@ export default {
         })
       })
     },
-    modifyParagraphBtn(content, index) { // 段落的修改按钮事件
-      this.currentParagraphID = this.paragraphList[index].id
+    modifyParagraphBtn(content, index, indexs) { // 段落的修改按钮事件
+      console.log(content)
+      this.currentParagraphID = this.paragraphList[index].paragraph_id // 修改的段落的id
+      this.currentParagraphIndex = indexs // 修改的段落内容数组的下标
       this.$refs.tinymce.setContent(content)
       this.submitType = false
     },
     modifyParagraphFun() { // 提交修改后的段落
       const params = {
         paragraph_id: this.currentParagraphID,
-        index: 0,
+        index: this.currentParagraphIndex,
         content: this.$refs.tinymce.value
       }
       modifyParagraph(params).then(res => {
@@ -451,31 +436,29 @@ export default {
     },
     nextParagraph() { // 下一段按钮处理事件
       this.addParagraphFun('single')
-
-      // if (this.chapterID === '') {
-      //   const chapterParams = {
-      //     creator_id: this.$store.state.user.id
-      //   }
-      //   addChapter(chapterParams).then(res => {
-      //     console.log(res.data)
-      //     if (res.code === 20000) {
-      //       this.chapterID = res.data.chapter_id
-      //       this.addParagraphFun()
-      //       this.$message({
-      //         type: 'success',
-      //         message: '新增章节成功！'
-      //       })
-      //     }
-      //   })
-      // } else if (this.chapterID !== null && this.chapterID !== undefined) {
-      //   this.addParagraphFun()
-      // }
     },
     submitChapter() { // 提交本章
       if (this.$refs.tinymce.value !== '') { // 如果富文本编辑器还有未提交的内容，则先提交段落
         this.addParagraphFun('single')
+      } else {
+        console.log(this.chapterID)
+        const params = {
+          chapter_id: this.chapterID,
+          title: this.chapterTitle
+        }
+        this.editTextVisible = false // 隐藏右侧编辑区
+        modifyChapter(params).then(res => {
+          if (res.code === 20000) {
+            this.treeNode.childNodes = [] // 刷新左侧树（连下一句一起）
+            this.fetchChapterListFun(this.treeNode, this.treeResolve)
+            this.$message({
+              type: 'success',
+              message: res.msg
+            })
+          }
+        })
       }
-      this.editTextVisible = false // 隐藏右侧编辑区
+
     }
   }
 }
@@ -507,24 +490,30 @@ export default {
   .articleTitleInput {
     width: 60%;
   }
-  .textArea {
-    width: 98%;
+  .textAreaBox {
+    width: 100%;
   }
   .textListBox {
     height: 470px;
-    padding: 20px;
+    padding: 10px;
     border: 1px solid #C0C4CC;
     overflow-y: scroll;
   }
   .previewItems {
     margin-bottom: 10px;
-    padding: 5px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     background: #f7f7f7;
   }
   .itemTextBox {
+    padding: 10px 5px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .textBox {
     width: 95%;
   }
   .textListBox p {

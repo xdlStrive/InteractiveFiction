@@ -3,13 +3,13 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const userModel = mongoose.model('users');
+const UserModel = mongoose.model('users');
 const URL = require('url');
 
 //注册接口
 router.post('/create', function (req, res) {
   // console.log(req.body.username, req.body.password, req.body.email)
-  new userModel({
+  new UserModel({
     username: req.body.username,
     password: req.body.password,
     email: req.body.email,
@@ -22,7 +22,7 @@ router.post('/create', function (req, res) {
 
 //登录接口
 router.post('/login', function (req, res) {
-  userModel.findOne({
+  UserModel.findOne({
     username: req.body.username
   }, function (err, obj) {
     // console.log(obj)
@@ -53,21 +53,29 @@ router.get("/profile", async (req, res) => {
   //解密token，第二个参数是秘钥
   const { id } = jwt.verify(raw, 'secret')
   //根据解密的id去查找对应的用户
-  const us = await userModel.findById(id);
+  const us = await UserModel.findById(id);
   res.send({ 'code': 20000, 'data': us })
 })
 
 //查询接口
-router.get('/search', function (req, res, next) {
-  userModel.find().sort('create_time').exec(function (err, data, count) {
-    res.send(data);
+router.get('/fetchList', function (req, res) {
+  const pageNum = req.query.pageNum,
+    pageSize = req.query.pageSize;
+
+  UserModel.count({}, (err, count) => {
+    UserModel.find()
+      .skip(pageNum - 1)
+      .sort('create_time').exec(function (err, docs) {
+        res.json({ code: 20000, msg: '用户列表获取成功！', data: docs, count: count });
+    })
   })
+  
 });
 
 //修改接口
 router.get('/find', function (req, res) {
   // var params = URL.parse(req.url.true).query;
-  userModel.find({ username: req.query.id }, function (err, data) {
+  UserModel.find({ username: req.query.id }, function (err, data) {
     var str = { length: data.length };
     res.send(data);
   })
@@ -75,7 +83,7 @@ router.get('/find', function (req, res) {
 
 //更新接口
 router.post('/update', function (req, res) {
-  userModel.findById(req.body._id, function (err, data) {
+  UserModel.findById(req.body._id, function (err, data) {
     data.content = req.body.content;
     data.updated_at = Date.now();
     data.save();
@@ -88,7 +96,7 @@ router.get('/delete', function (req, res) {
 
   var params = URL.parse(req.url, true).query;
 
-  userModel.findById(params.id, function (err, data) {
+  UserModel.findById(params.id, function (err, data) {
     data.remove(function (err, data) {
       res.redirect('/'); //返回首页
     })
