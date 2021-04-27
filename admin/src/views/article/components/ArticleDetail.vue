@@ -74,6 +74,9 @@
               <el-button slot="append" icon="el-icon-search" @click="searchSelect" />
             </el-input>
           </el-form-item>
+          <el-form-item label="选择描述">
+            <div v-html="relationNote"></div>
+          </el-form-item>
           <ul>
             <li v-for="(item, index) in relationList" :key="index">
               <el-form-item :label="item.labelName">
@@ -201,8 +204,10 @@ export default {
         labelName: '选项二',
         inputValue: ''
       }],
+      // 关联选择
       relationList: [],
-      selectID: 0
+      selectID: 0,
+      relationNote: ''
     }
   },
   created() {
@@ -366,6 +371,7 @@ export default {
       searchSelect(searchTerms).then(res => {
         if (res.code === 20000) {
           if (res.data !== null) {
+            this.relationNote = res.data.note
             this.relationList = res.data.options
             this.selectID = res.data.select_id
           } else {

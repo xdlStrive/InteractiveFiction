@@ -2,10 +2,10 @@
   <div class="app-container">
     <el-table v-loading="listLoading" :data="tableData" stripe border style="width: 100%;">
       <el-table-column type="index" label="章节编号" width="100" align="center" />
-      <el-table-column prop="title" label="章节名" min-width="150" />
-      <el-table-column prop="roundup" label="摘要" class-name="roundup" min-width="300" />
+      <el-table-column prop="title" label="章节名" min-width="300" />
+      <el-table-column prop="pageviews" label="阅览量" class-name="roundup" min-width="150" />
       <el-table-column prop="author.username" label="作者" width="200" align="center" />
-      <el-table-column prop="creationTime" label="发布时间" width="200" align="center" />
+      <el-table-column prop="create_time" label="发布时间" width="200" align="center" />
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
           <el-button type="primary" size="small" icon="el-icon-edit">修改</el-button>
@@ -64,7 +64,7 @@ export default {
     },
     handleCurrentChange(val) {
       console.log(val)
-    },
+    }
     // handleDelete(row) {
     //   this.$confirm('此操作将永久删除该文件，是否继续？', '提示', {
     //     confirmButtonText: '确定',

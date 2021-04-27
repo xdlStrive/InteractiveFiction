@@ -8,7 +8,7 @@ const moment = require('moment'); // 引入moment
 // 默认port为27017
 mongoose.set('useCreateIndex', true);
 mongoose.connect('mongodb://root:198300@47.97.230.150/IF?authSource=admin', {
-  useNewUrlParser: true, 
+  useNewUrlParser: true,
   useUnifiedTopology: true
   }); 
 
@@ -27,11 +27,14 @@ db.once('open', () => { // 监听一次打开
 });
 
 // 用户模型
-const UserSchema = new mongoose.Schema({  
+const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   email: String,
-  roles: String,  // 权限（必须）
+  roles: { // 权限（必须）
+    type:String,
+    default: 'readers' // 用户角色默认为读者
+  },
   nickname: String, // 昵称
   avatar: { // 头像
     type: String,
@@ -40,7 +43,7 @@ const UserSchema = new mongoose.Schema({
   archive: String,  // 存档
   create_time: { 
     type: Date, 
-    default: Date.now, 
+    default: new Date,
     get: v => moment(v).format('YYYY-MM-DD HH:mm:ss') 
   }
 }).set('toJSON', { getters: true });
@@ -67,7 +70,7 @@ const SelectSchema = new mongoose.Schema({
   options: [], // 选择支的选项数组
   create_time: {
     type: Date, 
-    default: Date.now, 
+    default: new Date, 
     get: v => moment(v).format('YYYY-MM-DD HH:mm') 
   }
 }).set('toJSON', { getters: true });
@@ -85,7 +88,7 @@ const paragraphSchema = new mongoose.Schema({
   select_id: String, // 段落关联的选项的id数组
   content: [],  // 段落内容
   bulletComment: [], // 关联弹幕的id数组
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
 
 // 章节模型
@@ -97,7 +100,7 @@ const ChapterSchema = new mongoose.Schema({
   author: { type: Schema.Types.ObjectId },  // 作者，与UserSchema模型进行关联
   chapter_comment: [], // 章节评论id
   pageviews: { type: Number, default: 0 }, // 默认值为0
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
 
 // 弹幕模型
@@ -111,7 +114,7 @@ const bulletCommentSchema = new mongoose.Schema({
 const chapterCommentSchema = new mongoose.Schema({
   select_id: { type: Number, index: true, unique: true },
   options: [],
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
 
 // 分卷模型
@@ -119,7 +122,7 @@ const VolumeSchema = new mongoose.Schema({
   volume_id: { type: Number, index: true, unique: true }, // 卷id
   title: String, // 卷名
   chapter_list: [], // 该卷所有的章节id数组
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
 
 // ChapterSchema.set('toJSON', { getters: true })
@@ -130,14 +133,14 @@ const TimelineSchema = new mongoose.Schema({
   title: String,
   desc: String,
   creator_id: Schema.Types.ObjectId,
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
 
 // 计数器模型
 const CounterSchema = new mongoose.Schema({  
   counter_id: String,
   counter_num: Number,
-  create_time: { type: Date, default: Date.now, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
+  create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
 
 // model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合

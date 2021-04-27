@@ -46,16 +46,20 @@ router.post('/add', (req, res) => {
 router.post('/modify', (req, res) => {
   let options = {}
   if (req.body.paragraph_list !== undefined) {
-    options.$addToSet.paragraph_list = {
-      $each: req.body.paragraph_list
+    options.$addToSet = {
+      paragraph_list: {
+        $each: req.body.paragraph_list
+      }
     }
   }
   if (req.body.title !== undefined) {
     options.title = req.body.title
   }
   if (req.body.chapter_comment !== undefined) {
-    options.$addToSet.chapter_comment = {
-      $each: req.body.chapter_comment
+    options.$addToSet = {
+      chapter_comment: {
+        $each: req.body.chapter_comment
+      }
     }
   }
   console.log(options)
@@ -74,11 +78,11 @@ router.post('/modify', (req, res) => {
 router.get('/allChapterList', (req, res) => {
   const pageNum = req.query.pageNum,
     pageSize = req.query.pageSize;
-  console.log(pageNum)
-  console.log(pageSize)
   ChapterModel.find({}, {
     chapter_id: 1,
     title: 1,
+    pageviews: 1,
+    create_time: 1,
     _id: 0
   }).skip((pageNum - 1) * pageSize)
     // .limit(pageSize)
