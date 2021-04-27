@@ -75,7 +75,7 @@
             </el-input>
           </el-form-item>
           <el-form-item label="选择描述">
-            <div v-html="relationNote"></div>
+            <div v-html="relationNote" />
           </el-form-item>
           <ul>
             <li v-for="(item, index) in relationList" :key="index">
@@ -464,7 +464,6 @@ export default {
           }
         })
       }
-
     }
   }
 }

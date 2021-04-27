@@ -1,6 +1,24 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
-Vue.use(Router)
+export const defaultRoutes = [
+  // 登录
+  {
+    path: '/',
+    name: 'login',
+    component: () => import('@/views/login/index'),
+    hidden: true
+  }
+]
 
-// import Layout from
+const router = createRouter({
+  scrollBehavior: () => ({ y: 0 }),
+  history: createWebHashHistory(),
+  routes: defaultRoutes
+})
+
+export function resetRouter() {
+  const newRouter = createRouter()
+  router.matcher = newRouter.matcher // 重置路由
+}
+
+export default router

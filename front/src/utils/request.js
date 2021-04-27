@@ -1,23 +1,23 @@
 import axios from 'axios'
-// import { Message, MessageBox } from 'element-ui'
-import store from '@/store'
-import { getToken } from '@/utils/auth'
+import { ElMessage, ElMessageBox } from 'element-plus'
+// import store from '@/store'
+// import { getToken } from '@/utils/auth'
 
-const service = axios.create({
+const request = axios.create({
   baseUrl: '',
   timeout: 5000
 })
 
 // request 拦截器
-service.interceptors.request.use(
+request.interceptors.request.use(
   config => {
     // 发出请求前执行事件
-    if (store.getters.token) {
-      // 让每个请求携带token
-      // ['X-Token'] 是自定义headers key
-      // 请根据实际情况修改
-      config.headers.authorization = getToken()
-    }
+    // if (store.getters.token) {
+    //   // 让每个请求携带token
+    //   // ['X-Token'] 是自定义headers key
+    //   // 请根据实际情况修改
+    //   config.headers.authorization = getToken()
+    // }
     return config
   },
   error => {
@@ -28,12 +28,12 @@ service.interceptors.request.use(
 )
 
 // response 拦截器
-service.interceptors.response.use(
+request.interceptors.response.use(
   response => {
     const res = response.data
     // 如果自定义code不是20000，则将其判断为错误
     if (res.code !== 20000) {
-      Message({
+      ElMessage({
         message: res.message || 'Error',
         type: 'error',
         duration: 5 * 1000
@@ -42,14 +42,14 @@ service.interceptors.response.use(
       // 50008: 无效Token; 50012: 该账号已登录; 50014: Token 过期;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         // to re-login
-        MessageBox.confirm('您已注销，您可以取消以停留在此页，或重新登录', 'Confirm logout', {
+        ElMessageBox.confirm('您已注销，您可以取消以停留在此页，或重新登录', 'Confirm logout', {
           confirmButtonText: 'Re-Login',
           cancelButtonText: 'Cancel',
           type: 'warning'
         }).then(() => {
-          store.dispatch('user/resetToken').then(() => {
-            location.reload()
-          })
+          // store.dispatch('user/resetToken').then(() => {
+          //   location.reload()
+          // })
         })
       }
       return Promise.reject(new Error(res.message || 'Error'))
@@ -59,7 +59,7 @@ service.interceptors.response.use(
   },
   error => {
     console.log('错误' + error) // for debug
-    Message({
+    ElMessage({
       message: error.message,
       type: 'error',
       duration: 5 * 1000
@@ -68,4 +68,4 @@ service.interceptors.response.use(
   }
 )
 
-export default service
+export { request }

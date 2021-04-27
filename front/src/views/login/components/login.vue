@@ -1,5 +1,5 @@
 <template>
-  <el-form>
+  <el-form :inline="true">
     <el-form-item label="账号：">
       <el-input v-model="form.username" />
     </el-form-item>
@@ -10,11 +10,19 @@
 </template>
 
 <script>
+import { ElForm, ElFormItem, ElInput } from 'element-plus'
+import { userLogin } from '@/api/user'
+
 export default {
   name: 'LoginFrom',
+  components: {
+    ElForm,
+    ElFormItem,
+    ElInput
+  },
   data() {
     return {
-      from: {
+      form: {
         username: '',
         password: ''
       }
@@ -25,7 +33,13 @@ export default {
   },
   methods: {
     handleLogin() {
-      console.log(this.from.username)
+      const params = {
+        username: this.form.username,
+        password: this.form.password
+      }
+      userLogin(params).then(res => {
+        console.log(res)
+      })
     }
   }
 }
