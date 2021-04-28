@@ -1,9 +1,13 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 export const defaultRoutes = [
-  // 登录
   {
     path: '/',
+    redirect: '/login'
+  },
+  // 登录
+  {
+    path: '/login',
     name: 'login',
     component: () => import('@/views/login/index'),
     hidden: true

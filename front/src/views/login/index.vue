@@ -1,8 +1,6 @@
 <!-- 登录页 -->
 <template>
-  <div>
     <LoginFrom />
-  </div>
 </template>
 
 <script>
