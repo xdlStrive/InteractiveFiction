@@ -11,6 +11,11 @@ export const defaultRoutes = [
     name: 'login',
     component: () => import('@/views/login/index'),
     hidden: true
+  },
+  {
+    path: '/:pathMatch(.*)*', // vue3中路径通配符*被移除，改为正则匹配
+    name: '404 not-find',
+    component: () => import()
   }
 ]
 
