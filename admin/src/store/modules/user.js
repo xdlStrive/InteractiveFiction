@@ -46,7 +46,6 @@ const actions = {
 
   // 获取用户信息
   getInfo({ commit, state }) {
-    console.log('getinfo')
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
         const { data } = response // 对象的解构赋值要注意值与值之间的对应
@@ -77,6 +76,7 @@ const actions = {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
+        commit('SET_NAME', '') // 需要清空store.getter中的name
         removeToken()
         resetRouter()
         // reset visited views and cached views

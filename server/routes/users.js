@@ -7,16 +7,17 @@ const UserModel = mongoose.model('users');
 const URL = require('url');
 
 // 注册接口
-router.post('/create', function (req, res) {
-  // console.log(req.body.username, req.body.password, req.body.email)
+router.post('/register', function (req, res) {
   new UserModel({
     username: req.body.username,
     password: req.body.password,
-    email: req.body.email,
-    create_time: Date.now()
+    email: req.body.email || ''
   }).save(function (err, user) {
     // res.redirect('/'); //res.redirect和res.send不能同时写，因为这两个方法的后面都不能写其他方法
-    res.send(user);
+    if (err) {
+      res.json({ code: 500, msg: err })
+    }
+    res.json({ code: 20000, msg: '注册成功！' });
   });
 });
 
@@ -30,10 +31,10 @@ router.post('/login', function (req, res) {
       // 返回给前台错误信息
       return res.status(422).json({ msg: "您输入的用户名有误" })
     }
-    // const isPass = bcrypt.compareSync(req.body.password, obj.password)  //将前端传入的密码和数据库中保存的密码进行比对
-    // if (!isPass) {  //如果比对不匹配
-    //   return res.status(422).send({ msg: "您输入的密码不正确" })
-    // }
+    const isPass = bcrypt.compareSync(req.body.password, obj.password)  //将前端传入的密码和数据库中保存的密码进行比对
+    if (!isPass) {  //如果比对不匹配
+      return res.status(422).json({ msg: "您输入的密码不正确" })
+    }
     const token = jwt.sign({  //比对成功则进行token签名
       id: String(obj._id)  //第一个参数为要签名的字段，最好为唯一的主键
     }, 'secret', {
@@ -46,8 +47,6 @@ router.post('/login', function (req, res) {
 // 用户信息接口
 router.get("/profile", async (req, res) => {
   const raw = String(req.headers.authorization) //获取前端请求头中的token
-  console.log(raw)
-
   const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
     if(err) {
       switch(err.name) {

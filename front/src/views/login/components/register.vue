@@ -1,8 +1,8 @@
 <template>
-  <el-row class="rowBox">
+    <el-row class="rowBox">
     <el-col :xs="{span: 24, offset: 0}" :sm="{span: 16, offset: 4}" :md="{span: 12, offset: 6}" :lg="{span: 6, offset: 9}" :xl="{span: 4, offset: 10}">
       <div class="titleBox">
-        <h2 class="title">登 录</h2>
+        <h2 class="title">注 册</h2>
       </div>
       <el-form :model="form">
         <el-form-item>
@@ -12,8 +12,10 @@
           <el-input prefix-icon="el-icon-lock" placeholder="密码" v-model="form.password" show-password />
         </el-form-item>
         <el-form-item>
-          <div class="registerLink" @click="$emit('update:formType', false)">没有账号？请点击注册...</div>
-          <el-button type="primary" class="loginBtn" @click="handleLogin">登 录</el-button>
+          <el-input prefix-icon="el-icon-lock" placeholder="再次确认密码" v-model="form.secondPassword" show-password />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" class="registerBtn" @click="handleRegister">注 册</el-button>
         </el-form-item>
       </el-form>
     </el-col>
@@ -23,33 +25,30 @@
 <script>
 import { ref } from 'vue'
 import { ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus'
+import { userRegister } from '@/api/user'
 
 export default {
-  name: 'LoginFrom',
+  name: 'registerForm',
   components: {
     ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton
   },
   props: {
     formType: {
       type: Boolean,
-      default: true
-    }
-  },
-  setup() {
-    return {
-      input: ref('')
+      default: false
     }
   },
   data() {
     return {
       form: {
         username: '',
-        password: ''
+        password: '',
+        secondPassword: ''
       }
     }
   },
   methods: {
-    handleLogin() {
+    handleRegister() {
       if (this.form.username === '') {
         ElMessage({
           message: '请输入用户名',
@@ -60,19 +59,18 @@ export default {
           message: '请输入密码',
           type: 'warning'
         })
+      } else if (this.form.secondPassword === '' || this.form.secondPassword !== this.form.password) {
+        ElMessage({
+          message: '两次输入密码不一致',
+          type: 'warning'
+        })
       } else {
-        this.loading = true
-        this.$store.dispatch('user/login', this.form).then(res => {
-          console.log(this.$router)
-          this.$router.push({ path: '/book' })
-          this.loading = false
+        userRegister(this.form).then(res => {
           ElMessage({
             message: res.msg,
             type: 'success'
           })
-          console.log(111)
-        }).catch(() => {
-          this.loading = false
+          this.$emit('update:formType', true)
         })
       }
     }
@@ -80,24 +78,18 @@ export default {
 }
 </script>
 
-<style scoped>
-.rowBox {
-  height: 100%;
-}
-.titleBox {
-  margin: 70% 0 30px;
-  text-align: center;
-  color: #444;
-}
-.registerLink {
-  text-align: right;
-  line-height: 25px;
-  color: #409EFF;
-  cursor: pointer;
-}
-.loginBtn {
-  width: 100%;
-  margin-top: 10px;
-  font-size: 17px;
-}
+<style>
+  .rowBox {
+    height: 100%;
+  }
+  .titleBox {
+    margin: 70% 0 30px;
+    text-align: center;
+    color: #444;
+  }
+  .registerBtn {
+    width: 100%;
+    margin-top: 15px;
+    font-size: 17px;
+  }
 </style>
