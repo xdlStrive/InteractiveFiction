@@ -54,7 +54,7 @@ router.get('/list', (req, res) => {
   //   } catch (err) {
   //     res.json({
   //       code: 1,
-  //       message: '后端出错',
+  //       msg: '后端出错',
   //       data: err
   //     })
   //   }

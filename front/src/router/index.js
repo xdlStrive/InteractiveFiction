@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 export const defaultRoutes = [
+  // 首页
   {
     path: '/',
     redirect: '/login'
@@ -11,6 +12,12 @@ export const defaultRoutes = [
     name: 'login',
     component: () => import('@/views/login/index'),
     hidden: true
+  },
+  // 书页
+  {
+    path: '/book',
+    name: 'book',
+    component: () => import('@/views/index/index')
   },
   {
     path: '/:pathMatch(.*)*', // vue3中路径通配符*被移除，改为正则匹配

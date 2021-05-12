@@ -60,7 +60,7 @@ request.interceptors.response.use(
   error => {
     console.log('错误' + error) // for debug
     ElMessage({
-      message: error.message,
+      message: error.response.data.msg,
       type: 'error',
       duration: 5 * 1000
     })

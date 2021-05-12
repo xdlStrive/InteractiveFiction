@@ -32,8 +32,7 @@ const mutations = {
 
 const actions = {
   // 登录方法
-  login({ commit }, userInfo) {
-    const { username, password } = userInfo
+  login({ commit }, { username, password }) {
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(res => {
         commit('SET_TOKEN', res.token)
@@ -47,15 +46,14 @@ const actions = {
 
   // 获取用户信息
   getInfo({ commit, state }) {
+    console.log('getinfo')
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
         const { data } = response // 对象的解构赋值要注意值与值之间的对应
         if (!data) {
           reject('验证失败，请重新登录！')
         }
-
         const { _id, roles, username, avatar, introduction } = data
-
         // 角色必须是非空数组
         if (!roles || roles.length <= 0) {
           reject('getInfo: 角色必须是非空数组！')
@@ -81,11 +79,9 @@ const actions = {
         commit('SET_ROLES', [])
         removeToken()
         resetRouter()
-
         // reset visited views and cached views
         // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
-        dispatch('tagsView/delAllViews', null, { root: true })
-
+        // dispatch('tagsView/delAllViews', null, { root: true })
         resolve()
       }).catch(error => {
         reject(error)
@@ -93,7 +89,7 @@ const actions = {
     })
   },
 
-  // 移除 token
+  // 移除token
   resetToken({ commit }) {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')

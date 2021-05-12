@@ -22,7 +22,6 @@
 <script>
 import { ref } from 'vue'
 import { ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus'
-import { userLogin } from '@/api/user'
 
 export default {
   name: 'LoginFrom',
@@ -32,8 +31,7 @@ export default {
     ElForm,
     ElFormItem,
     ElInput,
-    ElButton,
-    ElMessage
+    ElButton
   },
   setup() {
     return {
@@ -61,15 +59,18 @@ export default {
           type: 'warning'
         })
       } else {
-        const params = {
-          username: this.form.username,
-          password: this.form.password
-        }
-        userLogin(params).then(res => {
+        this.loading = true
+        this.$store.dispatch('user/login', this.form).then(res => {
+          console.log(this.$router)
+          this.$router.push({ path: '/book' })
+          this.loading = false
           ElMessage({
             message: res.msg,
             type: 'success'
           })
+          console.log(111)
+        }).catch((err) => {
+          this.loading = false
         })
       }
     }
