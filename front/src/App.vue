@@ -1,10 +1,15 @@
 <template>
-    <router-view />
+  <Navigation />
+  <router-view />
 </template>
 
 <script>
+import Navigation from '@/components/Navigation'
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    Navigation
+  }
 }
 </script>
 

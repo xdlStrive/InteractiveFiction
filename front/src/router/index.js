@@ -19,6 +19,12 @@ export const defaultRoutes = [
     name: 'book',
     component: () => import('@/views/index/index')
   },
+  // 安全屋
+  {
+    path: '/safe-house',
+    name: 'safe-house',
+    component: () => import('@/views/userProfile/index')
+  },
   {
     path: '/:pathMatch(.*)*', // vue3中路径通配符*被移除，改为正则匹配
     name: '404 not-find',

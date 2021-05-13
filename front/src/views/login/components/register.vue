@@ -23,7 +23,6 @@
 </template>
 
 <script>
-import { ref } from 'vue'
 import { ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus'
 import { userRegister } from '@/api/user'
 
