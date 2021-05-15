@@ -10,11 +10,11 @@
         <el-table-column prop="email" label="用户邮箱" width="200" align="center" />
         <el-table-column prop="create_time" label="创建时间" width="200" align="center" />
         <el-table-column align="center" label="操作" width="300">
-        <template slot-scope="scope">
-          <el-button type="primary" size="small" icon="el-icon-edit">修改</el-button>
-          <el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row)">冻结</el-button>
-        </template>
-      </el-table-column>
+          <template slot-scope="scope">
+            <el-button type="primary" size="small" icon="el-icon-edit">修改</el-button>
+            <el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row)">冻结</el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <el-pagination
         :current-page.sync="paginationParams.page"

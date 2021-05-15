@@ -1,6 +1,8 @@
 <template>
   <Navigation />
-  <router-view />
+  <div class="componentsBox">
+    <router-view />
+  </div>
 </template>
 
 <script>
@@ -23,5 +25,8 @@ ul,li {
 }
 html, body, #app {
   height: 100%;
+}
+.componentsBox {
+  height: calc(100% - 61px);
 }
 </style>

@@ -1,18 +1,35 @@
 <!-- 主页 -->
 <template>
-  <div class="pageBox">异世界</div>
+  <div class="pageBox">
+    <div ref="textBox" class="textBox">{{obj.output}}</div>
+  </div>
 </template>
 
 <script>
+import EasyTyper from 'easy-typer-js'
 export default {
   data () {
     return {
+      obj: {
+        output: '',
+        type: 'rollback',
+        isEnd: false,
+        speed: 200,
+        backSpeed: 40,
+        sleep: 100,
+        singleBack: false
+      }
     };
   },
-
-  components: {},
-
-  methods: {}
+  components: {
+    
+  },
+  mounted() {
+    new EasyTyper(this.obj, `我将要被打字机输出`)
+  },
+  methods: {
+    
+  }
 }
 
 </script>
