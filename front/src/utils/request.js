@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
-// import store from '@/store'
-// import { getToken } from '@/utils/auth'
+import store from '@/store'
+import { getToken } from '@/utils/auth'
 
 const request = axios.create({
   baseUrl: '',
@@ -12,12 +12,12 @@ const request = axios.create({
 request.interceptors.request.use(
   config => {
     // 发出请求前执行事件
-    // if (store.getters.token) {
-    //   // 让每个请求携带token
-    //   // ['X-Token'] 是自定义headers key
-    //   // 请根据实际情况修改
-    //   config.headers.authorization = getToken()
-    // }
+    if (store.getters.token) {
+      // 让每个请求携带token
+      // ['X-Token'] 是自定义headers key
+      // 请根据实际情况修改
+      config.headers.authorization = getToken()
+    }
     return config
   },
   error => {
@@ -47,9 +47,9 @@ request.interceptors.response.use(
           cancelButtonText: 'Cancel',
           type: 'warning'
         }).then(() => {
-          // store.dispatch('user/resetToken').then(() => {
-          //   location.reload()
-          // })
+          store.dispatch('user/resetToken').then(() => {
+            location.reload()
+          })
         })
       }
       return Promise.reject(new Error(res.message || 'Error'))
@@ -68,4 +68,4 @@ request.interceptors.response.use(
   }
 )
 
-export { request }
+export default request
