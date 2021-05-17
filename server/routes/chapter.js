@@ -154,23 +154,58 @@ router.get('/oneChapter', (req, res) => {
     }
   ], (err, doc) => {
     if (!err && doc) {
+      const lengths = doc[0].paragraph_list.length
+
       new Promise((resolve, reject) => {
-        let length = doc[0].paragraph_list.length - 1
-        doc[0].paragraph_list.forEach((item, index) => {
+        async function getSelect(index, length) {
+          const item = doc[0].paragraph_list[index]
+          console.log('----------')
+          console.log(item.select_id)
           if (item.select_id !== undefined) {
-            selectModel.findOne({
+            await selectModel.findOne({
               select_id: item.select_id
             }, (err, doc) => {
               item.select_id = doc.options
-              if (index ===  length) {
-                resolve()
-              }
             })
           }
-        })
-      }).then(value => {
+          if (++index < length) {
+            getSelect(index, length)
+          } else {
+            console.log(length)
+            console.log(++index)
+            // 最后一个还没查出来就已经下一步了，怀疑和最后一个的位置有关
+            resolve()
+          }
+        }
+        getSelect(0, lengths)
+      }).then(val => {
+        console.log('>>>>>>>>>>>>>>>>>')
         return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
       })
+      
+      
+      
+      // new Promise((resolve, reject) => {
+      //   doc[0].paragraph_list.forEach((item, index) => {
+      //     if (item.select_id !== undefined) {
+      //       // console.log(123)
+      //       (async function findSelects() {
+      //         await selectModel.findOne({
+      //           select_id: item.select_id
+      //         }, (err, doc) => {
+      //           // console.log(doc.options)
+      //           item.select_id = doc.options
+      //         }).exec()
+      //       })()
+      //     }
+      //     if (index === doc[0].paragraph_list.length) {
+      //       resolve()
+      //     }
+      //   })
+      // }).then(val => {
+      //   return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
+      // })
+      
     }
   })
 })

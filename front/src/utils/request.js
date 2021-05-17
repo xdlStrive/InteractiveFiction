@@ -3,19 +3,18 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
-const request = axios.create({
+// 创建axios实例
+const service = axios.create({
   baseUrl: '',
   timeout: 5000
 })
 
 // request 拦截器
-request.interceptors.request.use(
+service.interceptors.request.use(
   config => {
     // 发出请求前执行事件
     if (store.getters.token) {
       // 让每个请求携带token
-      // ['X-Token'] 是自定义headers key
-      // 请根据实际情况修改
       config.headers.authorization = getToken()
     }
     return config
@@ -28,7 +27,7 @@ request.interceptors.request.use(
 )
 
 // response 拦截器
-request.interceptors.response.use(
+service.interceptors.response.use(
   response => {
     const res = response.data
     // 如果自定义code不是20000，则将其判断为错误
@@ -58,8 +57,8 @@ request.interceptors.response.use(
     }
   },
   error => {
-    console.log('错误' + error) // for debug
-    ElMessage({
+    console.log('错误' + error)
+    ElMessage({ // 返回错误
       message: error.response.data.msg,
       type: 'error',
       duration: 5 * 1000
@@ -68,4 +67,4 @@ request.interceptors.response.use(
   }
 )
 
-export default request
+export default service

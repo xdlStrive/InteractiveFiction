@@ -63,14 +63,12 @@ export default {
       } else {
         this.loading = true
         this.$store.dispatch('user/login', this.form).then(res => {
-          console.log(this.$router)
           this.$router.push({ path: '/book' })
           this.loading = false
           ElMessage({
             message: res.msg,
             type: 'success'
           })
-          console.log(111)
         }).catch(() => {
           this.loading = false
         })

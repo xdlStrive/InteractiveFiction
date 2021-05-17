@@ -45,13 +45,25 @@ export default {
 				content: []
 			},
 			selectVisible: false,
-			selectIndex: 0,
+			selectIndex: null,
       paragraphHeight: 0,
     };
   },
 	watch: {
-		selectIndex(value) {
-			console.log(value)
+		selectIndex(val) {
+      const index = this.currentParagraphID,
+        currentData = this.chapterDataList[index]
+
+      this.chapterList.push(currentData.content[val])
+      this.currentParagraphID += 1
+      this.$nextTick(() => {
+        this.$refs[`listItemBox${index}`].style.display = 'block'
+        this.$refs[`listItemBox${index}`].scrollTop = 100
+        this.$refs[`listItemBox${index}`].scrollIntoView({
+          block: 'end',
+          behavior: 'smooth'
+        })
+      })
 		}
 	},
   created() {
@@ -88,25 +100,24 @@ export default {
       if (index < this.chapterDataList.length) {
         if (currentData.content.length === 1) {
           this.chapterList.push(currentData.content)
+          this.currentParagraphID += 1
+          this.$nextTick(() => {
+            this.$refs[`listItemBox${index}`].style.display = 'block'
+            this.$refs[`listItemBox${index}`].scrollTop = 100
+            this.$refs[`listItemBox${index}`].scrollIntoView({
+              block: 'end',
+              behavior: 'smooth'
+            })
+          })
         } else if (currentData.content.length > 1) {
           this.currentSelect = {
             select: currentData.select_id,
             content: currentData.content
           }
+          console.log(this.currentSelect)
           this.selectVisible = true // 显示选择弹框
           // 根据选择的结果加载对应的段落
         }
-        console.log(this.chapterList)
-
-        this.$nextTick(() => {
-          this.$refs[`listItemBox${index}`].style.display = 'block'
-          this.$refs[`listItemBox${index}`].scrollTop = 100
-          this.$refs[`listItemBox${index}`].scrollIntoView({
-            block: 'end',
-            behavior: 'smooth'
-          })
-        })
-        this.currentParagraphID += 1
       } else {
         ElMessage({
           message: '本章已结束',

@@ -4,6 +4,7 @@
     v-model="dialogVisible"
     width="30%"
     custom-class="dialog-box"
+    destroy-on-close
     :show-close="false"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
@@ -25,6 +26,9 @@ export default {
     return {
       dialogVisible: true
     }
+  },
+  created () {
+    console.log(this.selectItem)
   },
   methods: {
     handleSelect(index) {
