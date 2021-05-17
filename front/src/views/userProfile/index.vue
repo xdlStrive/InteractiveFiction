@@ -1,6 +1,6 @@
 <!-- 安全屋 -->
 <template>
-  <div>安全屋</div>
+  <div>安全屋测试版</div>
 </template>
 
 <script>

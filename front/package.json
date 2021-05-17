@@ -10,7 +10,6 @@
   "dependencies": {
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
-    "easy-typer-js": "^2.1.0",
     "element-plus": "^1.0.2-beta.28",
     "js-cookie": "^2.2.1",
     "vue": "^3.0.0",

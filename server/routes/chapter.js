@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 // const formidable = require('formidable');
 const ChapterModel = mongoose.model('chapter');
+const selectModel = mongoose.model('select');
 const CounterModel = mongoose.model('counter');
 
 mongoose.set('useFindAndModify', false)
@@ -137,6 +138,13 @@ router.get('/oneChapter', (req, res) => {
         as: 'paragraph_list'
       }
     }, {
+      $lookup: {
+        from: 'selects',
+        localField: 'paragraph_list.select_id',
+        foreignField: 'select_id',
+        as: 'select'
+      }
+    },{
       $project: {
         _id: 0,
         chapter_id: 1,
@@ -146,7 +154,23 @@ router.get('/oneChapter', (req, res) => {
     }
   ], (err, doc) => {
     if (!err && doc) {
-      return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
+      new Promise((resolve, reject) => {
+        let length = doc[0].paragraph_list.length - 1
+        doc[0].paragraph_list.forEach((item, index) => {
+          if (item.select_id !== undefined) {
+            selectModel.findOne({
+              select_id: item.select_id
+            }, (err, doc) => {
+              item.select_id = doc.options
+              if (index ===  length) {
+                resolve()
+              }
+            })
+          }
+        })
+      }).then(value => {
+        return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
+      })
     }
   })
 })
