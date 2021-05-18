@@ -166,6 +166,7 @@ router.get('/oneChapter', (req, res) => {
               select_id: item.select_id
             }, (err, doc) => {
               item.select_id = doc.options
+              console.log(doc.options)
             })
           }
           if (++index < length) {
@@ -174,7 +175,9 @@ router.get('/oneChapter', (req, res) => {
             console.log(length)
             console.log(++index)
             // 最后一个还没查出来就已经下一步了，怀疑和最后一个的位置有关
-            resolve()
+            setTimeout(() => {
+              resolve()
+            })
           }
         }
         getSelect(0, lengths)
@@ -182,30 +185,6 @@ router.get('/oneChapter', (req, res) => {
         console.log('>>>>>>>>>>>>>>>>>')
         return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
       })
-      
-      
-      
-      // new Promise((resolve, reject) => {
-      //   doc[0].paragraph_list.forEach((item, index) => {
-      //     if (item.select_id !== undefined) {
-      //       // console.log(123)
-      //       (async function findSelects() {
-      //         await selectModel.findOne({
-      //           select_id: item.select_id
-      //         }, (err, doc) => {
-      //           // console.log(doc.options)
-      //           item.select_id = doc.options
-      //         }).exec()
-      //       })()
-      //     }
-      //     if (index === doc[0].paragraph_list.length) {
-      //       resolve()
-      //     }
-      //   })
-      // }).then(val => {
-      //   return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
-      // })
-      
     }
   })
 })

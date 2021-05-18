@@ -64,6 +64,7 @@ export default {
           behavior: 'smooth'
         })
       })
+      this.selectVisible = false
 		}
 	},
   created() {
