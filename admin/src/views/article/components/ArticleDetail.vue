@@ -1,7 +1,30 @@
 <template>
   <el-container>
     <el-aside class="leftBox">
-      <el-tree
+      <super-flow
+        ref="superFlow"
+        :node-list="nodeList"
+        :link-list="linkList"
+        :origin="origin"
+        :graph-menu="graphMenuList"
+        :node-menu="nodeMenuList"
+        :link-menu="linkMenuList"
+        :enter-intercept="enterIntercept"
+        :output-intercept="outputIntercept"
+        :link-desc="linkDesc"
+      >
+        <template #node="{ meta }">
+          <div :class="`flow-node flow-node-${meta.prop}`">
+            <header class="ellipsis">
+              {{ meta.name }}
+            </header>
+            <section>
+              {{ meta.desc }}
+            </section>
+          </div>
+        </template>
+      </super-flow>
+      <!-- <el-tree
         :props="props"
         :load="fetchChapterListFun"
         :default-expanded-keys="[1]"
@@ -16,7 +39,7 @@
       <div class="treeBtnGroup">
         <el-button type="primary" icon="el-icon-plus" @click="addVolumeFormVisible = true">新增卷</el-button>
         <el-button type="success" icon="el-icon-plus" @click="addChapterFormVisible = true">新增章节</el-button>
-      </div>
+      </div> -->
       <el-dialog title="新增卷" :visible.sync="addVolumeFormVisible" width="25%">
         <el-form label-width="80px">
           <el-form-item label="卷名">
@@ -127,6 +150,8 @@
 
 <script>
 import Tinymce from '@/components/Tinymce'
+import SuperFlow from 'vue-super-flow'
+import 'vue-super-flow/lib/index.css'
 import { fetchVolumeList } from '@/api/volume'
 import { addVolume } from '@/api/volume'
 import { fetchVolumesChapterList } from '@/api/chapter'
@@ -138,9 +163,14 @@ import { modifyParagraph } from '@/api/paragraph'
 import { newSelect } from '@/api/select'
 import { searchSelect } from '@/api/select'
 
+const drawerType = {
+  node: 0,
+  link: 1
+}
+
 export default {
   name: 'NewChapter',
-  components: { Tinymce },
+  components: { Tinymce, SuperFlow },
   props: {
     isRevise: {
       type: Boolean,
@@ -155,6 +185,155 @@ export default {
         children: '',
         isLeaf: 'leaf'
       },
+      // 流程图
+      drawerType,
+      drawerConf: {
+        title: '',
+        visible: false,
+        type: null,
+        info: null,
+        open: (type, info) => {
+          const conf = this.drawerConf
+          conf.visible = true
+          conf.type = type
+          conf.info = info
+          if (conf.type === drawerType.node) {
+            conf.title = '节点'
+            if (this.$refs.nodeSetting) this.$refs.nodeSetting.resetFields()
+            this.$set(this.nodeSetting, 'name', info.meta.name)
+            this.$set(this.nodeSetting, 'desc', info.meta.desc)
+          } else {
+            conf.title = '连线'
+            if (this.$refs.linkSetting) this.$refs.linkSetting.resetFields()
+            this.$set(this.linkSetting, 'desc', info.meta ? info.meta.desc : '')
+          }
+        },
+        cancel: () => {
+          this.drawerConf.visible = false
+          if (this.drawerConf.type === drawerType.node) {
+            this.$refs.nodeSetting.clearValidate()
+          } else {
+            this.$refs.linkSetting.clearValidate()
+          }
+        }
+      },
+      linkSetting: {
+        desc: ''
+      },
+      nodeSetting: {
+        name: '',
+        desc: ''
+      },
+
+      origin: [50, 210],
+      nodeList: [],
+      linkList: [],
+      graphMenuList: [
+        [
+          {
+            label: '开始节点',
+            disable(graph) {
+              return !!graph.nodeList.find(node => node.meta.prop === 'start')
+            },
+            selected: (graph, coordinate) => {
+              const start = graph.nodeList.find(node => node.meta.prop === 'start')
+              if (!start) {
+                graph.addNode({
+                  width: 80,
+                  height: 50,
+                  coordinate: coordinate,
+                  meta: {
+                    prop: 'start',
+                    name: '开始节点'
+                  }
+                })
+              }
+            }
+          },
+          {
+            label: '审批节点',
+            disable: false,
+            selected: (graph, coordinate) => {
+              graph.addNode({
+                width: 80,
+                height: 50,
+                coordinate: coordinate,
+                meta: {
+                  prop: 'approval',
+                  name: '审批节点'
+                }
+              })
+            }
+          },
+          {
+            label: '结束节点',
+            disable(graph) {
+              return !!graph.nodeList.find(point => point.meta.prop === 'end')
+            },
+            selected: (graph, coordinate) => {
+              graph.addNode({
+                width: 80,
+                height: 50,
+                coordinate: coordinate,
+                meta: {
+                  prop: 'end',
+                  name: '结束节点'
+                }
+              })
+            }
+          }
+        ],
+        [
+          {
+            label: '全选',
+            selected: (graph, coordinate) => {
+              graph.selectAll()
+            }
+          }
+        ]
+      ],
+      nodeMenuList: [
+        [
+          {
+            label: '删除',
+            disable: false,
+            hidden(node) {
+              return node.meta.prop === 'start'
+            },
+            selected(node, coordinate) {
+              node.remove()
+            }
+          }
+        ],
+        [
+          {
+            label: '编辑',
+            selected: (node, coordinate) => {
+              this.drawerConf.open(drawerType.node, node)
+            }
+          }
+        ]
+      ],
+      linkMenuList: [
+        [
+          {
+            label: '删除',
+            disable: false,
+            selected: (link, coordinate) => {
+              link.remove()
+            }
+          }
+        ],
+        [
+          {
+            label: '编辑',
+            disable: false,
+            selected: (link, coordinate) => {
+              this.drawerConf.open(drawerType.link, link)
+            }
+          }
+        ]
+      ],
       editTextVisible: false,
       treeNode: {},
       treeResolve: {},
@@ -212,6 +391,51 @@ export default {
   },
   created() {
     this.tempRoute = Object.assign({}, this.$route)
+    const nodeList = [
+      {
+        'id': 'nodeS3WgFnzCI15X58Qw',
+        'width': 80,
+        'height': 50,
+        'coordinate': [-50, -200],
+        'meta': {
+          'prop': 'start',
+          'name': '开始节点'
+        }
+      },
+      {
+        'id': 'nodefHsy9uJObPtdHZv1',
+        'width': 80,
+        'height': 50,
+        'coordinate': [40, 0],
+        'meta': {
+          'prop': 'approval',
+          'name': '审批节点',
+          'desc': '111111'
+        }
+      },
+      {
+        'id': 'nodeni9QOqT3mI7hsMau',
+        'width': 80,
+        'height': 50,
+        'coordinate': [80, 0],
+        'meta': {
+          'prop': 'condition',
+          'name': '条件节点'
+        }
+      }]
+    const linkList = [
+      {
+        'id': 'linkcs9ZhumWeTHrtUy8',
+        'startId': 'nodeS3WgFnzCI15X58Qw',
+        'endId': 'nodeni9QOqT3mI7hsMau',
+        'startAt': [50, 80],
+        'endAt': [0, 40],
+        'meta': null
+      }]
+    setTimeout(() => {
+      this.nodeList = nodeList
+      this.linkList = linkList
+    }, 100)
   },
   methods: {
     openNode(data) { // 绑定树形卷的展开事件
@@ -464,6 +688,57 @@ export default {
           }
         })
       }
+    },
+    enterIntercept(formNode, toNode, graph) {
+      const formType = formNode.meta.prop
+      switch (toNode.meta.prop) {
+        case 'start':
+          return false
+        case 'approval':
+          return [
+            'start',
+            'approval',
+            'condition',
+            'cc'
+          ].includes(formType)
+        case 'condition':
+          return [
+            'start',
+            'approval',
+            'condition',
+            'cc'
+          ].includes(formType)
+        case 'end':
+          return [
+            'approval',
+            'cc'
+          ].includes(formType)
+        default:
+          return true
+      }
+    },
+    outputIntercept(node, graph) {
+      return !(node.meta.prop === 'end')
+    },
+    linkDesc(link) {
+      return link.meta ? link.meta.desc : ''
+    },
+    settingSubmit() {
+      const conf = this.drawerConf
+      if (this.drawerConf.type === drawerType.node) {
+        if (!conf.info.meta) conf.info.meta = {}
+        Object.keys(this.nodeSetting).forEach(key => {
+          this.$set(conf.info.meta, key, this.nodeSetting[key])
+        })
+        this.$refs.nodeSetting.resetFields()
+      } else {
+        if (!conf.info.meta) conf.info.meta = {}
+        Object.keys(this.linkSetting).forEach(key => {
+          this.$set(conf.info.meta, key, this.linkSetting[key])
+        })
+        this.$refs.linkSetting.resetFields()
+      }
+      conf.visible = false
     }
   }
 }
@@ -473,6 +748,7 @@ export default {
   .leftBox {
     margin: 15px;
     padding: 20px 10px;
+    height: 800px;
     background: #f3f3f3;
     box-sizing: border-box;
   }
@@ -488,7 +764,6 @@ export default {
     display: flex;
     flex-wrap: wrap;
   }
-
   .el-form-item__content {
     margin-left: 100px!important;
   }
@@ -554,5 +829,71 @@ export default {
   }
   .el-button+.el-button {
     margin-left: 0;
+  }
+
+  .ellipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-wrap: break-word;
+  }
+
+  .super-flow-base-demo {
+    width            : 100%;
+    height           : 800px;
+    margin           : 0 auto;
+    background-color : #f5f5f5;
+
+    .super-flow__node {
+      .flow-node {
+        > header {
+          font-size   : 14px;
+          height      : 32px;
+          line-height : 32px;
+          padding     : 0 12px;
+          color       : #ffffff;
+        }
+
+        > section {
+          text-align  : center;
+          line-height : 20px;
+          overflow    : hidden;
+          padding     : 6px 12px;
+          word-break  : break-all;
+        }
+
+        &.flow-node-start {
+          > header {
+            background-color : #55abfc;
+          }
+        }
+
+        &.flow-node-condition {
+          > header {
+            background-color : #BC1D16;
+          }
+        }
+
+        &.flow-node-approval {
+          > header {
+            background-color : rgba(188, 181, 58, 0.76);
+          }
+        }
+
+        &.flow-node-cc {
+          > header {
+            background-color : #30b95c;
+          }
+        }
+
+        &.flow-node-end {
+          > header {
+            height           : 50px;
+            line-height      : 50px;
+            background-color : rgb(0, 0, 0);
+          }
+        }
+      }
+    }
   }
 </style>
