@@ -1,6 +1,6 @@
 <template>
-  <div style="height: calc(100vh - 55px);">
-    <RelationGraph ref="relationGraph" :options="graphOptions" :on-node-click="onNodeClick" :on-line-click="onLineClick" />
+  <div style="height: calc(100vh - 70px);">
+    <RelationGraph ref="relationGraph" :options="graphOptions" :on-node-click="onNodeClick" />
   </div>
 </template>
 
@@ -12,9 +12,25 @@ export default {
   data() {
     return {
       graphOptions: {
+        layouts: [{
+          label: '中心',
+          layoutName: 'tree',
+          from: 'top',
+          centerOffset_x: -20,
+          min_per_width: 120,
+          max_per_width: 200,
+          min_per_height: 200
+        }],
+        defaultNodeWidth: 80,
+        defaultNodeHeight: 40,
+        defaultJunctionPoint: 'tb',
+        defaultNodeShape: 1,
+        defaultLineShape: 4,
+        allowShowMiniToolBar: false,
         allowSwitchLineShape: true,
         allowSwitchJunctionPoint: true,
-        defaultJunctionPoint: 'tb'
+        defaultFocusRootNode: false,
+        defaultNodeBorderWidth: 3
       }
     }
   },
@@ -23,25 +39,29 @@ export default {
   },
   methods: {
     showGraph() {
-      let jsonData = {
+      const jsonData = {
         rootId: 'a',
         nodes: [
-          { id: 'a', text: 'A', borderColor: 'yellow' },
-          { id: 'b', text: 'B', color: '#43a2f1', fontColor: 'yellow' },
-          { id: 'c', text: 'C', nodeShape: 1, width: 80, height: 60 },
-          { id: 'e', text: 'E', nodeShape: 0, width: 150, height: 150 }
+          { id: 'a', text: '开始节点' },
+          { id: 'b', text: 'B', fontColor: 'yellow' },
+          { id: 'c', text: 'C' },
+          { id: 'd', text: 'E' }
         ],
         links: [
           // link配置选项：http://relation-graph.com/#/docs/link
-          { from: 'a', to: 'b', text: '关系1', color: '#43a2f1' },
-          { from: 'a', to: 'c', text: '关系2' },
-          { from: 'a', to: 'e', text: '关系3' },
-          { from: 'b', to: 'e', color: '#67C23A' }
+          { from: 'a', to: 'b', text: '', lineShape: 4 },
+          { from: 'b', to: 'c', text: '', lineShape: 4 },
+          { from: 'c', to: 'd', text: '', lineShape: 4 }
         ]
       }
       this.$refs.relationGraph.setJsonData(jsonData, (seeksRGGraph) => {
         // 图形完成回调
+        console.log(seeksRGGraph)
       })
+    },
+    onNodeClick(node, event) {
+      console.log(node)
+      console.log(event)
     }
   }
 }

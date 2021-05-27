@@ -9636,8 +9636,8 @@ relateurl@0.2.x, relateurl@^0.2.7:
 
 relation-graph@^1.1.0:
   version "1.1.0"
-  resolved "https://registry.npm.taobao.org/relation-graph/download/relation-graph-1.1.0.tgz#4fa47cd2fd766305e4e99627c1f464e7e98cd0a6"
-  integrity sha1-T6R80v12YwXk6ZYnwfRk5+mM0KY=
+  resolved "https://registry.yarnpkg.com/relation-graph/-/relation-graph-1.1.0.tgz#4fa47cd2fd766305e4e99627c1f464e7e98cd0a6"
+  integrity sha512-bPBjFOStki5kJqVDkcoTVg1pEg8tztsHk2XLjyc7i16RQFoZcAU0SJRwlAtG9ClLVNWlBYACxOS1lap9Ri3i6A==
   dependencies:
     html2canvas "^1.0.0-rc.5"
     screenfull "^4.2.0"

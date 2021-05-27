@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-aside class="leftBox">
+    <el-aside width="25%" class="leftBox">
       <TreeChart />
       <!-- <el-tree
         :props="props"
@@ -473,9 +473,9 @@ export default {
 
 <style lang="scss">
   .leftBox {
-    margin: 15px;
-    padding: 20px 10px;
-    height: 800px;
+    padding: 10px;
+    width: 25%;
+    height: calc(100vh - 50px);
     background: #f3f3f3;
     box-sizing: border-box;
   }
