@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-aside width="25%" class="leftBox">
+    <el-aside width="430px" class="leftBox">
       <TreeChart />
       <!-- <el-tree
         :props="props"

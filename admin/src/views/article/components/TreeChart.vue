@@ -125,30 +125,31 @@ export default {
       origin: [0, 0],
       nodeList: [],
       linkList: [],
-      graphMenuList: [
+      graphMenuList: [ // 画布右键菜单及事件
         [
           {
-            label: '开始节点',
+            label: '段落节点',
             disable(graph) {
-              return !!graph.nodeList.find(node => node.meta.prop === 'start')
+              return false
+              // return !!graph.nodeList.find(node => node.meta.prop === 'paragraph')
             },
             selected: (graph, coordinate) => {
-              const start = graph.nodeList.find(node => node.meta.prop === 'start')
-              if (!start) {
+              const paragraph = graph.nodeList.find(node => node.meta.prop === 'paragraph')
+              if (paragraph) {
                 graph.addNode({
                   width: 100,
                   height: 50,
                   coordinate: coordinate,
                   meta: {
-                    prop: 'start',
-                    name: '开始节点'
+                    prop: 'paragraph',
+                    name: '段落节点'
                   }
                 })
               }
             }
           },
           {
-            label: '条件节点',
+            label: '选项节点',
             disable: false,
             selected: (graph, coordinate) => {
               graph.addNode({
@@ -156,55 +157,8 @@ export default {
                 height: 50,
                 coordinate: coordinate,
                 meta: {
-                  prop: 'condition',
-                  name: '条件节点'
-                }
-              })
-            }
-          },
-          {
-            label: '审批节点',
-            disable: false,
-            selected: (graph, coordinate) => {
-              graph.addNode({
-                width: 100,
-                height: 50,
-                coordinate: coordinate,
-                meta: {
-                  prop: 'approval',
-                  name: '审批节点'
-                }
-              })
-            }
-          },
-          {
-            label: '抄送节点',
-            disable: false,
-            selected: (graph, coordinate) => {
-              graph.addNode({
-                width: 100,
-                height: 50,
-                coordinate: coordinate,
-                meta: {
-                  prop: 'cc',
-                  name: '抄送节点'
-                }
-              })
-            }
-          },
-          {
-            label: '结束节点',
-            disable(graph) {
-              return !!graph.nodeList.find(point => point.meta.prop === 'end')
-            },
-            selected: (graph, coordinate) => {
-              graph.addNode({
-                width: 50,
-                height: 50,
-                coordinate: coordinate,
-                meta: {
-                  prop: 'end',
-                  name: '结束节点'
+                  prop: 'select',
+                  name: '选项节点'
                 }
               })
             }
@@ -222,21 +176,20 @@ export default {
       nodeMenuList: [
         [
           {
-            label: '删除',
-            disable: false,
-            hidden(node) {
-              return node.meta.prop === 'start'
-            },
-            selected(node, coordinate) {
-              node.remove()
-            }
-          }
-        ],
-        [
-          {
             label: '编辑',
             selected: (node, coordinate) => {
               this.drawerConf.open(drawerType.node, node)
+            }
+          }
+        ], [
+          {
+            label: '删除',
+            disable: false,
+            hidden(node) {
+              return node.meta.prop === ''
+            },
+            selected(node, coordinate) {
+              node.remove()
             }
           }
         ]
@@ -249,19 +202,19 @@ export default {
         'id': 'node0',
         'width': 100,
         'height': 50,
-        'coordinate': [170, 0],
+        'coordinate': [155, 0],
         'meta': {
-          'prop': 'start',
-          'name': '开始节点'
+          'prop': 'paragraph',
+          'name': '段落节点'
         }
       },
       {
         'id': 'node1',
         'width': 100,
         'height': 50,
-        'coordinate': [170, 80],
+        'coordinate': [155, 80],
         'meta': {
-          'prop': 'condition',
+          'prop': 'select',
           'name': '条件节点',
           'desc': '条件节点1'
         }
@@ -271,7 +224,7 @@ export default {
         'height': 50,
         'coordinate': [30, 80],
         'meta': {
-          'prop': 'condition',
+          'prop': 'select',
           'name': '条件节点',
           'desc': '条件节点2'
         }
@@ -281,7 +234,7 @@ export default {
         'height': 50,
         'coordinate': [310, 80],
         'meta': {
-          'prop': 'condition',
+          'prop': 'select',
           'name': '条件节点',
           'desc': '条件节点3'
         }
@@ -289,10 +242,10 @@ export default {
         'id': 'node4',
         'width': 100,
         'height': 50,
-        'coordinate': [170, 180],
+        'coordinate': [155, 180],
         'meta': {
-          'prop': 'approval',
-          'name': '审批节点',
+          'prop': 'paragraph',
+          'name': '段落节点',
           'desc': '审批节点1'
         }
       },
@@ -300,10 +253,10 @@ export default {
         'id': 'node5',
         'width': 100,
         'height': 50,
-        'coordinate': [170, 260],
+        'coordinate': [155, 260],
         'meta': {
-          'prop': 'cc',
-          'name': '抄送节点',
+          'prop': 'paragraph',
+          'name': '段落节点',
           'desc': '抄送节点2'
         }
       },
@@ -311,10 +264,10 @@ export default {
         'id': 'node6',
         'width': 100,
         'height': 50,
-        'coordinate': [170, 360],
+        'coordinate': [155, 360],
         'meta': {
-          'prop': 'end',
-          'name': '结束节点'
+          'prop': 'paragraph',
+          'name': '段落节点'
         }
       }
     ]
@@ -324,89 +277,73 @@ export default {
         'startId': 'node0',
         'endId': 'node1',
         'startAt': [50, 50],
-        'endAt': [50, 0],
-        'meta': null
+        'endAt': [50, 0]
       },
       {
         'id': 'linkII013ovDctUDuPLu',
         'startId': 'node0',
         'endId': 'node2',
         'startAt': [50, 40],
-        'endAt': [50, 0],
-        'meta': null
+        'endAt': [50, 0]
       },
       {
         'id': 'linknL75dQV0AWZA85sq',
         'startId': 'node0',
         'endId': 'node3',
         'startAt': [50, 30],
-        'endAt': [50, 0],
-        'meta': null
+        'endAt': [50, 0]
       },
       {
         'id': 'linkBDld5rDBw4C6kiva',
         'startId': 'node1',
         'endId': 'node4',
         'startAt': [50, 30],
-        'endAt': [50, 0],
-        'meta': null
+        'endAt': [50, 0]
       },
       {
         'id': 'linkA0ZZxRlDI9AOonuq',
         'startId': 'node4',
         'endId': 'node5',
         'startAt': [50, 30],
-        'endAt': [50, 0],
-        'meta': null
+        'endAt': [50, 0]
       },
       {
         'id': 'linkhCKTpRAf89gcujGS',
         'startId': 'node5',
         'endId': 'node6',
         'startAt': [50, 30],
-        'endAt': [50, 0],
-        'meta': null
+        'endAt': [50, 0]
       }
     ]
-
     setTimeout(() => {
       this.nodeList = nodeList
       this.linkList = linkList
     }, 100)
   },
   methods: {
-    enterIntercept(formNode, toNode, graph) {
+    enterIntercept(formNode, toNode, graph) { // 限制连线进入节点
       const formType = formNode.meta.prop
       switch (toNode.meta.prop) {
-        case 'start':
-          return false
-        case 'approval':
+        case 'paragraph':
+          return true
+        case 'select':
           return [
-            'start',
-            'approval',
-            'condition',
-            'cc'
-          ].includes(formType)
-        case 'condition':
-          return [
-            'start',
-            'approval',
-            'condition',
-            'cc'
+            'paragraph',
+            'select'
           ].includes(formType)
         case 'end':
           return [
-            'approval',
-            'cc'
+            'paragraph',
+            'select'
           ].includes(formType)
         default:
           return true
       }
     },
-    outputIntercept(node, graph) {
+    outputIntercept(node, graph) { // 限制节点生成连线
       return !(node.meta.prop === 'end')
     },
-    linkDesc(link) {
+    linkDesc(link) { // 连线描述
       return link.meta ? link.meta.desc : ''
     },
     settingSubmit() {

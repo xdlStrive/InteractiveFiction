@@ -11504,8 +11504,8 @@ vue-style-loader@^4.1.2:
 
 vue-super-flow@^1.3.6:
   version "1.3.6"
-  resolved "https://registry.yarnpkg.com/vue-super-flow/-/vue-super-flow-1.3.6.tgz#1a144e92e2229aee7e48a3cca8d83eaed9b41c3b"
-  integrity sha512-mOYNFyYT+C81QgOIVLIUiNiXKYXmfAvP14P8h3tOjGwWd8TWZ4zv7/WybncqFMddmJPBpagv9Cmb98Ql8l0MhQ==
+  resolved "https://registry.npm.taobao.org/vue-super-flow/download/vue-super-flow-1.3.6.tgz#1a144e92e2229aee7e48a3cca8d83eaed9b41c3b"
+  integrity sha1-GhROkuIimu5+SKPMqNg+rtm0HDs=
 
 vue-template-compiler@2.6.12:
   version "2.6.12"
