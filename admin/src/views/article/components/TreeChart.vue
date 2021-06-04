@@ -1,5 +1,5 @@
 <template>
-  <div style="height: calc(100vh - 70px);">
+  <div style="width: 100%;height: calc(100vh - 70px);">
     <super-flow
       ref="superFlow"
       :node-list="nodeList"
@@ -13,12 +13,7 @@
     >
       <template #node="{meta}">
         <div :class="`flow-node flow-node-${meta.prop}`">
-          <header class="ellipsis">
-            {{ meta.name }}
-          </header>
-          <section>
-            {{ meta.desc }}
-          </section>
+          <section>{{ meta.desc }}</section>
         </div>
       </template>
     </super-flow>
@@ -51,19 +46,12 @@
         @submit.native.prevent
       >
         <el-form-item label="连线描述" prop="desc">
-          <el-input
-            v-model="linkSetting.desc"
-            placeholder="请输入连线描述"
-          />
+          <el-input v-model="linkSetting.desc" placeholder="请输入连线描述" />
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="drawerConf.cancel">
-          取 消
-        </el-button>
-        <el-button type="primary" @click="settingSubmit">
-          确 定
-        </el-button>
+        <el-button @click="drawerConf.cancel">取 消</el-button>
+        <el-button type="primary" @click="settingSubmit">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -80,6 +68,14 @@ import 'vue-super-flow/lib/index.css'
 export default {
   name: 'TreeChart',
   components: { SuperFlow },
+  props: {
+    paragraphsList: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    }
+  },
   data() {
     return {
       drawerType,
@@ -197,6 +193,7 @@ export default {
     }
   },
   created() {
+    this.initChart(this.paragraphsList)
     const nodeList = [
       {
         'id': 'node0',
@@ -205,69 +202,7 @@ export default {
         'coordinate': [155, 0],
         'meta': {
           'prop': 'paragraph',
-          'name': '段落节点'
-        }
-      },
-      {
-        'id': 'node1',
-        'width': 100,
-        'height': 50,
-        'coordinate': [155, 80],
-        'meta': {
-          'prop': 'select',
-          'name': '条件节点',
-          'desc': '条件节点1'
-        }
-      }, {
-        'id': 'node2',
-        'width': 100,
-        'height': 50,
-        'coordinate': [30, 80],
-        'meta': {
-          'prop': 'select',
-          'name': '条件节点',
-          'desc': '条件节点2'
-        }
-      }, {
-        'id': 'node3',
-        'width': 100,
-        'height': 50,
-        'coordinate': [310, 80],
-        'meta': {
-          'prop': 'select',
-          'name': '条件节点',
-          'desc': '条件节点3'
-        }
-      }, {
-        'id': 'node4',
-        'width': 100,
-        'height': 50,
-        'coordinate': [155, 180],
-        'meta': {
-          'prop': 'paragraph',
-          'name': '段落节点',
-          'desc': '审批节点1'
-        }
-      },
-      {
-        'id': 'node5',
-        'width': 100,
-        'height': 50,
-        'coordinate': [155, 260],
-        'meta': {
-          'prop': 'paragraph',
-          'name': '段落节点',
-          'desc': '抄送节点2'
-        }
-      },
-      {
-        'id': 'node6',
-        'width': 100,
-        'height': 50,
-        'coordinate': [155, 360],
-        'meta': {
-          'prop': 'paragraph',
-          'name': '段落节点'
+          'desc': '选择章节'
         }
       }
     ]
@@ -321,8 +256,59 @@ export default {
     }, 100)
   },
   methods: {
+    initChart(data) {
+      console.log(data)
+      this.nodeList = []
+      let nodeNum = 0
+      let coordinates = [164, 0]
+      for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
+        if (item.content.length === 1) {
+          this.nodeList.push({
+            id: 'node' + (nodeNum++),
+            width: '100',
+            height: '50',
+            coordinate: JSON.parse(JSON.stringify(coordinates)),
+            meta: {
+              prop: 'paragraph',
+              desc: item.content[0].substring(3, 15)
+            }
+          })
+          if (index > 0) {
+            this.linkList.push({
+              id: 'link' + nodeNum,
+              startId: 'node' + (nodeNum - 1),
+              endId: 'node' + nodeNum,
+              startAt: [50, 50],
+              endAt: [50, 0]
+            })
+          }
+          coordinates[1] = 80 * ++index
+        } else if (item.content.length > 1) {
+          coordinates[1] = 80 * index++
+          let itemIndex = 0
+          for (let items of item.content) {
+            let paddingLeft = (428 / item.content.length - 100) / 2
+            coordinates[0] = paddingLeft + (428 / item.content.length) * itemIndex
+            this.nodeList.push({
+              id: 'node' + (nodeNum++),
+              width: '100',
+              height: '50',
+              coordinate: JSON.parse(JSON.stringify(coordinates)),
+              meta: {
+                prop: 'select',
+                desc: items.substring(3, 15)
+              }
+            })
+            itemIndex++
+          }
+          coordinates[0] = 164
+          coordinates[1] = 80 * ++index
+        }
+      }
+    },
     enterIntercept(formNode, toNode, graph) { // 限制连线进入节点
       const formType = formNode.meta.prop
+      console.log(123)
       switch (toNode.meta.prop) {
         case 'paragraph':
           return true
@@ -368,5 +354,21 @@ export default {
 </script>
 
 <style>
-
+  .super-flow {
+    background-color: #fff;
+  }
+  .super-flow__node {
+    border-radius: 3px;
+  }
+  .flow-node {
+    height: 100%;
+    padding: 5px 2px;
+    font-size: 14px;
+  }
+  .flow-node-paragraph {
+    border-bottom: 5px solid #409EFF;
+  }
+  .flow-node-select {
+    border-bottom: 5px solid #67C23A;
+  }
 </style>

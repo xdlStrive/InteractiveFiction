@@ -1,23 +1,25 @@
 <template>
   <el-container>
-    <el-aside width="430px" class="leftBox">
-      <TreeChart />
-      <!-- <el-tree
-        :props="props"
-        :load="fetchChapterListFun"
-        :default-expanded-keys="[1]"
-        node-key="volume_id"
-        lazy
-        accordion
-        highlight-current
-        class="treeBox"
-        @node-expand="openNode"
-        @node-click="handleNodeClick"
-      />
-      <div class="treeBtnGroup">
-        <el-button type="primary" icon="el-icon-plus" @click="addVolumeFormVisible = true">新增卷</el-button>
-        <el-button type="success" icon="el-icon-plus" @click="addChapterFormVisible = true">新增章节</el-button>
-      </div> -->
+    <el-aside width="660px" class="leftBox">
+      <div>
+        <el-tree
+          :props="props"
+          :load="fetchChapterListFun"
+          :default-expanded-keys="[1]"
+          node-key="volume_id"
+          lazy
+          accordion
+          highlight-current
+          class="treeBox"
+          @node-expand="openNode"
+          @node-click="handleNodeClick"
+        />
+        <div class="treeBtnGroup">
+          <el-button type="primary" icon="el-icon-plus" @click="addVolumeFormVisible = true">新增卷</el-button>
+          <el-button type="success" icon="el-icon-plus" @click="addChapterFormVisible = true">新增章节</el-button>
+        </div>
+      </div>
+      <TreeChart ref="treeChart" :paragraphs-list="paragraphList" />
       <el-dialog title="新增卷" :visible.sync="addVolumeFormVisible" width="25%">
         <el-form label-width="80px">
           <el-form-item label="卷名">
@@ -41,10 +43,10 @@
     </el-aside>
     <el-main v-if="editTextVisible">
       <el-form class="articleForm" label-width="80px">
-        <el-form-item label="章节标题" class="articleTitleInput">
+        <el-form-item label="" class="articleTitleInput">
           <el-input v-model="chapterTitle" />
         </el-form-item>
-        <el-form-item label="正文" class="textAreaBox">
+        <el-form-item label="" class="textAreaBox">
           <div class="textListBox">
             <ul>
               <li v-for="(item, index) in paragraphList" :key="index" class="previewItems">
@@ -57,7 +59,7 @@
             </ul>
           </div>
         </el-form-item>
-        <el-form-item label="当前段落" class="editArea">
+        <el-form-item label="" class="editArea">
           <tinymce ref="tinymce" v-model="currentParagraph" :height="200" />
         </el-form-item>
         <el-form-item class="articleBtnGroup">
@@ -68,7 +70,7 @@
           <el-button type="success" @click="submitChapter">提交本章</el-button>
         </el-form-item>
       </el-form>
-      <el-dialog title="关联选择" :visible.sync="relationFormVisible" width="40%" @close="relationSelectClose">
+      <el-dialog title="" :visible.sync="relationFormVisible" width="40%" @close="relationSelectClose">
         <el-form label-width="80px">
           <el-form-item label="搜索选择">
             <el-input v-model="relationForm.searchTerms" placeholder="请输入关键字" class="input-with-select">
@@ -282,6 +284,7 @@ export default {
           this.chapterTitle = res.data.title
           this.paragraphList = res.data.paragraph_list
           console.log(this.paragraphList)
+          this.$refs.treeChart.initChart(this.paragraphList)
         }
       })
     },
@@ -473,8 +476,8 @@ export default {
 
 <style lang="scss">
   .leftBox {
+    display: flex;
     padding: 10px;
-    width: 25%;
     height: calc(100vh - 50px);
     background: #f3f3f3;
     box-sizing: border-box;
@@ -492,7 +495,7 @@ export default {
     flex-wrap: wrap;
   }
   .el-form-item__content {
-    margin-left: 100px!important;
+    margin-left: 0!important;
   }
   .articleTitleInput {
     width: 60%;
@@ -533,7 +536,7 @@ export default {
     padding: 8px 15px;
   }
   .editArea {
-    width: 90%;
+    width: 88%;
   }
   .articleBtnGroup {
     width: 20%;

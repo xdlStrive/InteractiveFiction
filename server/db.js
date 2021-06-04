@@ -74,6 +74,20 @@ const SelectSchema = new mongoose.Schema({
     get: v => moment(v).format('YYYY-MM-DD HH:mm') 
   }
 }).set('toJSON', { getters: true });
+
+// 分支模型
+const BranchSchema = new mongoose.Schema({ 
+  branch_id: { type: Number, index: true, unique: true }, // 分支的id
+  type: String, // 分支的类型（一般选项、重要抉择、bad-end选项）
+  note: String, // 分支的描述（用于关联选择时的模糊搜索）
+  members: [], // 分支包含的段落数组
+  create_time: {
+    type: Date,
+    default: new Date,
+    get: v => moment(v).format('YYYY-MM-DD HH:mm')
+  }
+}).set('toJSON', { getters: true });
+
 //SelectSchema.set('toJSON', { getters: true });
 
 // model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
@@ -81,11 +95,13 @@ const SelectSchema = new mongoose.Schema({
 // let test = new testModel();
 // test.create_time = "2021-04-20T09:41:38.427+0000"
 // console.log(test.create_time)
+
 // 段落模型
 const paragraphSchema = new mongoose.Schema({ 
   paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
   chapter_id: Number, // 所属章节的ID
   select_id: String, // 段落关联的选项的id数组
+  branch_id: String, // 关联的分支的id
   content: [],  // 段落内容
   bulletComment: [], // 关联弹幕的id数组
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
@@ -148,6 +164,7 @@ module.exports = mongoose.model('users', UserSchema, 'users');
 module.exports = mongoose.model('volume', VolumeSchema, 'volumes');
 module.exports = mongoose.model('chapter', ChapterSchema, 'chapters');
 module.exports = mongoose.model('paragraphs', paragraphSchema, 'paragraphs');
+module.exports = mongoose.model('branch', BranchSchema, 'branchs');
 module.exports = mongoose.model('select', SelectSchema, 'selects');
 module.exports = mongoose.model('timeline', TimelineSchema, 'timeline');
 module.exports = mongoose.model('counter', CounterSchema, 'counters');
