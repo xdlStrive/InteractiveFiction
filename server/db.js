@@ -76,7 +76,7 @@ const SelectSchema = new mongoose.Schema({
 }).set('toJSON', { getters: true });
 
 // 分支模型
-const BranchSchema = new mongoose.Schema({ 
+const BranchSchema = new mongoose.Schema({
   branch_id: { type: Number, index: true, unique: true }, // 分支的id
   type: String, // 分支的类型（一般选项、重要抉择、bad-end选项）
   note: String, // 分支的描述（用于关联选择时的模糊搜索）
@@ -97,9 +97,10 @@ const BranchSchema = new mongoose.Schema({
 // console.log(test.create_time)
 
 // 段落模型
-const paragraphSchema = new mongoose.Schema({ 
+const paragraphSchema = new mongoose.Schema({
   paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
   chapter_id: Number, // 所属章节的ID
+  type: String,
   select_id: String, // 段落关联的选项的id数组
   branch_id: String, // 关联的分支的id
   content: [],  // 段落内容

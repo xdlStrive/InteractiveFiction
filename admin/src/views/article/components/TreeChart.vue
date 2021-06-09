@@ -9,7 +9,6 @@
       :node-menu="nodeMenuList"
       :enter-intercept="enterIntercept"
       :output-intercept="outputIntercept"
-      :link-desc="linkDesc"
     >
       <template #node="{meta}">
         <div :class="`flow-node flow-node-${meta.prop}`">
@@ -65,6 +64,7 @@ const drawerType = {
 
 import SuperFlow from 'vue-super-flow'
 import 'vue-super-flow/lib/index.css'
+import { addBranch } from '@/api/branch'
 export default {
   name: 'TreeChart',
   components: { SuperFlow },
@@ -148,14 +148,16 @@ export default {
             label: '选项节点',
             disable: false,
             selected: (graph, coordinate) => {
-              graph.addNode({
-                width: 100,
-                height: 50,
-                coordinate: coordinate,
-                meta: {
-                  prop: 'select',
-                  name: '选项节点'
-                }
+              addBranch().then(res => {
+                graph.addNode({
+                  width: 100,
+                  height: 50,
+                  coordinate: coordinate,
+                  meta: {
+                    prop: 'select',
+                    name: '选项节点'
+                  }
+                })
               })
             }
           }
@@ -172,8 +174,14 @@ export default {
       nodeMenuList: [
         [
           {
-            label: '编辑',
+            label: '新增子节点',
+            hidden(node) {
+              return node.meta.prop === 'paragraph'
+            },
             selected: (node, coordinate) => {
+              // if (node.meta.prop === 'paragraph') {
+
+              // }
               this.drawerConf.open(drawerType.node, node)
             }
           }
@@ -184,8 +192,23 @@ export default {
             hidden(node) {
               return node.meta.prop === ''
             },
-            selected(node, coordinate) {
-              node.remove()
+            selected: (node, coordinate) => {
+              this.$confirm('确认删除？', '删除确认', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                node.remove()
+                this.$message({
+                  type: 'success',
+                  message: '删除成功！'
+                })
+              }).catch(() => {
+                this.$message({
+                  type: 'info',
+                  message: '已取消删除操作'
+                })
+              })
             }
           }
         ]
@@ -206,50 +229,7 @@ export default {
         }
       }
     ]
-    const linkList = [
-      {
-        'id': 'linkcs9ZhumWeTHrtUy8',
-        'startId': 'node0',
-        'endId': 'node1',
-        'startAt': [50, 50],
-        'endAt': [50, 0]
-      },
-      {
-        'id': 'linkII013ovDctUDuPLu',
-        'startId': 'node0',
-        'endId': 'node2',
-        'startAt': [50, 40],
-        'endAt': [50, 0]
-      },
-      {
-        'id': 'linknL75dQV0AWZA85sq',
-        'startId': 'node0',
-        'endId': 'node3',
-        'startAt': [50, 30],
-        'endAt': [50, 0]
-      },
-      {
-        'id': 'linkBDld5rDBw4C6kiva',
-        'startId': 'node1',
-        'endId': 'node4',
-        'startAt': [50, 30],
-        'endAt': [50, 0]
-      },
-      {
-        'id': 'linkA0ZZxRlDI9AOonuq',
-        'startId': 'node4',
-        'endId': 'node5',
-        'startAt': [50, 30],
-        'endAt': [50, 0]
-      },
-      {
-        'id': 'linkhCKTpRAf89gcujGS',
-        'startId': 'node5',
-        'endId': 'node6',
-        'startAt': [50, 30],
-        'endAt': [50, 0]
-      }
-    ]
+    const linkList = []
     setTimeout(() => {
       this.nodeList = nodeList
       this.linkList = linkList
@@ -262,7 +242,7 @@ export default {
       let nodeNum = 0
       let coordinates = [164, 0]
       for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
-        if (item.content.length === 1) {
+        if (item.content.length === 1) { // 主线段落节点
           this.nodeList.push({
             id: 'node' + (nodeNum++),
             width: '100',
@@ -273,17 +253,15 @@ export default {
               desc: item.content[0].substring(3, 15)
             }
           })
-          if (index > 0) {
-            this.linkList.push({
-              id: 'link' + nodeNum,
-              startId: 'node' + (nodeNum - 1),
-              endId: 'node' + nodeNum,
-              startAt: [50, 50],
-              endAt: [50, 0]
-            })
-          }
+          this.linkList.push({
+            id: 'link' + nodeNum,
+            startId: 'node' + (nodeNum - 1),
+            endId: 'node' + nodeNum,
+            startAt: [50, 50],
+            endAt: [50, 0]
+          })
           coordinates[1] = 80 * ++index
-        } else if (item.content.length > 1) {
+        } else if (item.content.length > 1) { // 选项段落节点
           coordinates[1] = 80 * index++
           let itemIndex = 0
           for (let items of item.content) {
@@ -300,7 +278,16 @@ export default {
               }
             })
             itemIndex++
+            console.log(this.linkList)
+            this.linkList.push({
+              id: 'link' + nodeNum,
+              startId: 'node' + (nodeNum - itemIndex - 1),
+              endId: 'node' + nodeNum,
+              startAt: [50, 50],
+              endAt: [50, 0]
+            })
           }
+
           coordinates[0] = 164
           coordinates[1] = 80 * ++index
         }
@@ -328,9 +315,6 @@ export default {
     },
     outputIntercept(node, graph) { // 限制节点生成连线
       return !(node.meta.prop === 'end')
-    },
-    linkDesc(link) { // 连线描述
-      return link.meta ? link.meta.desc : ''
     },
     settingSubmit() {
       const conf = this.drawerConf

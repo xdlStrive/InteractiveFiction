@@ -24,7 +24,7 @@ router.post('/add', (req, res) => {
       branch_id: doc.counter_num,
       type: req.body.type,
       note: req.body.note,
-      members: req.body.members, // 与user进行关联
+      members: req.body.members, // 分支包含段落数组
     }).save((err, docs) => {
       if (err) {
         console.log(err)
