@@ -53,6 +53,28 @@
         <el-button type="primary" @click="settingSubmit">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog title="新增选择" :visible.sync="selectFormVisible" width="40%" @close="newSelectClose">
+      <el-form label-width="80px">
+        <el-form-item label="选择类型">
+          <el-radio-group v-model="selectForm.selectType">
+            <el-radio :label="0">普通选择</el-radio>
+            <el-radio :label="1">重要抉择</el-radio>
+            <el-radio :label="2">bad-end 结局</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <ul>
+          <li v-for="(item, index) in selectInputList" :key="index">
+            <el-form-item :label="item.labelName">
+              <el-input v-model="item.inputValue" />
+            </el-form-item>
+          </li>
+        </ul>
+        <el-form-item class="addSelectBox">
+          <el-button type="primary" style="margin-right: 40px;" @click="addSelectInput">增加选项</el-button>
+          <el-button type="success" @click="submitSelect">提交选择</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -65,6 +87,7 @@ const drawerType = {
 import SuperFlow from 'vue-super-flow'
 import 'vue-super-flow/lib/index.css'
 import { addBranch } from '@/api/branch'
+import { newSelect } from '@/api/select'
 export default {
   name: 'TreeChart',
   components: { SuperFlow },
@@ -121,6 +144,10 @@ export default {
       origin: [0, 0],
       nodeList: [],
       linkList: [],
+      selectParams: {
+        graph: {},
+        coordinate: []
+      },
       graphMenuList: [ // 画布右键菜单及事件
         [
           {
@@ -148,17 +175,9 @@ export default {
             label: '选项节点',
             disable: false,
             selected: (graph, coordinate) => {
-              addBranch().then(res => {
-                graph.addNode({
-                  width: 100,
-                  height: 50,
-                  coordinate: coordinate,
-                  meta: {
-                    prop: 'select',
-                    name: '选项节点'
-                  }
-                })
-              })
+              this.selectFormVisible = true
+              this.selectParams.graph = graph
+              this.selectParams.coordinate = coordinate
             }
           }
         ],
@@ -179,9 +198,6 @@ export default {
               return node.meta.prop === 'paragraph'
             },
             selected: (node, coordinate) => {
-              // if (node.meta.prop === 'paragraph') {
-
-              // }
               this.drawerConf.open(drawerType.node, node)
             }
           }
@@ -212,7 +228,20 @@ export default {
             }
           }
         ]
-      ]
+      ],
+      // 新增选项弹窗
+      selectFormVisible: false,
+      selectForm: {
+        selectType: 0
+      },
+      selectInputList: [{
+        labelName: '选项一',
+        inputValue: ''
+      },
+      {
+        labelName: '选项二',
+        inputValue: ''
+      }]
     }
   },
   created() {
@@ -278,7 +307,6 @@ export default {
               }
             })
             itemIndex++
-            console.log(this.linkList)
             this.linkList.push({
               id: 'link' + nodeNum,
               startId: 'node' + (nodeNum - itemIndex - 1),
@@ -287,7 +315,6 @@ export default {
               endAt: [50, 0]
             })
           }
-
           coordinates[0] = 164
           coordinates[1] = 80 * ++index
         }
@@ -332,6 +359,54 @@ export default {
         this.$refs.linkSetting.resetFields()
       }
       conf.visible = false
+    },
+    addSelectInput() { // 增加选项方法
+      const selectInputNum = this.selectInputList.length
+      if (selectInputNum === 2) {
+        this.selectInputList.push({
+          labelName: '选项三',
+          inputValue: ''
+        })
+      } else if (selectInputNum === 3) {
+        this.selectInputList.push({
+          labelName: '选项四',
+          inputValue: ''
+        })
+      } else {
+        return
+      }
+    },
+    submitSelect() { // 新增选择方法
+      const selectParams = {
+        type: this.selectForm.selectType, // 选择支的类型（一般选项、重要抉择、bad-end选项）
+        options: this.selectInputList
+      }
+      console.log(this.selectInputList)
+
+      // addBranch().then(res => {
+      // this.selectParams.graph.addNode({
+      //   width: 100,
+      //   height: 50,
+      //   coordinate: this.selectParams.coordinate,
+      //   meta: {
+      //     prop: 'select',
+      //     name: '选项节点'
+      //   }
+      // })
+      // })
+      // newSelect(selectParams).then(res => {
+      //   console.log(res.data)
+      //   if (res.code === 20000) {
+      //     this.selectFormVisible = false
+      //     this.$message({
+      //       type: 'success',
+      //       message: '新增选项成功！'
+      //     })
+      //   }
+      // })
+    },
+    newSelectClose() { // 新增选择弹窗的关闭事件
+      this.selectInputList = this.selectInputList.slice(0, 2)
     }
   }
 }

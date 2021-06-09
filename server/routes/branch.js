@@ -32,7 +32,7 @@ router.post('/add', (req, res) => {
       }
       res.json({
         code: 20000,
-        msg: '新增章节成功！',
+        msg: '新增分支成功！',
         data: docs
       })
     })

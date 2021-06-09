@@ -16,7 +16,7 @@ mongoose.connect('mongodb://root:198300@47.97.230.150/IF?authSource=admin', {
 // mongoose.connect('mongodb://localhost/WAG', {
 //   useNewUrlParser: true, 
 //   useUnifiedTopology: true 
-// }); 
+// });
 
 const db = mongoose.connection;
 db.on('error', () => { // 监听是否有异常
@@ -141,8 +141,6 @@ const VolumeSchema = new mongoose.Schema({
   chapter_list: [], // 该卷所有的章节id数组
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
-
-// ChapterSchema.set('toJSON', { getters: true })
 
 // 时间轴模型
 const TimelineSchema = new mongoose.Schema({  
