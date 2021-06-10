@@ -12,6 +12,7 @@ const alyapiRouter = require('./routes/alyapi');
 const volumeRouter = require('./routes/volume');
 const chapterRouter = require('./routes/chapter');
 const paragraphRouter = require('./routes/paragraph');
+const branchRouter = require('./routes/branch');
 const selectRouter = require('./routes/select');
 const timelineRouter = require('./routes/timeline');
 
@@ -46,6 +47,7 @@ app.use('/alyapi', alyapiRouter);
 app.use('/volume', volumeRouter);
 app.use('/chapter', chapterRouter);
 app.use('/paragraph', paragraphRouter);
+app.use('/branch', branchRouter);
 app.use('/select', selectRouter);
 app.use('/timeline', timelineRouter);
 

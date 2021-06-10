@@ -1,8 +1,9 @@
 import request from '@/utils/request'
 
-export function addBranch() {
+export function addBranch(data) {
   return request({
     url: '/branch/add',
-    method: 'post'
+    method: 'post',
+    data
   })
 }

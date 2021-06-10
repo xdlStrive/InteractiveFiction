@@ -87,6 +87,7 @@ const drawerType = {
 import SuperFlow from 'vue-super-flow'
 import 'vue-super-flow/lib/index.css'
 import { addBranch } from '@/api/branch'
+import { addParagraph } from '@/api/paragraph'
 import { newSelect } from '@/api/select'
 export default {
   name: 'TreeChart',
@@ -237,10 +238,6 @@ export default {
       selectInputList: [{
         labelName: '选项一',
         inputValue: ''
-      },
-      {
-        labelName: '选项二',
-        inputValue: ''
       }]
     }
   },
@@ -362,7 +359,12 @@ export default {
     },
     addSelectInput() { // 增加选项方法
       const selectInputNum = this.selectInputList.length
-      if (selectInputNum === 2) {
+      if (selectInputNum === 1) {
+        this.selectInputList.push({
+          labelName: '选项二',
+          inputValue: ''
+        })
+      } else if (selectInputNum === 2) {
         this.selectInputList.push({
           labelName: '选项三',
           inputValue: ''
@@ -376,23 +378,42 @@ export default {
         return
       }
     },
-    submitSelect() { // 新增选择方法
-      const selectParams = {
-        type: this.selectForm.selectType, // 选择支的类型（一般选项、重要抉择、bad-end选项）
-        options: this.selectInputList
+    submitSelect() { // 提交选择方法
+      const branchParams = {
+        type: this.selectForm.selectType // 选择支的类型（一般选项、重要抉择、bad-end选项）
       }
-      console.log(this.selectInputList)
+      console.log(this.selectParams.coordinate)
 
+      for (let i in this.selectInputList) {
+        let paddingLeft = (428 / this.selectInputList.length - 100) / 2
+        let coordinate = [paddingLeft + (428 / this.selectInputList.length) * i, this.selectParams.coordinate[1]]
+        console.log(this.selectInputList[i])
+        addBranch().then(res => {
+          this.selectParams.graph.addNode({
+            width: 100,
+            height: 50,
+            coordinate: coordinate,
+            meta: {
+              prop: 'select',
+              name: '选项节点',
+              desc: this.selectInputList[i].inputValue
+            }
+          })
+        })
+      }
       // addBranch().then(res => {
-      // this.selectParams.graph.addNode({
-      //   width: 100,
-      //   height: 50,
-      //   coordinate: this.selectParams.coordinate,
-      //   meta: {
-      //     prop: 'select',
-      //     name: '选项节点'
+      //   for (let i in this.selectInputList) {
+      //     console.log(i)
       //   }
-      // })
+      //   this.selectParams.graph.addNode({
+      //     width: 100,
+      //     height: 50,
+      //     coordinate: this.selectParams.coordinate,
+      //     meta: {
+      //       prop: 'select',
+      //       name: '选项节点'
+      //     }
+      //   })
       // })
       // newSelect(selectParams).then(res => {
       //   console.log(res.data)
