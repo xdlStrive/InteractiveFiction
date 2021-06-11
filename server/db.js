@@ -87,13 +87,6 @@ const BranchSchema = new mongoose.Schema({
   }
 }).set('toJSON', { getters: true });
 
-//SelectSchema.set('toJSON', { getters: true });
-
-// model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
-// let testModel = mongoose.model('select', SelectSchema, 'selects');
-// let test = new testModel();
-// test.create_time = "2021-04-20T09:41:38.427+0000"
-// console.log(test.create_time)
 
 // 段落模型
 const paragraphSchema = new mongoose.Schema({
