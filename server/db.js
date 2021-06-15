@@ -77,7 +77,7 @@ const SelectSchema = new mongoose.Schema({
 
 // 分支模型
 const BranchSchema = new mongoose.Schema({
-  branch_id: { type: Number }, // 分支的id
+  branch_id: { type: Number, index: true, unique: true }, // 分支的id
   type: String, // 分支的类型（一般选项、重要抉择、bad-end选项）
   members: [], // 分支包含的段落数组
   create_time: {
@@ -96,8 +96,8 @@ const paragraphSchema = new mongoose.Schema({
   select_id: String, // 段落关联的选项的id数组
   branch_id: String, // 关联的分支的id
   content: [],  // 段落内容
-  select: [],
-  selectNote: String,
+  selects: [], // 分支id组成的数组
+  selectType: String,
   bulletComment: [], // 关联弹幕的id数组
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });

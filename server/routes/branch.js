@@ -43,10 +43,9 @@ router.post('/add', (req, res) => {
 
 // 修改分支
 router.post('/modify', (req, res) => {
-  const contentIndex = 'content.' + req.body.index
-  branchModel.findOneAndUpdate({ paragraph_id: req.body.branch_id }, {
-    $set: {
-      [contentIndex] : req.body.content
+  branchModel.findOneAndUpdate({ branch_id: req.body.branch_id }, {
+    $push: {
+      members: req.body.paragraph_id
     }
   }, { new: true }, (err, doc) => {
     if (err) {

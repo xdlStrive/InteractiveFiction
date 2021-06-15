@@ -20,7 +20,8 @@ router.post('/add', (req, res) => {
       paragraph_id: doc.counter_num,
       chapter_id: req.body.chapter_id,
       content: req.body.content,
-      select_id: req.body.select_id
+      selects: req.body.selects,
+      selectType: req.body.selectType
     }).save((err, docs) => {
       if (err) {
         console.log(err)

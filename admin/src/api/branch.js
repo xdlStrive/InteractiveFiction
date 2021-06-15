@@ -7,3 +7,11 @@ export function addBranch(data) {
     data
   })
 }
+
+export function modifyBranch(data) {
+  return request({
+    url: '/branch/modify',
+    method: 'post',
+    data
+  })
+}

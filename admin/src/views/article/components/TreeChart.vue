@@ -87,8 +87,10 @@ const drawerType = {
 import SuperFlow from 'vue-super-flow'
 import 'vue-super-flow/lib/index.css'
 import { addBranch } from '@/api/branch'
+import { modifyBranch } from '@/api/branch'
 import { addParagraph } from '@/api/paragraph'
-import { newSelect } from '@/api/select'
+import { modifyChapter } from '@/api/chapter'
+
 export default {
   name: 'TreeChart',
   components: { SuperFlow },
@@ -98,6 +100,10 @@ export default {
       default: function() {
         return []
       }
+    },
+    chapterId: {
+      type: Number,
+      default: null
     }
   },
   data() {
@@ -138,9 +144,7 @@ export default {
       },
       nodeSetting: {
         width: 100,
-        height: 50,
-        name: '',
-        desc: ''
+        height: 50
       },
       origin: [0, 0],
       nodeList: [],
@@ -318,8 +322,18 @@ export default {
       }
     },
     enterIntercept(formNode, toNode, graph) { // 限制连线进入节点
+      console.log(234)
       const formType = formNode.meta.prop
-      console.log(123)
+      if (formType === 'select') {
+        const params = {
+          branch_id: formNode.id,
+          paragraph_id: toNode.id
+        }
+        modifyBranch(params).then(res => {
+          console.log(res)
+        })
+      }
+
       switch (toNode.meta.prop) {
         case 'paragraph':
           return true
@@ -379,17 +393,43 @@ export default {
       }
     },
     submitSelect() { // 提交选择方法
-      const branchParams = {
-        type: this.selectForm.selectType // 选择支的类型（一般选项、重要抉择、bad-end选项）
-      }
-      console.log(this.selectParams.coordinate)
-
+      this.addBranchs().then(v => {
+        const branchParams = {
+          selectType: this.selectForm.selectType, // 选择支的类型（一般选项、重要抉择、bad-end选项）
+          selects: v
+        }
+        addParagraph(branchParams).then(res => {
+          console.log(res)
+          const paragraphsListArr = this.paragraphsList.map((val, index) => {
+            return val.paragraph_id
+          })
+          paragraphsListArr.push(res.data.paragraph_id)
+          const params = {
+            chapter_id: this.chapterId,
+            paragraph_list: paragraphsListArr
+          }
+          console.log(params)
+          modifyChapter(params).then(res => {
+            if (res.code === 20000) {
+              this.$message({
+                type: 'success',
+                message: res.msg
+              })
+            }
+          })
+        })
+      })
+    },
+    async addBranchs() { // 保存分支
+      let branchIDArr = []
       for (let i in this.selectInputList) {
         let paddingLeft = (428 / this.selectInputList.length - 100) / 2
         let coordinate = [paddingLeft + (428 / this.selectInputList.length) * i, this.selectParams.coordinate[1]]
-        console.log(this.selectInputList[i])
-        addBranch().then(res => {
+        await addBranch().then(res => {
+          console.log(res)
+          branchIDArr[i] = res.data.branch_id
           this.selectParams.graph.addNode({
+            id: res.data.branch_id,
             width: 100,
             height: 50,
             coordinate: coordinate,
@@ -401,30 +441,7 @@ export default {
           })
         })
       }
-      // addBranch().then(res => {
-      //   for (let i in this.selectInputList) {
-      //     console.log(i)
-      //   }
-      //   this.selectParams.graph.addNode({
-      //     width: 100,
-      //     height: 50,
-      //     coordinate: this.selectParams.coordinate,
-      //     meta: {
-      //       prop: 'select',
-      //       name: '选项节点'
-      //     }
-      //   })
-      // })
-      // newSelect(selectParams).then(res => {
-      //   console.log(res.data)
-      //   if (res.code === 20000) {
-      //     this.selectFormVisible = false
-      //     this.$message({
-      //       type: 'success',
-      //       message: '新增选项成功！'
-      //     })
-      //   }
-      // })
+      return branchIDArr
     },
     newSelectClose() { // 新增选择弹窗的关闭事件
       this.selectInputList = this.selectInputList.slice(0, 2)

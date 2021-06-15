@@ -19,7 +19,7 @@
           <el-button type="success" icon="el-icon-plus" @click="addChapterFormVisible = true">新增章节</el-button>
         </div>
       </div>
-      <TreeChart ref="treeChart" :paragraphs-list="paragraphList" />
+      <TreeChart ref="treeChart" :paragraphs-list="paragraphList" :chapter-id="chapterID" />
       <el-dialog title="新增卷" :visible.sync="addVolumeFormVisible" width="25%">
         <el-form label-width="80px">
           <el-form-item label="卷名">
@@ -171,7 +171,7 @@ export default {
       currentVolumeID: 1,
       // 章节部分
       chapterTitle: '',
-      chapterID: '',
+      chapterID: 0,
       chapterList: [],
       // 段落部分
       paragraphList: [],
