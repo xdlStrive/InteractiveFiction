@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-aside width="660px" class="leftBox">
-      <div>
+      <div id="left-tree-box">
         <el-tree
           :props="props"
           :load="fetchChapterListFun"
@@ -51,7 +51,12 @@
             <ul>
               <li v-for="(item, index) in paragraphList" :key="index" class="previewItems">
                 <div v-for="(items, indexs) in item.content" :key="indexs" class="itemTextBox">
-                  <el-tag v-if="item.content.length > 1">{{ '选项 ' + (indexs + 1) }}</el-tag>
+                  <!-- <el-tag v-if="item.content.length > 1">{{ '选项 ' + (indexs + 1) }}</el-tag> -->
+                  <div class="textBox" v-html="items" />
+                  <el-button type="primary" class="itemEditBtn" @click="modifyParagraphBtn(item.content[indexs], index, indexs)">修改</el-button>
+                </div>
+                <div v-for="(items, indexs) in item.selects_key" :key="indexs" class="itemTextBox">
+                  <el-tag style="margin-right: 10px;">{{ '选项 ' + (indexs + 1) }}</el-tag>
                   <div class="textBox" v-html="items" />
                   <el-button type="primary" class="itemEditBtn" @click="modifyParagraphBtn(item.content[indexs], index, indexs)">修改</el-button>
                 </div>
@@ -63,7 +68,7 @@
           <tinymce ref="tinymce" v-model="currentParagraph" :height="200" />
         </el-form-item>
         <el-form-item class="articleBtnGroup">
-          <el-button type="danger" @click="relationFormVisible = true">关联选择</el-button>
+          <!-- <el-button type="danger" @click="relationFormVisible = true">关联选择</el-button> -->
           <!-- <el-button type="warning" @click="selectFormVisible = true">新增选择</el-button> -->
           <el-button v-if="submitType" type="primary" @click="nextParagraph">下一段</el-button>
           <el-button v-if="!submitType" type="primary" @click="modifyParagraphFun()">提交修改</el-button>
@@ -481,13 +486,16 @@ export default {
     background: #f3f3f3;
     box-sizing: border-box;
   }
+  .left-tree-box {
+    width: 190px;
+  }
   .treeBtnGroup {
     margin-top: 20px;
     display: flex;
     justify-content: space-evenly;
   }
   .treeBtnGroup > .el-button {
-    padding: 8px 18px;
+    padding: 8px;
   }
   .articleForm {
     display: flex;
@@ -540,7 +548,7 @@ export default {
   .articleBtnGroup {
     width: 20%;
     max-width: 100px;
-    margin-left: 20px;
+    margin-left: 19px;
     display: flex;
     align-items: flex-end;
   }

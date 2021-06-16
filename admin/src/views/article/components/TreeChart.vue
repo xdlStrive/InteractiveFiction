@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%;height: calc(100vh - 70px);">
+  <div id="left-chart-box">
     <super-flow
       ref="superFlow"
       :node-list="nodeList"
@@ -272,7 +272,8 @@ export default {
       let nodeNum = 0
       let coordinates = [164, 0]
       for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
-        if (item.content.length === 1) { // 主线段落节点
+        console.log(item.selects === undefined)
+        if (item.selects === undefined) { // 主线段落节点
           this.nodeList.push({
             id: 'node' + (nodeNum++),
             width: '100',
@@ -291,12 +292,13 @@ export default {
             endAt: [50, 0]
           })
           coordinates[1] = 80 * ++index
-        } else if (item.content.length > 1) { // 选项段落节点
+        } else { // 选项段落节点
           coordinates[1] = 80 * index++
           let itemIndex = 0
-          for (let items of item.content) {
-            let paddingLeft = (428 / item.content.length - 100) / 2
-            coordinates[0] = paddingLeft + (428 / item.content.length) * itemIndex
+          for (let items of item.selects_key) {
+            console.log(items)
+            let paddingLeft = (428 / item.selects_key.length - 100) / 2
+            coordinates[0] = paddingLeft + (428 / item.selects_key.length) * itemIndex
             this.nodeList.push({
               id: 'node' + (nodeNum++),
               width: '100',
@@ -304,7 +306,7 @@ export default {
               coordinate: JSON.parse(JSON.stringify(coordinates)),
               meta: {
                 prop: 'select',
-                desc: items.substring(3, 15)
+                desc: items.substring(0, 15)
               }
             })
             itemIndex++
@@ -393,11 +395,14 @@ export default {
       }
     },
     submitSelect() { // 提交选择方法
-      this.addBranchs().then(v => {
+      this.addBranchs().then(value => {
         const branchParams = {
+          chapter_id: this.chapterId,
           selectType: this.selectForm.selectType, // 选择支的类型（一般选项、重要抉择、bad-end选项）
-          selects: v
+          selects_key: value.inputValue,
+          selects: value.branchIDArr
         }
+        console.log(branchParams)
         addParagraph(branchParams).then(res => {
           console.log(res)
           const paragraphsListArr = this.paragraphsList.map((val, index) => {
@@ -421,13 +426,17 @@ export default {
       })
     },
     async addBranchs() { // 保存分支
-      let branchIDArr = []
+      let params = {
+        inputValue: [],
+        branchIDArr: []
+      }
       for (let i in this.selectInputList) {
+        params.inputValue[i] = this.selectInputList[i].inputValue
         let paddingLeft = (428 / this.selectInputList.length - 100) / 2
         let coordinate = [paddingLeft + (428 / this.selectInputList.length) * i, this.selectParams.coordinate[1]]
         await addBranch().then(res => {
           console.log(res)
-          branchIDArr[i] = res.data.branch_id
+          params.branchIDArr[i] = res.data.branch_id
           this.selectParams.graph.addNode({
             id: res.data.branch_id,
             width: 100,
@@ -441,7 +450,8 @@ export default {
           })
         })
       }
-      return branchIDArr
+
+      return params
     },
     newSelectClose() { // 新增选择弹窗的关闭事件
       this.selectInputList = this.selectInputList.slice(0, 2)
@@ -451,6 +461,10 @@ export default {
 </script>
 
 <style>
+  #left-chart-box {
+    width: 450px;
+    height: calc(100vh - 70px);
+  }
   .super-flow {
     background-color: #fff;
   }

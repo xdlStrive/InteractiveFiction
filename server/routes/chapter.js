@@ -159,8 +159,6 @@ router.get('/oneChapter', (req, res) => {
       new Promise((resolve, reject) => {
         async function getSelect(index, length) {
           const item = doc[0].paragraph_list[index]
-          console.log('----------')
-          console.log(item.select_id)
           if (item.select_id !== undefined) {
             await selectModel.findOne({
               select_id: item.select_id
@@ -172,8 +170,6 @@ router.get('/oneChapter', (req, res) => {
           if (++index < length) {
             getSelect(index, length)
           } else {
-            console.log(length)
-            console.log(++index)
             // 最后一个还没查出来就已经下一步了，怀疑和最后一个的位置有关
             setTimeout(() => {
               resolve()
@@ -182,7 +178,6 @@ router.get('/oneChapter', (req, res) => {
         }
         getSelect(0, lengths)
       }).then(val => {
-        console.log('>>>>>>>>>>>>>>>>>')
         return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
       })
     }

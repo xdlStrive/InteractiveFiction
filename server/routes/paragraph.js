@@ -20,6 +20,7 @@ router.post('/add', (req, res) => {
       paragraph_id: doc.counter_num,
       chapter_id: req.body.chapter_id,
       content: req.body.content,
+      selects_key: req.body.selects_key,
       selects: req.body.selects,
       selectType: req.body.selectType
     }).save((err, docs) => {

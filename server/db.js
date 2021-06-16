@@ -96,6 +96,7 @@ const paragraphSchema = new mongoose.Schema({
   select_id: String, // 段落关联的选项的id数组
   branch_id: String, // 关联的分支的id
   content: [],  // 段落内容
+  selects_key: [], // 选项描述
   selects: [], // 分支id组成的数组
   selectType: String,
   bulletComment: [], // 关联弹幕的id数组
