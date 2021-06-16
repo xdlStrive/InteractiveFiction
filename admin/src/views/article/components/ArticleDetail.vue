@@ -51,7 +51,6 @@
             <ul>
               <li v-for="(item, index) in paragraphList" :key="index" class="previewItems">
                 <div v-for="(items, indexs) in item.content" :key="indexs" class="itemTextBox">
-                  <!-- <el-tag v-if="item.content.length > 1">{{ '选项 ' + (indexs + 1) }}</el-tag> -->
                   <div class="textBox" v-html="items" />
                   <el-button type="primary" class="itemEditBtn" @click="modifyParagraphBtn(item.content[indexs], index, indexs)">修改</el-button>
                 </div>
@@ -68,67 +67,11 @@
           <tinymce ref="tinymce" v-model="currentParagraph" :height="200" />
         </el-form-item>
         <el-form-item class="articleBtnGroup">
-          <!-- <el-button type="danger" @click="relationFormVisible = true">关联选择</el-button> -->
-          <!-- <el-button type="warning" @click="selectFormVisible = true">新增选择</el-button> -->
           <el-button v-if="submitType" type="primary" @click="nextParagraph">下一段</el-button>
           <el-button v-if="!submitType" type="primary" @click="modifyParagraphFun()">提交修改</el-button>
           <el-button type="success" @click="submitChapter">提交本章</el-button>
         </el-form-item>
       </el-form>
-      <!-- <el-dialog title="" :visible.sync="relationFormVisible" width="40%" @close="relationSelectClose">
-        <el-form label-width="80px">
-          <el-form-item label="搜索选择">
-            <el-input v-model="relationForm.searchTerms" placeholder="请输入关键字" class="input-with-select">
-              <el-button slot="append" icon="el-icon-search" @click="searchSelect" />
-            </el-input>
-          </el-form-item>
-          <el-form-item label="选择描述">
-            <div v-html="relationNote" />
-          </el-form-item>
-          <ul>
-            <li v-for="(item, index) in relationList" :key="index">
-              <el-form-item :label="item.labelName">
-                <span>{{ item.inputValue }}</span>
-                <el-button :ref="'btnStatus' + index" type="primary" style="margin-left: 20px;" @click="addRelatedParagraphs(item.inputValue, index)">新增关联段落</el-button>
-              </el-form-item>
-            </li>
-          </ul>
-          <el-form-item class="addSelectBox">
-            <el-button type="primary" @click="addParagraphFun('plural')">提交关联段落</el-button>
-          </el-form-item>
-        </el-form>
-      </el-dialog> -->
-      <!-- <el-dialog :title="dialogTitle" :visible.sync="addFormVisible" width="50%" @close="addRelationClose">
-        <tinymce ref="tinymce" v-model="relationParagraph" :height="200" />
-        <span slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="submitSelectText">提交</el-button>
-        </span>
-      </el-dialog> -->
-      <!-- <el-dialog title="新增选择" :visible.sync="selectFormVisible" width="40%" @close="newSelectClose">
-        <el-form label-width="80px">
-          <el-form-item label="选择描述">
-            <el-input v-model="selectForm.note" placeholder="用于关联选择时模糊搜索" />
-          </el-form-item>
-          <el-form-item label="选择类型">
-            <el-radio-group v-model="selectForm.selectType">
-              <el-radio :label="0">普通选择</el-radio>
-              <el-radio :label="1">重要抉择</el-radio>
-              <el-radio :label="2">bad-end 结局</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <ul>
-            <li v-for="(item, index) in selectInputList" :key="index">
-              <el-form-item :label="item.labelName">
-                <el-input v-model="item.inputValue" />
-              </el-form-item>
-            </li>
-          </ul>
-          <el-form-item class="addSelectBox">
-            <el-button type="primary" style="margin-right: 40px;" @click="addSelectInput">增加选项</el-button>
-            <el-button type="success" @click="submitSelect">提交选择</el-button>
-          </el-form-item>
-        </el-form>
-      </el-dialog> -->
     </el-main>
   </el-container>
 </template>
@@ -144,18 +87,10 @@ import { addChapter } from '@/api/chapter'
 import { modifyChapter } from '@/api/chapter'
 import { addParagraph } from '@/api/paragraph'
 import { modifyParagraph } from '@/api/paragraph'
-// import { newSelect } from '@/api/select'
-// import { searchSelect } from '@/api/select'
 
 export default {
   name: 'NewChapter',
   components: { Tinymce, TreeChart },
-  props: {
-    isRevise: {
-      type: Boolean,
-      default: false
-    }
-  },
   data() {
     return {
       // 树部分
@@ -184,38 +119,7 @@ export default {
       currentParagraph: '',
       currentParagraphID: 0,
       currentParagraphIndex: 0,
-      currentParagraphList: [],
       submitType: true
-      // 关联选项弹窗
-      // relationFormVisible: false,
-      // relationForm: {
-      //   searchTerms: ''
-      // },
-      // relationBtnStatus: 0,
-      // 新增关联选项的段落弹窗
-      // addFormVisible: false,
-      // dialogTitle: '',
-      // selectIndex: 0,
-      // relationParagraph: '',
-      // 新增选项弹窗
-      // selectFormVisible: false,
-      // selectForm: {
-      //   note: '',
-      //   selectType: 0
-      // },
-      // inputValue: '',
-      // selectInputList: [{
-      //   labelName: '选项一',
-      //   inputValue: ''
-      // },
-      // {
-      //   labelName: '选项二',
-      //   inputValue: ''
-      // }]
-      // 关联选择
-      // relationList: [],
-      // selectID: 0,
-      // relationNote: ''
     }
   },
   created() {
@@ -313,14 +217,10 @@ export default {
         }
       })
     },
-    addParagraphFun(type) { // 新增段落
+    addParagraphFun() { // 新增段落
       const paragraphParams = {
         chapter_id: this.chapterID,
         content: this.currentParagraph
-      }
-      if (type === 'plural') {
-        paragraphParams.content = this.currentParagraphList
-        paragraphParams.select_id = this.selectID
       }
       addParagraph(paragraphParams).then(res => { // 新增段落
         if (res.code === 20000) {
@@ -375,86 +275,12 @@ export default {
         }
       })
     },
-    // searchSelect() { // 搜索选项
-    //   const searchTerms = this.relationForm.searchTerms
-    //   searchSelect(searchTerms).then(res => {
-    //     if (res.code === 20000) {
-    //       if (res.data !== null) {
-    //         this.relationNote = res.data.note
-    //         this.relationList = res.data.options
-    //         this.selectID = res.data.select_id
-    //       } else {
-    //         this.$message({
-    //           type: 'warning',
-    //           message: res.msg
-    //         })
-    //       }
-    //     }
-    //   })
-    // },
-    // addRelatedParagraphs(titleText, index) { // 新增选项关联的段落
-    //   this.$refs['btnStatus' + index][0].$el.innerText = '修改关联段落'
-    //   this.dialogTitle = titleText
-    //   this.addFormVisible = true
-    //   this.selectIndex = index
-    //   this.$refs.tinymce.setContent(this.currentParagraphList[index] ? this.currentParagraphList[index] : '')
-    // },
-    // submitSelectText() { // 提交关联选项的段落
-    //   this.currentParagraphList[this.selectIndex] = this.relationParagraph
-    //   console.log(this.currentParagraphList)
-    //   this.addFormVisible = false
-    // },
-    // addRelationClose() { // 新增关联段落弹窗关闭事件
-    //   this.$refs.tinymce.setContent('')
-    // },
-    // relationSelectClose() { // 关联选择弹窗的关闭事件
-    //   this.relationList = []
-    // },
-    // addSelectInput() { // 增加选项方法
-    //   const selectInputNum = this.selectInputList.length
-    //   if (selectInputNum === 2) {
-    //     this.selectInputList.push({
-    //       labelName: '选项三',
-    //       inputValue: ''
-    //     })
-    //   } else if (selectInputNum === 3) {
-    //     this.selectInputList.push({
-    //       labelName: '选项四',
-    //       inputValue: ''
-    //     })
-    //   } else if (selectInputNum === 4) {
-    //     this.selectInputList.push({
-    //       labelName: '选项五',
-    //       inputValue: ''
-    //     })
-    //   }
-    // },
-    // submitSelect() { // 新增选择方法
-    //   const selectParams = {
-    //     note: this.selectForm.note, // 选择支的描述（用于关联选择时的模糊搜索）
-    //     type: this.selectForm.selectType, // 选择支的类型（一般选项、重要抉择、bad-end选项）
-    //     options: this.selectInputList
-    //   }
-    //   newSelect(selectParams).then(res => {
-    //     console.log(res.data)
-    //     if (res.code === 20000) {
-    //       this.selectFormVisible = false
-    //       this.$message({
-    //         type: 'success',
-    //         message: '新增选项成功！'
-    //       })
-    //     }
-    //   })
-    // },
-    // newSelectClose() { // 新增选择弹窗的关闭事件
-    //   this.selectInputList = this.selectInputList.slice(0, 2)
-    // },
     nextParagraph() { // 下一段按钮处理事件
-      this.addParagraphFun('single')
+      this.addParagraphFun()
     },
     submitChapter() { // 提交本章
       if (this.$refs.tinymce.value !== '') { // 如果富文本编辑器还有未提交的内容，则先提交段落
-        this.addParagraphFun('single')
+        this.addParagraphFun()
       } else {
         console.log(this.chapterID)
         const params = {

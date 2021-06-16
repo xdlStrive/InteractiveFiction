@@ -275,7 +275,8 @@ export default {
         console.log(item.selects === undefined)
         if (item.selects === undefined) { // 主线段落节点
           this.nodeList.push({
-            id: 'node' + (nodeNum++),
+            id: nodeNum++,
+            pid: item.paragraph_id,
             width: '100',
             height: '50',
             coordinate: JSON.parse(JSON.stringify(coordinates)),
@@ -286,8 +287,8 @@ export default {
           })
           this.linkList.push({
             id: 'link' + nodeNum,
-            startId: 'node' + (nodeNum - 1),
-            endId: 'node' + nodeNum,
+            startId: nodeNum - 1,
+            endId: nodeNum,
             startAt: [50, 50],
             endAt: [50, 0]
           })
@@ -300,7 +301,8 @@ export default {
             let paddingLeft = (428 / item.selects_key.length - 100) / 2
             coordinates[0] = paddingLeft + (428 / item.selects_key.length) * itemIndex
             this.nodeList.push({
-              id: 'node' + (nodeNum++),
+              id: nodeNum++,
+              pid: item.paragraph_id,
               width: '100',
               height: '50',
               coordinate: JSON.parse(JSON.stringify(coordinates)),
@@ -312,8 +314,8 @@ export default {
             itemIndex++
             this.linkList.push({
               id: 'link' + nodeNum,
-              startId: 'node' + (nodeNum - itemIndex - 1),
-              endId: 'node' + nodeNum,
+              startId: nodeNum - itemIndex - 1,
+              endId: nodeNum,
               startAt: [50, 50],
               endAt: [50, 0]
             })
@@ -324,13 +326,13 @@ export default {
       }
     },
     enterIntercept(formNode, toNode, graph) { // 限制连线进入节点
-      console.log(234)
       const formType = formNode.meta.prop
       if (formType === 'select') {
         const params = {
-          branch_id: formNode.id,
-          paragraph_id: toNode.id
+          branch_id: formNode.pid,
+          paragraph_id: toNode.pid
         }
+        console.log(params)
         modifyBranch(params).then(res => {
           console.log(res)
         })
