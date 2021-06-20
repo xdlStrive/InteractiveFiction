@@ -138,13 +138,6 @@ router.get('/oneChapter', (req, res) => {
         as: 'paragraph_list'
       }
     }, {
-      $lookup: {
-        from: 'selects',
-        localField: 'paragraph_list.select_id',
-        foreignField: 'select_id',
-        as: 'select'
-      }
-    },{
       $project: {
         _id: 0,
         chapter_id: 1,
@@ -154,8 +147,9 @@ router.get('/oneChapter', (req, res) => {
     }
   ], (err, doc) => {
     if (!err && doc) {
+      return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
+      
       const lengths = doc[0].paragraph_list.length
-
       new Promise((resolve, reject) => {
         async function getSelect(index, length) {
           const item = doc[0].paragraph_list[index]

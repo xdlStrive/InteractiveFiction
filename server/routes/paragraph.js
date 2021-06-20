@@ -6,6 +6,8 @@ const CounterModel = mongoose.model('counter');
 
 // 新增段落接口
 router.post('/add', (req, res) => {
+  console.log(req.body.selects_key)
+  console.log(req.body.selects)
   CounterModel.findOneAndUpdate({ counter_id: 'paragraph' }, {
     $inc: { counter_num: 1 }
   }, {

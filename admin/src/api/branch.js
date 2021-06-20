@@ -15,3 +15,11 @@ export function modifyBranch(data) {
     data
   })
 }
+
+export function fetchBranch(data) {
+  return request({
+    url: '/branch/fetch',
+    method: 'post',
+    data
+  })
+}

@@ -88,6 +88,7 @@ import SuperFlow from 'vue-super-flow'
 import 'vue-super-flow/lib/index.css'
 import { addBranch } from '@/api/branch'
 import { modifyBranch } from '@/api/branch'
+import { fetchBranch } from '@/api/branch'
 import { addParagraph } from '@/api/paragraph'
 import { modifyChapter } from '@/api/chapter'
 
@@ -269,13 +270,13 @@ export default {
     initChart(data) {
       console.log(data)
       this.nodeList = []
-      let nodeNum = 0
+
       let coordinates = [164, 0]
       for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
-        console.log(item.selects === undefined)
-        if (item.selects === undefined) { // 主线段落节点
+        let nodeNum = index
+        if (item.selects === undefined || item.selects.length === 0) { // 主线段落节点
           this.nodeList.push({
-            id: nodeNum++,
+            id: 'node' + item.paragraph_id,
             pid: item.paragraph_id,
             width: '100',
             height: '50',
@@ -285,23 +286,24 @@ export default {
               desc: item.content[0].substring(3, 15)
             }
           })
-          this.linkList.push({
-            id: 'link' + nodeNum,
-            startId: nodeNum - 1,
-            endId: nodeNum,
-            startAt: [50, 50],
-            endAt: [50, 0]
-          })
-          coordinates[1] = 80 * ++index
+          coordinates[1] = 80 * ++nodeNum
+          if (index !== 0) {
+            this.linkList.push({
+              id: 'link' + this.nodeList[index].pid,
+              startId: this.nodeList[index - 1] ? 'node' + this.nodeList[index - 1].pid : 'node' + this.nodeList[0].pid,
+              endId: 'node' + this.nodeList[index].pid,
+              startAt: [50, 50],
+              endAt: [50, 0]
+            })
+          }
         } else { // 选项段落节点
-          coordinates[1] = 80 * index++
-          let itemIndex = 0
-          for (let items of item.selects_key) {
-            console.log(items)
+          coordinates[1] = 80 * nodeNum++
+          for (let [indexs, items] of item.selects_key.entries()) {
+            console.log(item.selects[indexs])
             let paddingLeft = (428 / item.selects_key.length - 100) / 2
-            coordinates[0] = paddingLeft + (428 / item.selects_key.length) * itemIndex
+            coordinates[0] = paddingLeft + (428 / item.selects_key.length) * indexs
             this.nodeList.push({
-              id: nodeNum++,
+              id: 'node' + item.paragraph_id + '_' + indexs,
               pid: item.paragraph_id,
               width: '100',
               height: '50',
@@ -311,19 +313,27 @@ export default {
                 desc: items.substring(0, 15)
               }
             })
-            itemIndex++
-            this.linkList.push({
-              id: 'link' + nodeNum,
-              startId: nodeNum - itemIndex - 1,
-              endId: nodeNum,
-              startAt: [50, 50],
-              endAt: [50, 0]
+            fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
+              console.log(res)
+              let startId = 'node' + item.paragraph_id + '_' + indexs
+              for (let itemss of res.data.paragraph_list) {
+                this.linkList.push({
+                  id: 'link' + nodeNum,
+                  startId: startId,
+                  endId: 'node' + itemss.paragraph_id,
+                  startAt: [50, 50],
+                  endAt: [50, 0]
+                })
+                startId = itemss.paragraph_id
+              }
             })
           }
           coordinates[0] = 164
-          coordinates[1] = 80 * ++index
+          coordinates[1] = 80 * ++nodeNum
         }
       }
+      console.log(this.nodeList)
+      console.log(this.linkList)
     },
     enterIntercept(formNode, toNode, graph) { // 限制连线进入节点
       const formType = formNode.meta.prop
@@ -397,14 +407,13 @@ export default {
       }
     },
     submitSelect() { // 提交选择方法
-      this.addBranchs().then(value => {
-        const branchParams = {
+      this.addBranchs(this.selectForm.selectType).then(value => {
+        let branchParams = {
           chapter_id: this.chapterId,
           selectType: this.selectForm.selectType, // 选择支的类型（一般选项、重要抉择、bad-end选项）
           selects_key: value.inputValue,
           selects: value.branchIDArr
         }
-        console.log(branchParams)
         addParagraph(branchParams).then(res => {
           console.log(res)
           const paragraphsListArr = this.paragraphsList.map((val, index) => {
@@ -427,7 +436,7 @@ export default {
         })
       })
     },
-    async addBranchs() { // 保存分支
+    async addBranchs(type) { // 保存分支
       let params = {
         inputValue: [],
         branchIDArr: []
@@ -436,8 +445,7 @@ export default {
         params.inputValue[i] = this.selectInputList[i].inputValue
         let paddingLeft = (428 / this.selectInputList.length - 100) / 2
         let coordinate = [paddingLeft + (428 / this.selectInputList.length) * i, this.selectParams.coordinate[1]]
-        await addBranch().then(res => {
-          console.log(res)
+        await addBranch({ type: type }).then(res => {
           params.branchIDArr[i] = res.data.branch_id
           this.selectParams.graph.addNode({
             id: res.data.branch_id,
