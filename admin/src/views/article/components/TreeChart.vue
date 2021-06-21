@@ -316,7 +316,30 @@ export default {
             fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
               console.log(res)
               let startId = 'node' + item.paragraph_id + '_' + indexs
-              for (let itemss of res.data.paragraph_list) {
+              console.log(res.data.paragraph_list.length)
+              for (let [indexss, itemss] of res.data.paragraph_list.entries()) {
+                if (indexss + 1 !== res.data.paragraph_list.length) {
+                  this.nodeList.push({
+                    id: 'node' + itemss.paragraph_id,
+                    pid: itemss.paragraph_id,
+                    width: '100',
+                    height: '50',
+                    coordinate: JSON.parse(JSON.stringify(coordinates)),
+                    meta: {
+                      prop: 'paragraph',
+                      desc: itemss.content[0].substring(3, 15)
+                    }
+                  })
+                } else {
+                  this.linkList.push({
+                    id: 'link' + nodeNum,
+                    startId: startId,
+                    endId: 'node' + itemss.paragraph_id,
+                    startAt: [50, 50],
+                    endAt: [50, 0]
+                  })
+                }
+
                 this.linkList.push({
                   id: 'link' + nodeNum,
                   startId: startId,
