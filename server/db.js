@@ -78,7 +78,7 @@ const SelectSchema = new mongoose.Schema({
 // 分支模型
 const BranchSchema = new mongoose.Schema({
   branch_id: { type: Number, index: true, unique: true }, // 分支的id
-  type: String, // 分支的类型（一般选项、重要抉择、bad-end选项）
+  type: Number, // 分支的类型（一般选项、重要抉择、bad-end选项）
   members: [], // 分支包含的段落数组
   create_time: {
     type: Date,

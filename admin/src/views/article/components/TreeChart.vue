@@ -298,6 +298,7 @@ export default {
           }
         } else { // 选项段落节点
           coordinates[1] = 80 * nodeNum++
+          let previousNode = this.nodeList[this.nodeList.length - 1].id // 选项之前的段落节点
           for (let [indexs, items] of item.selects_key.entries()) {
             console.log(item.selects[indexs])
             let paddingLeft = (428 / item.selects_key.length - 100) / 2
@@ -313,27 +314,36 @@ export default {
                 desc: items.substring(0, 15)
               }
             })
+
+            this.linkList.push({
+              id: 'link' + nodeNum,
+              startId: previousNode,
+              endId: 'node' + item.paragraph_id + '_' + indexs,
+              startAt: [50, 50],
+              endAt: [50, 0]
+            })
             fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
               console.log(res)
               let startId = 'node' + item.paragraph_id + '_' + indexs
-              console.log(res.data.paragraph_list.length)
+              let parentCoordinates = this.nodeList.find(item => item.id === startId).coordinate // 选项的坐标
               for (let [indexss, itemss] of res.data.paragraph_list.entries()) {
-                if (indexss + 1 !== res.data.paragraph_list.length) {
+                if (this.nodeList.every((item) => item.pid !== itemss.paragraph_id)) {
                   this.nodeList.push({
                     id: 'node' + itemss.paragraph_id,
                     pid: itemss.paragraph_id,
                     width: '100',
                     height: '50',
-                    coordinate: JSON.parse(JSON.stringify(coordinates)),
+                    coordinate: [parentCoordinates[0], parentCoordinates[1] + 80], // 继承选项的x坐标，y坐标+80
                     meta: {
                       prop: 'paragraph',
                       desc: itemss.content[0].substring(3, 15)
                     }
                   })
-                } else {
-                  this.linkList.push({
+                }
+                if (indexss + 1 === res.data.paragraph_list.length) {
+                  this.linkList.push({ // 分支的最后一段，回归主线
                     id: 'link' + nodeNum,
-                    startId: startId,
+                    startId: 'node' + startId,
                     endId: 'node' + itemss.paragraph_id,
                     startAt: [50, 50],
                     endAt: [50, 0]

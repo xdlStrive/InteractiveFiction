@@ -21,14 +21,12 @@ router.post('/add', (req, res) => {
       console.log(err);
       return;
     }
-    console.log(doc.counter_num)
     new BranchModel({ // 新增分支
       branch_id: doc.counter_num,
       type: req.body.type,
       // members: req.body.members, // 分支包含段落数组
     }).save((err, docs) => {
       if (err) {
-        console.log('abc')
         console.log(err)
         return
       }
@@ -73,6 +71,7 @@ router.post('/fetch', (req, res) => {
       $project: {
         _id: 0,
         branch_id: 1,
+        type: 1,
         paragraph_list: 1
       }
     }
