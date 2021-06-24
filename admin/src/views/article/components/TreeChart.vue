@@ -270,10 +270,20 @@ export default {
     initChart(data) {
       console.log(data)
       this.nodeList = []
-
       let coordinates = [164, 0]
       for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
         let nodeNum = index
+        let previousNode
+        let previousCoordinate
+        if (this.nodeList.length > 1) {
+          previousNode = this.nodeList[this.nodeList.length - 1].id // 选项之前的段落节点
+          previousCoordinate = this.nodeList[this.nodeList.length - 1].coordinate
+          let childrenNum = this.nodeList[this.nodeList.length - 1].meta.children
+          coordinates = [previousCoordinate[0], previousCoordinate[1] + 80]
+          if (childrenNum) {
+            coordinates = [164, previousCoordinate[1] + 80 * childrenNum]
+          }
+        }
         if (item.selects === undefined || item.selects.length === 0) { // 主线段落节点
           this.nodeList.push({
             id: 'node' + item.paragraph_id,
@@ -281,13 +291,14 @@ export default {
             width: '100',
             height: '50',
             coordinate: JSON.parse(JSON.stringify(coordinates)),
+            // coordinate: coordinates,
             meta: {
               prop: 'paragraph',
               desc: item.content[0].substring(3, 15)
             }
           })
           coordinates[1] = 80 * ++nodeNum
-          if (index !== 0) {
+          if (index > 0) {
             this.linkList.push({
               id: 'link' + this.nodeList[index].pid,
               startId: this.nodeList[index - 1] ? 'node' + this.nodeList[index - 1].pid : 'node' + this.nodeList[0].pid,
@@ -297,10 +308,9 @@ export default {
             })
           }
         } else { // 选项段落节点
+          previousNode = this.nodeList[this.nodeList.length - 1].id
           coordinates[1] = 80 * nodeNum++
-          let previousNode = this.nodeList[this.nodeList.length - 1].id // 选项之前的段落节点
           for (let [indexs, items] of item.selects_key.entries()) {
-            console.log(item.selects[indexs])
             let paddingLeft = (428 / item.selects_key.length - 100) / 2
             coordinates[0] = paddingLeft + (428 / item.selects_key.length) * indexs
             this.nodeList.push({
@@ -311,7 +321,8 @@ export default {
               coordinate: JSON.parse(JSON.stringify(coordinates)),
               meta: {
                 prop: 'select',
-                desc: items.substring(0, 15)
+                desc: items.substring(0, 15),
+                children: item.selects_key.length
               }
             })
 
@@ -323,7 +334,6 @@ export default {
               endAt: [50, 0]
             })
             fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
-              console.log(res)
               let startId = 'node' + item.paragraph_id + '_' + indexs
               let parentCoordinates = this.nodeList.find(item => item.id === startId).coordinate // 选项的坐标
               for (let [indexss, itemss] of res.data.paragraph_list.entries()) {

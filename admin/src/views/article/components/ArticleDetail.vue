@@ -227,7 +227,7 @@ export default {
           this.paragraphList.push(res.data)
           this.$refs.tinymce.setContent('')
           this.paragraphIDList.push(res.data.paragraph_id)
-          this.fetchChapter(res.data.chapter_id)
+          console.log(this.paragraphIDList)
           this.$message({
             type: 'success',
             message: '新增段落成功！'
@@ -241,6 +241,7 @@ export default {
         }
         modifyChapter(params).then(res => {
           if (res.code === 20000) {
+            this.fetchChapter(res.data.chapter_id)
             this.$message({
               type: 'success',
               message: res.msg
