@@ -343,6 +343,31 @@ export default {
     border: 1px solid #C0C4CC;
     overflow-y: scroll;
   }
+  .textListBox::-webkit-scrollbar {
+    width: 10px;
+    height: 1px;
+  }
+  .textListBox::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 10px;
+    background: skyblue;
+    background-image: -webkit-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.2) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.2) 75%,
+      transparent 75%,
+      transparent
+  );
+  }
+  .textListBox::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    background: #ededed;
+  }
   .previewItems {
     margin-bottom: 10px;
     display: flex;

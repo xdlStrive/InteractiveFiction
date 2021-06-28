@@ -176,14 +176,27 @@ export default {
                 })
               }
             }
-          },
-          {
+          }, {
             label: '选项节点',
             disable: false,
             selected: (graph, coordinate) => {
               this.selectFormVisible = true
               this.selectParams.graph = graph
               this.selectParams.coordinate = coordinate
+            }
+          }, {
+            label: '分支段落节点',
+            disable: false,
+            selected: (graph, coordinate) => {
+              graph.addNode({
+                width: 100,
+                height: 50,
+                coordinate: coordinate,
+                meta: {
+                  prop: 'branch',
+                  name: '分支段落节点'
+                }
+              })
             }
           }
         ],
@@ -270,6 +283,7 @@ export default {
     initChart(data) {
       console.log(data)
       this.nodeList = []
+      let nodeArr = []
       let coordinates = [164, 0]
       for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
         let nodeNum = index
@@ -291,22 +305,30 @@ export default {
             width: '100',
             height: '50',
             coordinate: JSON.parse(JSON.stringify(coordinates)),
-            // coordinate: coordinates,
             meta: {
               prop: 'paragraph',
-              desc: item.content[0].substring(3, 15)
+              index: this.nodeList.length,
+              desc: item.paragraph_id + item.content[0].substring(3, 15)
             }
           })
           coordinates[1] = 80 * ++nodeNum
-          if (index > 0) {
+          console.log(this.nodeList[index])
+          console.log(item.paragraph_id)
+
+          if (index > 0 && this.nodeList[index].meta.prop !== 'select') {
+            let a = this.nodeList.filter(item => item.pid === item.paragraph_id)
+            // 找到当前的index
+            console.log(a)
+            console.log(nodeArr)
             this.linkList.push({
-              id: 'link' + this.nodeList[index].pid,
-              startId: this.nodeList[index - 1] ? 'node' + this.nodeList[index - 1].pid : 'node' + this.nodeList[0].pid,
-              endId: 'node' + this.nodeList[index].pid,
+              id: 'link' + item.paragraph_id,
+              startId: 'node' + nodeArr[nodeArr.length - 1],
+              endId: 'node' + item.paragraph_id,
               startAt: [50, 50],
               endAt: [50, 0]
             })
           }
+          nodeArr.push(item.paragraph_id)
         } else { // 选项段落节点
           previousNode = this.nodeList[this.nodeList.length - 1].id
           coordinates[1] = 80 * nodeNum++
@@ -321,7 +343,7 @@ export default {
               coordinate: JSON.parse(JSON.stringify(coordinates)),
               meta: {
                 prop: 'select',
-                desc: items.substring(0, 15),
+                desc: item.paragraph_id + items.substring(0, 15),
                 children: item.selects_key.length
               }
             })
@@ -345,8 +367,8 @@ export default {
                     height: '50',
                     coordinate: [parentCoordinates[0], parentCoordinates[1] + 80], // 继承选项的x坐标，y坐标+80
                     meta: {
-                      prop: 'paragraph',
-                      desc: itemss.content[0].substring(3, 15)
+                      prop: 'branch',
+                      desc: itemss.paragraph_id + itemss.content[0].substring(3, 15)
                     }
                   })
                 }
@@ -360,13 +382,13 @@ export default {
                   })
                 }
 
-                this.linkList.push({
-                  id: 'link' + nodeNum,
-                  startId: startId,
-                  endId: 'node' + itemss.paragraph_id,
-                  startAt: [50, 50],
-                  endAt: [50, 0]
-                })
+                // this.linkList.push({
+                //   id: 'link' + nodeNum,
+                //   startId: 'node' + startId,
+                //   endId: 'node' + itemss.paragraph_id,
+                //   startAt: [50, 50],
+                //   endAt: [50, 0]
+                // })
                 startId = itemss.paragraph_id
               }
             })
@@ -380,7 +402,22 @@ export default {
     },
     enterIntercept(formNode, toNode, graph) { // 限制连线进入节点
       const formType = formNode.meta.prop
-      if (formType === 'select') {
+      const toType = toNode.meta.prop
+      if (formType === 'paragraph') {
+        let params = {
+          chapter_id: this.chapterId,
+          paragraph_list: this.paragraphsList
+        }
+        console.log(params)
+        // modifyChapter(params).then(res => {
+        //   if (res.code === 20000) {
+        //     this.$message({
+        //       type: 'success',
+        //       message: res.msg
+        //     })
+        //   }
+        // })
+      } else if (formType === 'select') {
         const params = {
           branch_id: formNode.pid,
           paragraph_id: toNode.pid
@@ -389,6 +426,19 @@ export default {
         modifyBranch(params).then(res => {
           console.log(res)
         })
+      } else if (formType === 'branch') {
+        if (toType === 'branch') {
+          const params = {
+            branch_id: formNode.pid,
+            paragraph_id: toNode.pid
+          }
+          console.log(params)
+          modifyBranch(params).then(res => {
+            console.log(res)
+          })
+        } else if (toType === 'paragraph') {
+          console.log(123)
+        }
       }
 
       switch (toNode.meta.prop) {
@@ -463,6 +513,7 @@ export default {
             return val.paragraph_id
           })
           paragraphsListArr.push(res.data.paragraph_id)
+          this.selectFormVisible = false
           const params = {
             chapter_id: this.chapterId,
             paragraph_list: paragraphsListArr
@@ -519,7 +570,33 @@ export default {
     height: calc(100vh - 70px);
   }
   .super-flow {
+    overflow-y: scroll;
     background-color: #fff;
+  }
+  .super-flow::-webkit-scrollbar {
+    width: 10px;
+    height: 1px;
+  }
+  .super-flow::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 10px;
+    background: skyblue;
+    background-image: -webkit-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.2) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.2) 75%,
+      transparent 75%,
+      transparent
+  );
+  }
+  .super-flow::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    background: #ededed;
   }
   .super-flow__node {
     border-radius: 3px;
@@ -534,5 +611,8 @@ export default {
   }
   .flow-node-select {
     border-bottom: 5px solid #67C23A;
+  }
+  .flow-node-branch {
+    border-bottom: 5px solid #ff9800;
   }
 </style>
