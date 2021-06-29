@@ -283,6 +283,7 @@ export default {
     initChart(data) {
       console.log(data)
       this.nodeList = []
+      this.linkList = []
       let nodeArr = []
       let coordinates = [164, 0]
       for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
@@ -316,10 +317,10 @@ export default {
           console.log(item.paragraph_id)
 
           if (index > 0 && this.nodeList[index].meta.prop !== 'select') {
-            let a = this.nodeList.filter(item => item.pid === item.paragraph_id)
-            // 找到当前的index
+            let a = this.nodeList.filter(items => items.pid === item.paragraph_id)
+            // 找到当前的index(主线段落连线似乎还有问题)想到的解决方案是给主线段落的mate里加个index，通过index找前一个主线段落
             console.log(a)
-            console.log(nodeArr)
+            // console.log(nodeArr)
             this.linkList.push({
               id: 'link' + item.paragraph_id,
               startId: 'node' + nodeArr[nodeArr.length - 1],
@@ -331,6 +332,7 @@ export default {
           nodeArr.push(item.paragraph_id)
         } else { // 选项段落节点
           previousNode = this.nodeList[this.nodeList.length - 1].id
+          console.log(nodeNum)
           coordinates[1] = 80 * nodeNum++
           for (let [indexs, items] of item.selects_key.entries()) {
             let paddingLeft = (428 / item.selects_key.length - 100) / 2
@@ -358,7 +360,7 @@ export default {
             fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
               let startId = 'node' + item.paragraph_id + '_' + indexs
               let parentCoordinates = this.nodeList.find(item => item.id === startId).coordinate // 选项的坐标
-              for (let [indexss, itemss] of res.data.paragraph_list.entries()) {
+              for (let itemss of res.data.paragraph_list) {
                 if (this.nodeList.every((item) => item.pid !== itemss.paragraph_id)) {
                   this.nodeList.push({
                     id: 'node' + itemss.paragraph_id,
@@ -372,24 +374,23 @@ export default {
                     }
                   })
                 }
-                if (indexss + 1 === res.data.paragraph_list.length) {
-                  this.linkList.push({ // 分支的最后一段，回归主线
-                    id: 'link' + nodeNum,
-                    startId: 'node' + startId,
-                    endId: 'node' + itemss.paragraph_id,
-                    startAt: [50, 50],
-                    endAt: [50, 0]
-                  })
-                }
-
-                // this.linkList.push({
-                //   id: 'link' + nodeNum,
-                //   startId: 'node' + startId,
-                //   endId: 'node' + itemss.paragraph_id,
-                //   startAt: [50, 50],
-                //   endAt: [50, 0]
-                // })
-                startId = itemss.paragraph_id
+                // if (indexss + 1 === res.data.paragraph_list.length) {
+                //   this.linkList.push({ // 分支的最后一段，回归主线
+                //     id: 'link' + nodeNum,
+                //     startId: startId,
+                //     endId: 'node' + itemss.paragraph_id,
+                //     startAt: [50, 50],
+                //     endAt: [50, 0]
+                //   })
+                // }
+                this.linkList.push({
+                  id: 'link' + nodeNum,
+                  startId: startId,
+                  endId: 'node' + itemss.paragraph_id,
+                  startAt: [50, 50],
+                  endAt: [50, 0]
+                })
+                startId = 'node' + itemss.paragraph_id
               }
             })
           }
