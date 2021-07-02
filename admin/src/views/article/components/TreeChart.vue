@@ -332,8 +332,7 @@ export default {
           nodeArr.push(item.paragraph_id)
         } else { // 选项段落节点
           previousNode = this.nodeList[this.nodeList.length - 1].id
-          console.log(nodeNum)
-          coordinates[1] = 80 * nodeNum++
+          coordinates[1] = this.nodeList[this.nodeList.length - 1].coordinate[1] + 80 // 获取上一个node节点的y坐标再加上80
           for (let [indexs, items] of item.selects_key.entries()) {
             let paddingLeft = (428 / item.selects_key.length - 100) / 2
             coordinates[0] = paddingLeft + (428 / item.selects_key.length) * indexs
@@ -500,7 +499,7 @@ export default {
         return
       }
     },
-    submitSelect() { // 提交选择方法
+    submitSelect() { // 提交选择方法（7/2：提交选择之后没有连线，y轴坐标有问题）
       this.addBranchs(this.selectForm.selectType).then(value => {
         let branchParams = {
           chapter_id: this.chapterId,
@@ -575,7 +574,7 @@ export default {
     background-color: #fff;
   }
   .super-flow::-webkit-scrollbar {
-    width: 10px;
+    width: 6px;
     height: 1px;
   }
   .super-flow::-webkit-scrollbar-thumb {

@@ -344,7 +344,7 @@ export default {
     overflow-y: scroll;
   }
   .textListBox::-webkit-scrollbar {
-    width: 10px;
+    width: 6px;
     height: 1px;
   }
   .textListBox::-webkit-scrollbar-thumb {
