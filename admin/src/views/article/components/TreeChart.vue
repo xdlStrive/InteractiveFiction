@@ -302,12 +302,12 @@ export default {
         if (item.selects === undefined || item.selects.length === 0) { // 主线段落节点
           this.nodeList.push({
             id: 'node' + item.paragraph_id,
-            pid: item.paragraph_id,
             width: '100',
             height: '50',
             coordinate: JSON.parse(JSON.stringify(coordinates)),
             meta: {
               prop: 'paragraph',
+              pid: item.paragraph_id,
               index: this.nodeList.length,
               desc: item.paragraph_id + item.content[0].substring(3, 15)
             }
@@ -317,8 +317,8 @@ export default {
           console.log(item.paragraph_id)
 
           if (index > 0 && this.nodeList[index].meta.prop !== 'select') {
-            let a = this.nodeList.filter(items => items.pid === item.paragraph_id)
-            // 找到当前的index(主线段落连线似乎还有问题)想到的解决方案是给主线段落的mate里加个index，通过index找前一个主线段落
+            let a = this.nodeList.filter(items => items.meta.pid === item.paragraph_id)
+            // 找到当前的index(主线段落连线似乎还有问题)想到的解决方案是给主线段落的meta里加个index，通过index找前一个主线段落
             console.log(a)
             // console.log(nodeArr)
             this.linkList.push({
@@ -338,12 +338,13 @@ export default {
             coordinates[0] = paddingLeft + (428 / item.selects_key.length) * indexs
             this.nodeList.push({
               id: 'node' + item.paragraph_id + '_' + indexs,
-              pid: item.paragraph_id,
               width: '100',
               height: '50',
               coordinate: JSON.parse(JSON.stringify(coordinates)),
               meta: {
                 prop: 'select',
+                pid: item.paragraph_id,
+                bid: item.selects[indexs],
                 desc: item.paragraph_id + items.substring(0, 15),
                 children: item.selects_key.length
               }
@@ -363,12 +364,12 @@ export default {
                 if (this.nodeList.every((item) => item.pid !== itemss.paragraph_id)) {
                   this.nodeList.push({
                     id: 'node' + itemss.paragraph_id,
-                    pid: itemss.paragraph_id,
                     width: '100',
                     height: '50',
                     coordinate: [parentCoordinates[0], parentCoordinates[1] + 80], // 继承选项的x坐标，y坐标+80
                     meta: {
                       prop: 'branch',
+                      pid: itemss.paragraph_id,
                       desc: itemss.paragraph_id + itemss.content[0].substring(3, 15)
                     }
                   })
@@ -400,7 +401,7 @@ export default {
       console.log(this.nodeList)
       console.log(this.linkList)
     },
-    enterIntercept(formNode, toNode, graph) { // 限制连线进入节点
+    enterIntercept(formNode, toNode, graph) { // 连线处理事件
       const formType = formNode.meta.prop
       const toType = toNode.meta.prop
       if (formType === 'paragraph') {
@@ -419,20 +420,21 @@ export default {
         // })
       } else if (formType === 'select') {
         const params = {
-          branch_id: formNode.pid,
-          paragraph_id: toNode.pid
+          branch_id: formNode.meta.bid,
+          paragraph_id: toNode.meta.pid
         }
         console.log(params)
+        console.log(formNode)
         modifyBranch(params).then(res => {
           console.log(res)
         })
       } else if (formType === 'branch') {
         if (toType === 'branch') {
           const params = {
-            branch_id: formNode.pid,
-            paragraph_id: toNode.pid
+            branch_id: formNode.meta.pid,
+            paragraph_id: toNode.meta.pid
           }
-          console.log(params)
+          console.log(formNode)
           modifyBranch(params).then(res => {
             console.log(res)
           })

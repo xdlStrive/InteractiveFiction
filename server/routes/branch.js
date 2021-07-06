@@ -41,6 +41,8 @@ router.post('/add', (req, res) => {
 
 // 修改分支
 router.post('/modify', (req, res) => {
+  console.log(req.body.branch_id)
+  console.log(req.body.paragraph_id)
   BranchModel.findOneAndUpdate({ branch_id: req.body.branch_id }, {
     $push: {
       members: req.body.paragraph_id
@@ -49,7 +51,7 @@ router.post('/modify', (req, res) => {
     if (err) {
       res.json({ code: 20000, msg: err })
     }
-    res.json({ code: 20000, msg: '修改段落成功！', data: doc })
+    res.json({ code: 20000, msg: '修改分支成功！', data: doc })
   })
 })
 
