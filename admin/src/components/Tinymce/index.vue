@@ -19,7 +19,7 @@ import load from './dynamicLoadScript'
 // import { postArticleImg } from '@/api/article.js'
 
 // why use this cdn, detail see https://github.com/PanJiaChen/tinymce-all-in-one
-const tinymceCDN = 'https://cdn.jsdelivr.net/npm/tinymce-all-in-one@4.9.3/tinymce.min.js'
+const tinymceCDN = 'https://cdn.jsdelivr.net/npm/tinymce@5.8.2/tinymce.min.js'
 
 export default {
   name: 'Tinymce',
@@ -119,6 +119,7 @@ export default {
       window.tinymce.init({
         selector: `#${this.tinymceId}`,
         language: this.languageTypeList['zh'],
+        language_url: 'https://cdn.jsdelivr.net/npm/tinymce-lang/langs/zh_CN.js', // site absolute URL
         height: this.height,
         body_class: 'panel-body ',
         branding: false,

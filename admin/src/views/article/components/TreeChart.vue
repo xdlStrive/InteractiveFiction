@@ -188,13 +188,30 @@ export default {
             label: '分支段落节点',
             disable: false,
             selected: (graph, coordinate) => {
-              graph.addNode({
-                width: 100,
-                height: 50,
-                coordinate: coordinate,
-                meta: {
-                  prop: 'branch',
-                  name: '分支段落节点'
+              const paragraphParams = {
+                chapter_id: this.chapterId,
+                content: ''
+              }
+              addParagraph(paragraphParams).then(res => { // 新增段落
+                if (res.code === 20000) {
+                  this.$parent.$parent.$parent.paragraphList.push(res.data)
+                  this.$parent.$parent.$parent.$refs.tinymce.setContent('分支段落')
+                  console.log(this.$parent.$parent.$parent.$refs.tinymce)
+                  this.$parent.$parent.$parent.paragraphIDList.push(res.data.paragraph_id)
+                  this.$message({
+                    type: 'success',
+                    message: '新增段落成功！'
+                  })
+                  graph.addNode({
+                    width: 100,
+                    height: 50,
+                    coordinate: coordinate,
+                    meta: {
+                      prop: 'branch',
+                      pid: res.data.paragraph_id,
+                      name: '分支段落节点'
+                    }
+                  })
                 }
               })
             }
@@ -218,6 +235,14 @@ export default {
             },
             selected: (node, coordinate) => {
               this.drawerConf.open(drawerType.node, node)
+            }
+          }
+        ], [
+          {
+            label: '编辑段落',
+            selected: (node, coordinate) => {
+              console.log(node)
+              this.$parent.$parent.$parent.$refs.tinymce.setContent('分支段落')
             }
           }
         ], [
@@ -279,8 +304,9 @@ export default {
       this.linkList = linkList
     }, 100)
   },
+  /* 8/22问题：分支段落循环加载有问题389以下，新增分支段落后如何提交段落内容 */
   methods: {
-    initChart(data) {
+    initChart(data) { // 初始化流程图
       console.log(data)
       this.nodeList = []
       this.linkList = []
@@ -369,6 +395,7 @@ export default {
                     coordinate: [parentCoordinates[0], parentCoordinates[1] + 80], // 继承选项的x坐标，y坐标+80
                     meta: {
                       prop: 'branch',
+                      bid: item.selects[indexs],
                       pid: itemss.paragraph_id,
                       desc: itemss.paragraph_id + itemss.content[0].substring(3, 15)
                     }
@@ -428,10 +455,10 @@ export default {
         modifyBranch(params).then(res => {
           console.log(res)
         })
-      } else if (formType === 'branch') {
+      } else if (formType === 'branch') { // 分支段落起点
         if (toType === 'branch') {
           const params = {
-            branch_id: formNode.meta.pid,
+            branch_id: formNode.meta.bid,
             paragraph_id: toNode.meta.pid
           }
           console.log(formNode)
@@ -439,7 +466,7 @@ export default {
             console.log(res)
           })
         } else if (toType === 'paragraph') {
-          console.log(123)
+          console.log(1233)
         }
       }
 

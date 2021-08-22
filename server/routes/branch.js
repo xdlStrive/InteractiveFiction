@@ -44,7 +44,7 @@ router.post('/modify', (req, res) => {
   console.log(req.body.branch_id)
   console.log(req.body.paragraph_id)
   BranchModel.findOneAndUpdate({ branch_id: req.body.branch_id }, {
-    $push: {
+    $addToSet: {
       members: req.body.paragraph_id
     }
   }, { new: true }, (err, doc) => {
