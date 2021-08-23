@@ -121,7 +121,7 @@ export default {
         language: this.languageTypeList['zh'],
         language_url: 'https://cdn.jsdelivr.net/npm/tinymce-lang/langs/zh_CN.js', // site absolute URL
         height: this.height,
-        body_class: 'panel-body ',
+        body_class: 'panel-body',
         branding: false,
         object_resizing: false,
         toolbar: this.toolbar.length > 0 ? this.toolbar : toolbar,
@@ -232,6 +232,10 @@ export default {
 }
 .tinymce-container>>>.mce-fullscreen {
   z-index: 10000;
+}
+.panel-body {
+  border: 2px solid #ff0000;
+  box-shadow: 0 0 5px #ff0000;
 }
 .tinymce-textarea {
   visibility: hidden;

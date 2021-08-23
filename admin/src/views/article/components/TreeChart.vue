@@ -195,8 +195,13 @@ export default {
               addParagraph(paragraphParams).then(res => { // 新增段落
                 if (res.code === 20000) {
                   this.$parent.$parent.$parent.paragraphList.push(res.data)
-                  this.$parent.$parent.$parent.$refs.tinymce.setContent('分支段落')
-                  console.log(this.$parent.$parent.$parent.$refs.tinymce)
+                  // this.$parent.$parent.$parent.$refs.tinymce.setContent('分支段落')
+                  this.$parent.$parent.$parent.$refs.tinymce.init({
+                    selector: 'textarea',
+                    body_class: 'branch-class',
+                    placeholder: '分支段落'
+                  })
+                  console.log('this.$parent.$parent.$parent.$refs.tinymce')
                   this.$parent.$parent.$parent.paragraphIDList.push(res.data.paragraph_id)
                   this.$message({
                     type: 'success',
@@ -242,7 +247,16 @@ export default {
             label: '编辑段落',
             selected: (node, coordinate) => {
               console.log(node)
-              this.$parent.$parent.$parent.$refs.tinymce.setContent('分支段落')
+              // this.$parent.$parent.$parent.$refs.tinymce.setContent('分支段落')
+              // console.log('this.$parent.$parent.$parent.$refs.tinymce')
+              console.log(this.$parent.$parent.$parent.$refs.tinymce)
+              this.$parent.$parent.$parent.submitBranch = true
+              this.$parent.$parent.$parent.submitBranchID = node.meta.pid
+              this.$parent.$parent.$parent.$refs.tinymce.init({
+                selector: 'textarea',
+                body_class: 'branch-class',
+                placeholder: 'placeholder'
+              })
             }
           }
         ], [
@@ -386,13 +400,14 @@ export default {
             fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
               let startId = 'node' + item.paragraph_id + '_' + indexs
               let parentCoordinates = this.nodeList.find(item => item.id === startId).coordinate // 选项的坐标
-              for (let itemss of res.data.paragraph_list) {
+              for (let [index, itemss] of res.data.paragraph_list.entries()) {
                 if (this.nodeList.every((item) => item.pid !== itemss.paragraph_id)) {
+                  console.log(index + 1)
                   this.nodeList.push({
                     id: 'node' + itemss.paragraph_id,
                     width: '100',
                     height: '50',
-                    coordinate: [parentCoordinates[0], parentCoordinates[1] + 80], // 继承选项的x坐标，y坐标+80
+                    coordinate: [parentCoordinates[0], parentCoordinates[1] + 80 * (index + 1)], // 继承选项的x坐标，y坐标+80
                     meta: {
                       prop: 'branch',
                       bid: item.selects[indexs],
@@ -594,6 +609,9 @@ export default {
 </script>
 
 <style>
+  .branch-class {
+    box-shadow: 0 0 5px #ff0000;
+  }
   #left-chart-box {
     width: 450px;
     height: calc(100vh - 70px);

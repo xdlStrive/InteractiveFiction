@@ -69,6 +69,7 @@
         <el-form-item class="articleBtnGroup">
           <el-button v-if="submitType" type="primary" @click="nextParagraph">下一段</el-button>
           <el-button v-if="!submitType" type="primary" @click="modifyParagraphFun()">提交修改</el-button>
+          <el-button v-if="submitBranch" type="info" @click="submitBranchParagraphFun()">提交分支</el-button>
           <el-button type="success" @click="submitChapter">提交本章</el-button>
         </el-form-item>
       </el-form>
@@ -119,7 +120,9 @@ export default {
       currentParagraph: '',
       currentParagraphID: 0,
       currentParagraphIndex: 0,
-      submitType: true
+      submitType: true,
+      submitBranch: false,
+      submitBranchID: 0
     }
   },
   created() {
@@ -275,6 +278,28 @@ export default {
           })
         }
       })
+    },
+    submitBranchParagraphFun() { // 提交分支段落
+      if (this.submitBranchID !== 0 && this.submitBranchID !== null) {
+        const params = {
+          paragraph_id: this.submitBranchID,
+          index: this.currentParagraphIndex,
+          content: this.$refs.tinymce.value
+        }
+        modifyParagraph(params).then(res => {
+          if (res.code === 20000) {
+            console.log(res)
+            this.submitType = true
+            this.$refs.tinymce.setContent('')
+            this.fetchChapter(res.data.chapter_id) // 刷新章节预览列表
+            this.$message({
+              type: 'success',
+              message: res.msg
+            })
+          }
+        })
+        this.submitBranch = false
+      }
     },
     nextParagraph() { // 下一段按钮处理事件
       this.addParagraphFun()
