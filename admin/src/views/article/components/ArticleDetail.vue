@@ -194,7 +194,6 @@ export default {
           this.editTextVisible = true
           this.chapterTitle = res.data.title
           this.paragraphList = res.data.paragraph_list
-          console.log(this.paragraphList)
           this.$refs.treeChart.initChart(this.paragraphList)
         }
       })
@@ -230,7 +229,6 @@ export default {
           this.paragraphList.push(res.data)
           this.$refs.tinymce.setContent('')
           this.paragraphIDList.push(res.data.paragraph_id)
-          console.log(this.paragraphIDList)
           this.$message({
             type: 'success',
             message: '新增段落成功！'

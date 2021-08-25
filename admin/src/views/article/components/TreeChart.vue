@@ -318,13 +318,10 @@ export default {
       this.linkList = linkList
     }, 100)
   },
-  /* 8/22问题：分支段落循环加载有问题389以下，新增分支段落后如何提交段落内容 */
   methods: {
     initChart(data) { // 初始化流程图
-      console.log(data)
       this.nodeList = []
       this.linkList = []
-      let nodeArr = []
       let coordinates = [164, 0]
       for (let [index, item] of data.entries()) { // for of 数组时无法取到index，所以需要调用数组的entries方法
         let nodeNum = index
@@ -353,23 +350,19 @@ export default {
             }
           })
           coordinates[1] = 80 * ++nodeNum
-          console.log(this.nodeList[index])
-          console.log(item.paragraph_id)
 
-          if (index > 0 && this.nodeList[index].meta.prop !== 'select') {
-            let a = this.nodeList.filter(items => items.meta.pid === item.paragraph_id)
+          let a = this.nodeList.filter(items => items.meta.pid === item.paragraph_id)
+          let prevNodeIndex = a[0].meta.index - 1
+          if (index > 0 && this.nodeList[prevNodeIndex].meta.prop !== 'select') {
             // 找到当前的index(主线段落连线似乎还有问题)想到的解决方案是给主线段落的meta里加个index，通过index找前一个主线段落
-            console.log(a)
-            // console.log(nodeArr)
             this.linkList.push({
               id: 'link' + item.paragraph_id,
-              startId: 'node' + nodeArr[nodeArr.length - 1],
+              startId: 'node' + this.nodeList[prevNodeIndex].meta.pid,
               endId: 'node' + item.paragraph_id,
               startAt: [50, 50],
               endAt: [50, 0]
             })
           }
-          nodeArr.push(item.paragraph_id)
         } else { // 选项段落节点
           previousNode = this.nodeList[this.nodeList.length - 1].id
           coordinates[1] = this.nodeList[this.nodeList.length - 1].coordinate[1] + 80 // 获取上一个node节点的y坐标再加上80
@@ -399,15 +392,15 @@ export default {
             })
             fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
               let startId = 'node' + item.paragraph_id + '_' + indexs
+              let paragraphListNum = res.data.paragraph_list.length
               let parentCoordinates = this.nodeList.find(item => item.id === startId).coordinate // 选项的坐标
-              for (let [index, itemss] of res.data.paragraph_list.entries()) {
+              for (let [indexss, itemss] of res.data.paragraph_list.entries()) {
                 if (this.nodeList.every((item) => item.pid !== itemss.paragraph_id)) {
-                  console.log(index + 1)
                   this.nodeList.push({
                     id: 'node' + itemss.paragraph_id,
                     width: '100',
                     height: '50',
-                    coordinate: [parentCoordinates[0], parentCoordinates[1] + 80 * (index + 1)], // 继承选项的x坐标，y坐标+80
+                    coordinate: [parentCoordinates[0], parentCoordinates[1] + 80 * (indexss + 1)], // 继承选项的x坐标，y坐标+80
                     meta: {
                       prop: 'branch',
                       bid: item.selects[indexs],
@@ -416,15 +409,15 @@ export default {
                     }
                   })
                 }
-                // if (indexss + 1 === res.data.paragraph_list.length) {
-                //   this.linkList.push({ // 分支的最后一段，回归主线
-                //     id: 'link' + nodeNum,
-                //     startId: startId,
-                //     endId: 'node' + itemss.paragraph_id,
-                //     startAt: [50, 50],
-                //     endAt: [50, 0]
-                //   })
-                // }
+                if (indexss + 1 === paragraphListNum) { // 分支的最后一段，回归主线
+                  this.linkList.push({
+                    id: 'link' + nodeNum,
+                    startId: 'node' + res.data.paragraph_list[paragraphListNum - 1].paragraph_id,
+                    endId: 'node' + data[index + 1].paragraph_id,
+                    startAt: [50, 50],
+                    endAt: [50, 0]
+                  })
+                }
                 this.linkList.push({
                   id: 'link' + nodeNum,
                   startId: startId,
@@ -481,7 +474,7 @@ export default {
             console.log(res)
           })
         } else if (toType === 'paragraph') {
-          console.log(1233)
+          console.log(toNode)
         }
       }
 
