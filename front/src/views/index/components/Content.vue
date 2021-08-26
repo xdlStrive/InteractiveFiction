@@ -17,6 +17,7 @@
 import { ElScrollbar, ElMessage } from 'element-plus'
 // import EasyTyper from 'easy-typer-js'
 import { fetchOneChapter } from '@/api/chapter'
+import { fetchBranch } from '@/api/branch'
 import SelectLayer from './SelectLayer'
 // import { h } from 'vue';
 
@@ -51,15 +52,25 @@ export default {
   },
 	watch: {
 		selectIndex(val) {
-      const index = this.currentParagraphID,
-        currentData = this.chapterDataList[index]
+      const currentParagraphIndex = this.currentParagraphID,
+        currentData = this.chapterDataList[currentParagraphIndex]
 
-      this.chapterList.push(currentData.content[val])
+      fetchBranch({branch_id: val}).then((res) => {
+        console.log(res)
+        res.data.paragraph_list.forEach((item, index) => {
+          console.log(item.content[0])
+          this.chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
+        })
+        
+        // console.log(this.chapterList)
+      })
+
+      // this.chapterList.push(currentData.content[val])
       this.currentParagraphID += 1
       this.$nextTick(() => {
-        this.$refs[`listItemBox${index}`].style.display = 'block'
-        this.$refs[`listItemBox${index}`].scrollTop = 100
-        this.$refs[`listItemBox${index}`].scrollIntoView({
+        this.$refs[`listItemBox${currentParagraphIndex}`].style.display = 'block'
+        this.$refs[`listItemBox${currentParagraphIndex}`].scrollTop = 100
+        this.$refs[`listItemBox${currentParagraphIndex}`].scrollIntoView({
           block: 'end',
           behavior: 'smooth'
         })
@@ -75,22 +86,22 @@ export default {
     initLoad() {
       fetchOneChapter({ chapter_id: '2' }).then(res => {
         const { chapter_id, paragraph_list, title } = res.data
+        console.log(paragraph_list)
         this.chapterTitle = title
         this.chapterDataList = paragraph_list
-				// this.chapterDataList.forEach((item, index) => {
-        // this.chapterList.push(item.content)
-				// 	// if (item.content.length === 1) { // 普通段落
-				// 	// 	this.chapterList.push(item.content)
-				// 	// } else if (item.content.length > 1) { // 带选项的段落
-				// 	// 	this.currentSelect = {
-				// 	// 		select: item.select_id,
-				// 	// 		content: item.content
-				// 	// 	}
-        //   //   this.chapterList = this.chapterList.concat(item.content) // 合并数组
-				// 	// }
-				// })
-        // console.log(this.chapterList)
-        this.loadParagraph()
+				this.chapterDataList.forEach((item, index) => {
+					if (item.content.length === 1) { // 普通段落
+						this.chapterList.push(item.content)
+					} else if (item.selects.length > 1) { // 带选项的段落
+						this.currentSelect = {
+							select: item.selects,
+							content: item.selects_key
+						}
+            this.chapterList = this.chapterList.concat(item.content) // 合并数组
+					}
+				})
+        console.log(this.chapterList)
+        this.loadParagraph() // 自动加载第一段
       })
     },
     // 加载段落
@@ -110,12 +121,12 @@ export default {
               behavior: 'smooth'
             })
           })
-        } else if (currentData.content.length > 1) {
+        } else if (currentData.selects.length > 1) {
           this.currentSelect = {
-            select: currentData.select_id,
-            content: currentData.content
+            select: currentData.selects,
+            content: currentData.selects_key
           }
-          console.log(this.currentSelect)
+          console.log(123123)
           this.selectVisible = true // 显示选择弹框
           // 根据选择的结果加载对应的段落
         }

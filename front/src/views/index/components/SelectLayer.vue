@@ -9,7 +9,7 @@
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     >
-      <el-button v-for="(item, index) in selectItem.select" :key="index" class="select-item" @click="handleSelect(index)">{{item.inputValue}}</el-button>
+      <el-button v-for="(item, index) in selectItem.content" :key="index" class="select-item" @click="handleSelect(index)">{{item}}</el-button>
     </el-dialog>
   </div>
 </template>
@@ -32,7 +32,7 @@ export default {
   },
   methods: {
     handleSelect(index) {
-      this.$emit('update:selectIndex', index)
+      this.$emit('update:selectIndex', this.selectItem.select[index])
     }
   }
 }

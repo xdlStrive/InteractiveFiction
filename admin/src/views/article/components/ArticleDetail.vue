@@ -64,7 +64,7 @@
           </div>
         </el-form-item>
         <el-form-item label="" class="editArea">
-          <tinymce ref="tinymce" v-model="currentParagraph" :height="200" />
+          <tinymce ref="tinymce" v-model="currentParagraph" :height="260" />
         </el-form-item>
         <el-form-item class="articleBtnGroup">
           <el-button v-if="submitType" type="primary" @click="nextParagraph">下一段</el-button>
@@ -361,7 +361,7 @@ export default {
     width: 100%;
   }
   .textListBox {
-    height: 470px;
+    height: 550px;
     padding: 10px;
     border: 1px solid #C0C4CC;
     overflow-y: scroll;
