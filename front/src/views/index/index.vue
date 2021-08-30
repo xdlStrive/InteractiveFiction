@@ -1,19 +1,21 @@
 <!-- 主页 -->
 <template>
   <div class="page-box">
+    <Navigation />
     <Content />
   </div>
 </template>
 
 <script>
 // import { ElScrollbar, ElMessage } from 'element-plus'
-// import EasyTyper from 'easy-typer-js'
 // import { fetchOneChapter } from '@/api/chapter'
+import Navigation from '@/components/Navigation'
 import Content from './components/Content'
 // import { h } from 'vue';
 
 export default {
 	components: {
+    Navigation,
     Content
   },
   data () {

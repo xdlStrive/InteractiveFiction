@@ -1,17 +1,12 @@
 <template>
-  <Navigation />
-  <div class="componentsBox">
+  <div class="app">
     <router-view />
   </div>
 </template>
 
 <script>
-import Navigation from '@/components/Navigation'
 export default {
-  name: 'App',
-  components: {
-    Navigation
-  }
+  name: 'App'
 }
 </script>
 
@@ -26,7 +21,7 @@ ul,li {
 html, body, #app {
   height: 100%;
 }
-.componentsBox {
+.app {
   height: calc(100% - 61px);
 }
 </style>

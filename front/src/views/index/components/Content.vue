@@ -2,6 +2,10 @@
 <template>
   <div class="content-box">
     <!-- <h3>{{chapterTitle}}</h3> -->
+    <vue-typed-js :strings="['First text', 'Second Text']">
+      <h1 class="typing">这是测试打字机文字</h1>
+    </vue-typed-js>
+    <div class="abc">{{ obj.output }}</div>
     <el-scrollbar @click="loadParagraph()" ref="textBox" class="text-box">
         <div class="list-placeholder-box" style="display: block"></div>
         <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
@@ -9,17 +13,16 @@
         <div class="list-placeholder-box" style="display: block"></div>
         <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
     </el-scrollbar>
+    
 		<SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" />
   </div>
 </template>
 
 <script>
 import { ElScrollbar, ElMessage } from 'element-plus'
-// import EasyTyper from 'easy-typer-js'
 import { fetchOneChapter } from '@/api/chapter'
 import { fetchBranch } from '@/api/branch'
 import SelectLayer from './SelectLayer'
-// import { h } from 'vue';
 
 export default {
 	components: {
@@ -48,7 +51,20 @@ export default {
 			selectVisible: false,
 			selectIndex: null,
       paragraphHeight: 0,
+      obj: {
+        output: '',
+        type: 'normal',
+        isEnd: true,
+        speed: 800,
+        backSpeed: 800,
+        sleep: 500,
+        singleBack: false,
+        sentencePause: false
+      }
     };
+  },
+  mounted() {
+    console.log(213)
   },
 	watch: {
 		selectIndex(val) {
@@ -110,7 +126,7 @@ export default {
         currentData = this.chapterDataList[index]
       
       if (index < this.chapterDataList.length) {
-        if (currentData.content.length === 1) {
+        if (currentData.selects.length === 0) { // 普通段落
           this.chapterList.push(currentData.content)
           this.currentParagraphID += 1
           this.$nextTick(() => {
@@ -121,12 +137,11 @@ export default {
               behavior: 'smooth'
             })
           })
-        } else if (currentData.selects.length > 1) {
+        } else if (currentData.selects.length > 1) { // 选择
           this.currentSelect = {
             select: currentData.selects,
             content: currentData.selects_key
           }
-          console.log(123123)
           this.selectVisible = true // 显示选择弹框
           // 根据选择的结果加载对应的段落
         }
