@@ -2,7 +2,7 @@
   <el-row class="rowBox">
     <el-col :xs="{span: 24, offset: 0}" :sm="{span: 16, offset: 4}" :md="{span: 12, offset: 6}" :lg="{span: 6, offset: 9}" :xl="{span: 4, offset: 10}">
       <div class="titleBox">
-        <h2 class="title">登 录</h2>
+        <h2 class="title">愚 者</h2>
       </div>
       <el-form :model="form">
         <el-form-item>
@@ -12,8 +12,8 @@
           <el-input prefix-icon="el-icon-lock" placeholder="密码" v-model="form.password" show-password />
         </el-form-item>
         <el-form-item>
-          <div class="registerLink" @click="$emit('update:formType', false)">没有账号？请点击注册...</div>
-          <el-button type="primary" class="loginBtn" @click="handleLogin">登 录</el-button>
+          <div class="registerLink" @click="$emit('update:formType', false)">创建身份...</div>
+          <el-button type="primary" class="loginBtn" @click="handleLogin">开始旅途</el-button>
         </el-form-item>
       </el-form>
     </el-col>
