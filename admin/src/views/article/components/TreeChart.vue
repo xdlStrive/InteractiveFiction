@@ -252,6 +252,7 @@ export default {
               console.log(this.$parent.$parent.$parent.$refs.tinymce)
               this.$parent.$parent.$parent.submitBranch = true
               this.$parent.$parent.$parent.submitBranchID = node.meta.pid
+              this.$parent.$parent.$parent.$refs.tinymce.setContent(node.meta.content)
               this.$parent.$parent.$parent.$refs.tinymce.init({
                 selector: 'textarea',
                 body_class: 'branch-class',
@@ -405,17 +406,9 @@ export default {
                       prop: 'branch',
                       bid: item.selects[indexs],
                       pid: itemss.paragraph_id,
-                      desc: itemss.paragraph_id + itemss.content[0].substring(3, 15)
+                      desc: itemss.paragraph_id + itemss.content[0].substring(3, 15),
+                      content: itemss.content[0]
                     }
-                  })
-                }
-                if (indexss + 1 === paragraphListNum) { // 分支的最后一段，回归主线
-                  this.linkList.push({
-                    id: 'link' + nodeNum,
-                    startId: 'node' + res.data.paragraph_list[paragraphListNum - 1].paragraph_id,
-                    endId: 'node' + data[index + 1].paragraph_id,
-                    startAt: [50, 50],
-                    endAt: [50, 0]
                   })
                 }
                 this.linkList.push({
@@ -425,6 +418,16 @@ export default {
                   startAt: [50, 50],
                   endAt: [50, 0]
                 })
+                if (indexss + 1 === paragraphListNum && data[index + 1] !== undefined) { // 分支的最后一段，回归主线
+                  console.log(data[index + 1])
+                  this.linkList.push({
+                    id: 'link' + nodeNum,
+                    startId: 'node' + res.data.paragraph_list[paragraphListNum - 1].paragraph_id,
+                    endId: 'node' + data[index + 1].paragraph_id,
+                    startAt: [50, 50],
+                    endAt: [50, 0]
+                  })
+                }
                 startId = 'node' + itemss.paragraph_id
               }
             })
