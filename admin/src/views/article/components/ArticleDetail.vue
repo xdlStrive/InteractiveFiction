@@ -335,6 +335,7 @@ export default {
     height: calc(100vh - 50px);
     background: #f3f3f3;
     box-sizing: border-box;
+    overflow: hidden;
   }
   .left-tree-box {
     width: 190px;

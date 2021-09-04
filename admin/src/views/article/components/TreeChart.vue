@@ -9,6 +9,7 @@
       :node-menu="nodeMenuList"
       :enter-intercept="enterIntercept"
       :output-intercept="outputIntercept"
+      :style="{height: canvasHeight + 'px'}"
     >
       <template #node="{meta}">
         <div :class="`flow-node flow-node-${meta.prop}`">
@@ -16,7 +17,6 @@
         </div>
       </template>
     </super-flow>
-
     <el-dialog
       :title="drawerConf.title"
       :visible.sync="drawerConf.visible"
@@ -109,6 +109,7 @@ export default {
   },
   data() {
     return {
+      canvasHeight: 939,
       drawerType,
       drawerConf: {
         title: '',
@@ -147,7 +148,7 @@ export default {
         width: 100,
         height: 50
       },
-      origin: [0, 0],
+      origin: [0, 30],
       nodeList: [],
       linkList: [],
       selectParams: {
@@ -337,6 +338,7 @@ export default {
             coordinates = [164, previousCoordinate[1] + 80 * childrenNum]
           }
         }
+
         if (item.selects === undefined || item.selects.length === 0) { // 主线段落节点
           this.nodeList.push({
             id: 'node' + item.paragraph_id,
@@ -351,6 +353,9 @@ export default {
             }
           })
           coordinates[1] = 80 * ++nodeNum
+          if (nodeNum >= 11) {
+            this.canvasHeight += 80
+          }
 
           let a = this.nodeList.filter(items => items.meta.pid === item.paragraph_id)
           let prevNodeIndex = a[0].meta.index - 1
@@ -391,6 +396,9 @@ export default {
               startAt: [50, 50],
               endAt: [50, 0]
             })
+            if (nodeNum >= 11) {
+              this.canvasHeight += 80
+            }
             fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
               let startId = 'node' + item.paragraph_id + '_' + indexs
               let paragraphListNum = res.data.paragraph_list.length
@@ -418,6 +426,9 @@ export default {
                   startAt: [50, 50],
                   endAt: [50, 0]
                 })
+                if (nodeNum >= 11) {
+                  this.canvasHeight += 80
+                }
                 if (indexss + 1 === paragraphListNum && data[index + 1] !== undefined) { // 分支的最后一段，回归主线
                   console.log(data[index + 1])
                   this.linkList.push({
@@ -611,16 +622,16 @@ export default {
   #left-chart-box {
     width: 450px;
     height: calc(100vh - 70px);
+    overflow-y: scroll;
   }
   .super-flow {
-    overflow-y: scroll;
     background-color: #fff;
   }
-  .super-flow::-webkit-scrollbar {
+  #left-chart-box::-webkit-scrollbar {
     width: 6px;
     height: 1px;
   }
-  .super-flow::-webkit-scrollbar-thumb {
+  #left-chart-box::-webkit-scrollbar-thumb {
     /*滚动条里面小方块*/
     border-radius: 10px;
     background: skyblue;
@@ -635,7 +646,7 @@ export default {
       transparent
   );
   }
-  .super-flow::-webkit-scrollbar-track {
+  #left-chart-box::-webkit-scrollbar-track {
     /*滚动条里面轨道*/
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
     border-radius: 10px;

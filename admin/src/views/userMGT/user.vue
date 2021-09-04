@@ -4,10 +4,14 @@
       <el-table v-loading="listLoading" :data="tableData" stripe border style="width: 100%;">
         <el-table-column type="index" label="编号" width="100" align="center" />
         <el-table-column prop="username" label="用户名" width="200" align="center" />
-        <el-table-column prop="nickname" label="用户昵称" width="200" align="center" />
-        <el-table-column prop="password" label="用户密码" width="200" align="center" />
-        <el-table-column prop="roles" label="用户角色" width="200" align="center" />
-        <el-table-column prop="email" label="用户邮箱" width="200" align="center" />
+        <el-table-column prop="nickname" label="昵称" width="200" align="center" />
+        <el-table-column prop="avatar" label="头像" width="200" align="center">
+          <template slot-scope="scope">
+            <el-avatar size="large" :src="scope.row.avatar" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="roles" label="角色" width="200" align="center" />
+        <el-table-column prop="email" label="邮箱" width="200" align="center" />
         <el-table-column prop="create_time" label="创建时间" width="200" align="center" />
         <el-table-column align="center" label="操作" width="300">
           <template slot-scope="scope">
