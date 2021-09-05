@@ -18,10 +18,7 @@ export default {
 ul,li {
   list-style: none;
 }
-html, body, #app {
+html, body, #app, .app  {
   height: 100%;
-}
-.app {
-  height: calc(100% - 61px);
 }
 </style>

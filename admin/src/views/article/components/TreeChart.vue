@@ -202,7 +202,6 @@ export default {
                     body_class: 'branch-class',
                     placeholder: '分支段落'
                   })
-                  console.log('this.$parent.$parent.$parent.$refs.tinymce')
                   this.$parent.$parent.$parent.paragraphIDList.push(res.data.paragraph_id)
                   this.$message({
                     type: 'success',
@@ -214,6 +213,42 @@ export default {
                     coordinate: coordinate,
                     meta: {
                       prop: 'branch',
+                      pid: res.data.paragraph_id,
+                      name: '分支段落节点'
+                    }
+                  })
+                }
+              })
+            }
+          }, {
+            label: 'bad-end分支段落节点',
+            disable: false,
+            selected: (graph, coordinate) => {
+              const paragraphParams = {
+                type: 0,
+                chapter_id: this.chapterId,
+                content: ''
+              }
+              addParagraph(paragraphParams).then(res => { // 新增段落
+                if (res.code === 20000) {
+                  this.$parent.$parent.$parent.paragraphList.push(res.data)
+                  // this.$parent.$parent.$parent.$refs.tinymce.setContent('分支段落')
+                  this.$parent.$parent.$parent.$refs.tinymce.init({
+                    selector: 'textarea',
+                    body_class: 'badend-class',
+                    placeholder: '分支段落'
+                  })
+                  this.$parent.$parent.$parent.paragraphIDList.push(res.data.paragraph_id)
+                  this.$message({
+                    type: 'success',
+                    message: '新增段落成功！'
+                  })
+                  graph.addNode({
+                    width: 100,
+                    height: 50,
+                    coordinate: coordinate,
+                    meta: {
+                      prop: 'badend',
                       pid: res.data.paragraph_id,
                       name: '分支段落节点'
                     }
@@ -399,25 +434,43 @@ export default {
             if (nodeNum >= 11) {
               this.canvasHeight += 80
             }
-            fetchBranch({ branch_id: item.selects[indexs] }).then(res => {
+            console.log(this)
+            fetchBranch({ branch_id: item.selects[indexs] }).then(res => { // 获取分支段落
               let startId = 'node' + item.paragraph_id + '_' + indexs
               let paragraphListNum = res.data.paragraph_list.length
+              console.log(this)
               let parentCoordinates = this.nodeList.find(item => item.id === startId).coordinate // 选项的坐标
               for (let [indexss, itemss] of res.data.paragraph_list.entries()) {
                 if (this.nodeList.every((item) => item.pid !== itemss.paragraph_id)) {
-                  this.nodeList.push({
-                    id: 'node' + itemss.paragraph_id,
-                    width: '100',
-                    height: '50',
-                    coordinate: [parentCoordinates[0], parentCoordinates[1] + 80 * (indexss + 1)], // 继承选项的x坐标，y坐标+80
-                    meta: {
-                      prop: 'branch',
-                      bid: item.selects[indexs],
-                      pid: itemss.paragraph_id,
-                      desc: itemss.paragraph_id + itemss.content[0].substring(3, 15),
-                      content: itemss.content[0]
-                    }
-                  })
+                  if (itemss.type === 0) {
+                    this.nodeList.push({ // 添加bad-end分支段落节点
+                      id: 'node' + itemss.paragraph_id,
+                      width: '100',
+                      height: '50',
+                      coordinate: [parentCoordinates[0], parentCoordinates[1] + 80 * (indexss + 1)], // 继承选项的x坐标，y坐标+80
+                      meta: {
+                        prop: 'badend',
+                        bid: item.selects[indexs],
+                        pid: itemss.paragraph_id,
+                        desc: itemss.paragraph_id + itemss.content[0].substring(3, 15),
+                        content: itemss.content[0]
+                      }
+                    })
+                  } else {
+                    this.nodeList.push({ // 添加分支段落节点
+                      id: 'node' + itemss.paragraph_id,
+                      width: '100',
+                      height: '50',
+                      coordinate: [parentCoordinates[0], parentCoordinates[1] + 80 * (indexss + 1)], // 继承选项的x坐标，y坐标+80
+                      meta: {
+                        prop: 'branch',
+                        bid: item.selects[indexs],
+                        pid: itemss.paragraph_id,
+                        desc: itemss.paragraph_id + itemss.content[0].substring(3, 15),
+                        content: itemss.content[0]
+                      }
+                    })
+                  }
                 }
                 this.linkList.push({
                   id: 'link' + nodeNum,
@@ -447,8 +500,8 @@ export default {
           coordinates[1] = 80 * ++nodeNum
         }
       }
-      console.log(this.nodeList)
-      console.log(this.linkList)
+      // console.log(this.nodeList)
+      // console.log(this.linkList)
     },
     enterIntercept(formNode, toNode, graph) { // 连线处理事件
       const formType = formNode.meta.prop
@@ -668,5 +721,8 @@ export default {
   }
   .flow-node-branch {
     border-bottom: 5px solid #ff9800;
+  }
+  .flow-node-badend {
+    border-bottom: 5px solid #ff2d5b;
   }
 </style>

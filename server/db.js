@@ -92,7 +92,7 @@ const BranchSchema = new mongoose.Schema({
 const paragraphSchema = new mongoose.Schema({
   paragraph_id: { type: Number, index: true, unique: true }, // 段落ID
   chapter_id: Number, // 所属章节的ID
-  type: String,
+  type: String, // 是否bad-end段落
   select_id: String, // 段落关联的选项的id数组
   branch_id: String, // 关联的分支的id
   content: [],  // 段落内容

@@ -156,16 +156,19 @@ export default {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang='scss'>
   .content-box {
-    height: 100%;
-    background-image: url('../../../assets/typewriter.png');
+    height: calc(100% - 61px);
+    background: url('../../../assets/typewriter.png') no-repeat bottom;
   }
   .text-box {
+    padding: 10px 30px;
     position: absolute;
-    left: 32%;
-    width: 666px;
-    height: 300px;
+    top: 19%;
+    left: 23.3%;
+    width: 1150px;
+    height: 570px;
+    box-sizing: border-box;
     transition: all 0.8s ease;
   }
   .chapter-title {
@@ -183,6 +186,11 @@ export default {
     margin-bottom: 20px;
     display: none;
     transition: all 0.7s ease;
+  }
+  .list-item-box > p {
+    text-indent: 2rem;
+    letter-spacing: .5px;
+    user-select: none;
   }
   .current-text {
     position: absolute;
