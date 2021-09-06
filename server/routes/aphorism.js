@@ -7,7 +7,8 @@ const AphorismModel = mongoose.model('aphorism');
 // 新增名言
 router.post('/add', (req, res) => {
   new AphorismModel({ // 新增分支
-    text: req.body.text
+    text: req.body.text,
+    author: req.body.author
   }).save((err, docs) => {
     if (err) {
       console.log(err)
@@ -15,14 +16,14 @@ router.post('/add', (req, res) => {
     }
     res.json({
       code: 20000,
-      msg: '新增分支成功！',
+      msg: '新增名言成功！',
       data: docs
     })
   })
 })
 
 // 查询名言
-router.post('/fetch', (req, res) => {
+router.get('/fetch', (req, res) => {
   AphorismModel.aggregate([
     { $sample: { size: 1 } }
   ], (err, doc) => {

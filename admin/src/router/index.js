@@ -101,6 +101,17 @@ export const constantRoutes = [
       meta: { title: '用户管理', icon: 'user' }
     }]
   },
+  // 名言管理
+  {
+    path: '/aphorism',
+    component: Layout,
+    children: [{
+      path: 'aphorism',
+      name: 'aphorism',
+      component: () => import('@/views/aphorism/index'),
+      meta: { title: '名言管理', icon: 'user' }
+    }]
+  },
   // 开发记录
   {
     path: '/example',

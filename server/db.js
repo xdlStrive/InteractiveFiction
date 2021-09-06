@@ -157,6 +157,7 @@ const CounterSchema = new mongoose.Schema({
 const AphorismSchema = new mongoose.Schema({
   aphorism_id: { type: Number, index: true, unique: true }, // 名言id
   text: String,
+  author: String,
   create_time: {
     type: Date,
     default: new Date,

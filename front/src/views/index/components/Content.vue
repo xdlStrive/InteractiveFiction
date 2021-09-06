@@ -22,6 +22,7 @@
 import { ElScrollbar, ElMessage } from 'element-plus'
 import { fetchOneChapter } from '@/api/chapter'
 import { fetchBranch } from '@/api/branch'
+import { fetchAphorism } from '@/api/aphorism'
 import SelectLayer from './SelectLayer'
 
 export default {
@@ -60,7 +61,8 @@ export default {
         sleep: 500,
         singleBack: false,
         sentencePause: false
-      }
+      },
+      pargaraphType: null
     };
   },
 	watch: {
@@ -121,7 +123,6 @@ export default {
     loadParagraph() {
       const index = this.currentParagraphID
       const currentData = this.chapterDataList[index]
-      let pargaraphType = null
       
       if (index < this.chapterDataList.length) {
         if (currentData.selects === undefined || currentData.selects.length === 0) { // 文本段落
@@ -136,7 +137,7 @@ export default {
             })
           })
           if (currentData.type === 0) { // bad-end结局
-            pargaraphType = 0
+            this.pargaraphType = 0
           }
         } else if (currentData.selects.length > 1) { // 选择
           this.currentSelect = {
@@ -148,14 +149,17 @@ export default {
           this.currentParagraphID += 1
         }
       } else {
-        if (pargaraphType === 0) {
-          
+        if (this.pargaraphType === 0) {
+          fetchAphorism().then(res => {
+            console.log(res)
+          })
+        } else {
+          ElMessage({
+            message: '本章已结束',
+            type: 'warning',
+            duration: 1000
+          })
         }
-        ElMessage({
-          message: '本章已结束',
-          type: 'warning',
-          duration: 1000
-        })
       }
     }
   }
