@@ -15,6 +15,7 @@ const paragraphRouter = require('./routes/paragraph');
 const branchRouter = require('./routes/branch');
 const selectRouter = require('./routes/select');
 const timelineRouter = require('./routes/timeline');
+const aphorismRouter = require('./routes/aphorism');
 
 const ejs = require('ejs');
 
@@ -50,6 +51,7 @@ app.use('/paragraph', paragraphRouter);
 app.use('/branch', branchRouter);
 app.use('/select', selectRouter);
 app.use('/timeline', timelineRouter);
+app.use('/aphorism', aphorismRouter);
 
 // 404错误处理中间件
 app.use(function(req, res, next) {

@@ -71,7 +71,6 @@ export default {
       fetchBranch({branch_id: val}).then((res) => {
         console.log(res)
         res.data.paragraph_list.forEach((item, index) => {
-          console.log(item.content[0])
           this.chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
           this.chapterDataList.push(item)
         })
@@ -122,9 +121,10 @@ export default {
     loadParagraph() {
       const index = this.currentParagraphID
       const currentData = this.chapterDataList[index]
+      let pargaraphType = null
       
       if (index < this.chapterDataList.length) {
-        if (currentData.selects === undefined || currentData.selects.length === 0) { // 普通段落
+        if (currentData.selects === undefined || currentData.selects.length === 0) { // 文本段落
           this.chapterList.push(currentData.content)
           this.currentParagraphID += 1
           this.$nextTick(() => {
@@ -135,6 +135,9 @@ export default {
               behavior: 'smooth'
             })
           })
+          if (currentData.type === 0) { // bad-end结局
+            pargaraphType = 0
+          }
         } else if (currentData.selects.length > 1) { // 选择
           this.currentSelect = {
             select: currentData.selects,
@@ -145,6 +148,9 @@ export default {
           this.currentParagraphID += 1
         }
       } else {
+        if (pargaraphType === 0) {
+          
+        }
         ElMessage({
           message: '本章已结束',
           type: 'warning',

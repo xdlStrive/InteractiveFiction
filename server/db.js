@@ -153,6 +153,17 @@ const CounterSchema = new mongoose.Schema({
   create_time: { type: Date, default: new Date, get: v => moment(v).format('YYYY-MM-DD HH:mm') }
 }).set('toJSON', { getters: true });
 
+// 名言模型
+const AphorismSchema = new mongoose.Schema({
+  aphorism_id: { type: Number, index: true, unique: true }, // 名言id
+  text: String,
+  create_time: {
+    type: Date,
+    default: new Date,
+    get: v => moment(v).format('YYYY-MM-DD HH:mm')
+  }
+}).set('toJSON', { getters: true });
+
 // model的第一个参数加上s是默认链接的集合名，第二个参数是建立的Schema名，第三个可选参数可直接指定连接的集合
 module.exports = mongoose.model('users', UserSchema, 'users');
 module.exports = mongoose.model('volume', VolumeSchema, 'volumes');
@@ -162,6 +173,7 @@ module.exports = mongoose.model('branch', BranchSchema, 'branchs');
 module.exports = mongoose.model('select', SelectSchema, 'selects');
 module.exports = mongoose.model('timeline', TimelineSchema, 'timeline');
 module.exports = mongoose.model('counter', CounterSchema, 'counters');
+module.exports = mongoose.model('aphorism', AphorismSchema, 'aphorisms');
 
 
 // let testData = new testModel({

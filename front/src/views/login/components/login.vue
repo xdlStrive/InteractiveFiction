@@ -13,7 +13,7 @@
         </el-form-item>
         <el-form-item>
           <div class="registerLink" @click="$emit('update:formType', false)">创建身份...</div>
-          <el-button type="primary" class="loginBtn" @click="handleLogin">开始旅途</el-button>
+          <el-button type="primary" class="loginBtn" @click="handleLogin">开启旅途</el-button>
         </el-form-item>
       </el-form>
     </el-col>

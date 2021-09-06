@@ -362,7 +362,7 @@ export default {
     width: 100%;
   }
   .textListBox {
-    height: 550px;
+    height: 520px;
     padding: 10px;
     border: 1px solid #C0C4CC;
     overflow-y: scroll;
