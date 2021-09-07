@@ -1,16 +1,17 @@
 <template>
   <div class="app-container">
-    <el-button @click="addDialogVisible = true">新增名言</el-button>
+    <el-button class="add-aphorism-btn" type="primary" @click="addDialogVisible = true; dialogTitle = '新增名言'; btnType = true">新增名言</el-button>
     <el-table
+      v-loading="loading"
       :data="listData"
       element-loading-text="Loading"
       border
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
+      <el-table-column align="center" label="编号" width="95">
         <template slot-scope="scope">
-          {{ scope.$index }}
+          {{ scope.row.aphorism_id }}
         </template>
       </el-table-column>
       <el-table-column label="内容">
@@ -18,7 +19,7 @@
           {{ scope.row.text }}
         </template>
       </el-table-column>
-      <el-table-column label="作者" width="200" align="center">
+      <el-table-column label="出处" width="200" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.author }}</span>
         </template>
@@ -29,9 +30,36 @@
           <span>{{ scope.row.create_time }}</span>
         </template>
       </el-table-column>
+      <el-table-column align="center" label="操作" width="300">
+        <template slot-scope="scope">
+          <el-button
+            type="primary"
+            size="small"
+            icon="el-icon-edit"
+            @click="addDialogVisible = true;
+                    dialogTitle = '修改名言';
+                    btnType = false;
+                    currentAphorismID = scope.row.aphorism_id;
+                    form.text = scope.row.text;
+                    form.author = scope.row.author"
+          >
+            修改
+          </el-button>
+          <el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+        </template>
+      </el-table-column>
     </el-table>
+    <el-pagination
+      :current-page.sync="paginationParams.page"
+      layout="total, sizes, prev, pager, next, jumper"
+      :page-sizes="[20,30,40,50]"
+      :page-size="paginationParams.limit"
+      :total="paginationParams.total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
 
-    <el-dialog title="新增名言" :visible.sync="addDialogVisible">
+    <el-dialog :title="dialogTitle" :visible.sync="addDialogVisible">
       <el-form :model="form">
         <el-form-item label="名言内容" label-width="120px">
           <el-input v-model="form.text" autocomplete="off" />
@@ -42,14 +70,15 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addAphorismFn();addDialogVisible = false">提 交</el-button>
+        <el-button v-if="btnType" type="primary" @click="addAphorismFn();addDialogVisible = false">提 交</el-button>
+        <el-button v-if="!btnType" type="primary" @click="handelEdit();addDialogVisible = false">修 改</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchAphorism, addAphorism } from '@/api/aphorism'
+import { fetchAphorismList, addAphorism, modifyAphorism, deleteAphorism } from '@/api/aphorism'
 
 export default {
   filters: {
@@ -66,17 +95,23 @@ export default {
     return {
       listData: null,
       addDialogVisible: false,
+      loading: true,
+      dialogTitle: '新增名言',
+      btnType: true,
+      currentAphorismID: null,
       form: {
         text: '',
         author: ''
+      },
+      paginationParams: {
+        page: 1,
+        limit: 20,
+        total: 0
       }
     }
   },
   created() {
-    fetchAphorism().then(res => {
-      console.log(res.data)
-      this.listData = res.data
-    })
+    this.fetchList()
   },
   methods: {
     addAphorismFn() {
@@ -85,10 +120,64 @@ export default {
         author: this.form.author
       }
       addAphorism(data).then(res => {
-        console.log(res)
-        // this.list = response.data.items
+        this.$message({
+          message: res.msg,
+          type: 'success'
+        })
+        this.fetchList()
       })
+    },
+    fetchList() {
+      fetchAphorismList().then(res => {
+        this.listData = res.data
+        this.loading = false
+      })
+    },
+    handelEdit() {
+      if (this.currentAphorismID !== 0) {
+        const data = {
+          aphorism_id: this.currentAphorismID,
+          text: this.form.text,
+          author: this.form.author
+        }
+        modifyAphorism(data).then(res => {
+          this.$message({
+            message: res.msg,
+            type: 'success'
+          })
+          this.fetchList()
+        })
+      }
+    },
+    handleDelete(row) {
+      const data = {
+        aphorism_id: row.aphorism_id
+      }
+      deleteAphorism(data).then(res => {
+        this.$message({
+          message: res.msg,
+          type: 'success'
+        })
+        this.fetchList()
+      })
+    },
+    handleSizeChange(val) {
+      this.paginationParams.limit = val
+      this.fetchList()
+    },
+    handleCurrentChange(val) {
+      this.paginationParams.page = val
+      this.fetchList()
     }
   }
 }
 </script>
+
+<style scoped>
+  .add-aphorism-btn {
+    margin-bottom: 15px;
+  }
+  .el-pagination {
+    margin-top: 35px;
+  }
+</style>
