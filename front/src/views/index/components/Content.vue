@@ -6,13 +6,22 @@
       <h1 class="typing">这是测试打字机文字</h1>
     </vue-typed-js> -->
     <div class="abc">{{ obj.output }}</div>
-    <el-scrollbar @click="loadParagraph()" ref="textBox" class="text-box">
+    <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textBox" class="text-box">
         <div class="list-placeholder-box" style="display: block"></div>
         <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
         <div class="list-placeholder-box" style="display: block"></div>
         <div class="list-placeholder-box" style="display: block"></div>
         <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
     </el-scrollbar>
+    
+    <transition name="fade">
+      <div class="mask-layer" v-if="maskVisible">
+        <div class="aphorism-box">
+          <p class="aphorism-text">{{aphorism.text}}</p>
+          <p class="aphorism-author">——{{aphorism.author}}</p>
+        </div>
+      </div>
+    </transition>
     
 		<SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" />
   </div>
@@ -62,7 +71,12 @@ export default {
         singleBack: false,
         sentencePause: false
       },
-      pargaraphType: null
+      pargaraphType: null,
+      maskVisible: false,
+      aphorism: {
+        text: '',
+        author: ''
+      }
     };
   },
 	watch: {
@@ -152,6 +166,9 @@ export default {
         if (this.pargaraphType === 0) {
           fetchAphorism().then(res => {
             console.log(res)
+            this.aphorism.text = res.data.text
+            this.aphorism.author = res.data.author
+            this.maskVisible = true
           })
         } else {
           ElMessage({
@@ -167,9 +184,40 @@ export default {
 </script>
 
 <style lang='scss'>
+  @font-face {
+    font-family: fzWzmxk;
+    src: url('../../../assets/fonts/fz-wzmxk.TTF');
+  }
   .content-box {
     height: calc(100% - 61px);
     background: url('../../../assets/typewriter.png') no-repeat bottom;
+  }
+  .mask-layer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    background-color: #000;
+  }
+  .aphorism-box {
+    width: 60%;
+    margin: 0 auto;
+  }
+  .aphorism-box > p {
+    margin: 15px 0 30px;
+    color: #ff4141;
+    user-select: none;
+  }
+  .aphorism-text {
+    text-align: center;
+    font-size: 46px;
+    font-family: fzWzmxk;
+  }
+  .aphorism-author {
+    font-size: 22px;
+    text-align: right;
   }
   .text-box {
     padding: 10px 30px;

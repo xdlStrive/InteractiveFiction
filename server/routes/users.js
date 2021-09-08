@@ -79,7 +79,7 @@ router.get('/fetchList', function (req, res) {
     UserModel.find()
       .skip(pageNum - 1)
       .sort('create_time').exec(function (err, docs) {
-        res.json({ code: 20000, msg: '用户列表获取成功！', data: docs, count: count });
+        res.json({ code: 20000, msg: '用户列表获取成功！', data: docs, count: count })
     })
   })
   

@@ -54,21 +54,23 @@ router.get('/fetch', (req, res) => {
 router.get('/fetchList', (req, res) => {
   const pageNum = req.query.pageNum,
     pageSize = req.query.pageSize;
+  AphorismModel.count({}, (err, count) => {
     AphorismModel.find({}, {
       aphorism_id: 1,
       text: 1,
       author: 1,
       create_time: 1,
       _id: 0
-  }).skip((pageNum - 1) * pageSize)
-    .limit(pageSize)
-    .sort({
-    chapter_id: 1
-  }).exec((err, doc) => {
-    if (err) {
-      res.json({ code: 20000, msg: err })
-    }
-    res.json({ code: 20000, msg: '名言获取成功！', data: doc })
+    }).skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .sort({
+      chapter_id: 1
+    }).exec((err, doc) => {
+      if (err) {
+        res.json({ code: 20000, msg: err })
+      }
+      res.json({ code: 20000, msg: '名言获取成功！', data: doc, count: count })
+    })
   })
 })
 

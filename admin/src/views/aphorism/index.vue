@@ -131,6 +131,7 @@ export default {
       fetchAphorismList().then(res => {
         this.listData = res.data
         this.loading = false
+        this.paginationParams.total = res.count
       })
     },
     handelEdit() {
