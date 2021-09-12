@@ -15,12 +15,14 @@ export default {
   components: { LoginFrom, RegisterForm },
   data () {
     return {
-      formType: true
-    };
+      formType: true,
+       show: true
+    }
   },
   methods: {}
 }
 
 </script>
-<style lang='scss' scoped>
+<style>
+
 </style>

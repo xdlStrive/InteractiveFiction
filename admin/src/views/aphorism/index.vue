@@ -69,9 +69,9 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button v-if="btnType" type="primary" @click="addAphorismFn();addDialogVisible = false">提 交</el-button>
         <el-button v-if="!btnType" type="primary" @click="handelEdit();addDialogVisible = false">修 改</el-button>
+        <el-button v-if="btnType" type="primary" @click="addAphorismFn();addDialogVisible = false">提 交</el-button>
+        <el-button class="cancel-btn" @click="addDialogVisible = false">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -175,10 +175,17 @@ export default {
 </script>
 
 <style scoped>
+  .app-container {
+    height: 100%;
+    overflow: auto;
+  }
   .add-aphorism-btn {
     margin-bottom: 15px;
   }
   .el-pagination {
     margin-top: 35px;
+  }
+  .cancel-btn {
+    margin-left: 20px;
   }
 </style>

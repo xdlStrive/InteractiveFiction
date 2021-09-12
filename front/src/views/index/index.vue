@@ -2,6 +2,7 @@
 <template>
   <div class="page-box">
     <Navigation />
+    <List />
     <Content />
   </div>
 </template>
@@ -11,17 +12,19 @@
 // import { fetchOneChapter } from '@/api/chapter'
 import Navigation from '@/components/Navigation'
 import Content from './components/Content'
+import List from './components/List'
 // import { h } from 'vue';
 
 export default {
 	components: {
     Navigation,
-    Content
+    Content,
+    List
   },
   data () {
     return {
       
-    };
+    }
   },
   methods: {
   }

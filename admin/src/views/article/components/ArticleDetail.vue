@@ -337,7 +337,7 @@ export default {
     box-sizing: border-box;
     overflow: hidden;
   }
-  .left-tree-box {
+  #left-tree-box {
     width: 190px;
   }
   .treeBtnGroup {

@@ -14,11 +14,11 @@
         <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
     </el-scrollbar>
     
-    <transition name="fade">
-      <div class="mask-layer" v-if="maskVisible">
+    <transition name="mask">
+      <div class="mask-layer" v-if="maskVisible" @click="closeMask">
         <div class="aphorism-box">
           <p class="aphorism-text">{{aphorism.text}}</p>
-          <p class="aphorism-author">——{{aphorism.author}}</p>
+          <p class="aphorism-author">—— {{aphorism.author}}</p>
         </div>
       </div>
     </transition>
@@ -164,7 +164,7 @@ export default {
         }
       } else {
         if (this.pargaraphType === 0) {
-          fetchAphorism().then(res => {
+          fetchAphorism().then(res => { // 获取名言
             console.log(res)
             this.aphorism.text = res.data.text
             this.aphorism.author = res.data.author
@@ -178,6 +178,9 @@ export default {
           })
         }
       }
+    },
+    closeMask() {
+      this.maskVisible = false
     }
   }
 }
@@ -191,33 +194,6 @@ export default {
   .content-box {
     height: calc(100% - 61px);
     background: url('../../../assets/typewriter.png') no-repeat bottom;
-  }
-  .mask-layer {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-content: center;
-    flex-wrap: wrap;
-    background-color: #000;
-  }
-  .aphorism-box {
-    width: 60%;
-    margin: 0 auto;
-  }
-  .aphorism-box > p {
-    margin: 15px 0 30px;
-    color: #ff4141;
-    user-select: none;
-  }
-  .aphorism-text {
-    text-align: center;
-    font-size: 46px;
-    font-family: fzWzmxk;
-  }
-  .aphorism-author {
-    font-size: 22px;
-    text-align: right;
   }
   .text-box {
     padding: 10px 30px;
@@ -256,5 +232,39 @@ export default {
     left: 32%;
     width: 666px;
     z-index: 9999;
+  }
+  .mask-layer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    background-color: #000;
+  }
+  .aphorism-box {
+    width: 60%;
+    margin: 0 auto;
+  }
+  .aphorism-box > p {
+    margin: 15px 0 30px;
+    color: #ff4141;
+    user-select: none;
+  }
+  .aphorism-text {
+    text-align: center;
+    font-size: 50px;
+    font-family: fzWzmxk;
+  }
+  .aphorism-author {
+    font-size: 22px;
+    text-align: right;
+  }
+  .mask-enter-active, .mask-leave-active {
+    transition: opacity .8s ease;
+    transition-delay: .1s;
+  }
+  .mask-enter-from, .mask-leave-to {
+    opacity: 0;
   }
 </style>

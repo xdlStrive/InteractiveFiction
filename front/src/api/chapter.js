@@ -8,3 +8,12 @@ export function fetchOneChapter(query) {
     params: query
   })
 }
+
+// 查询某卷的章节列表
+export function fetchVolumesChapterList(query) {
+  return request({
+    url: '/chapter/volumesList',
+    method: 'get',
+    params: query
+  })
+}
