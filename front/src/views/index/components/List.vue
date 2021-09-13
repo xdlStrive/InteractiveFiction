@@ -1,31 +1,40 @@
 <template>
-  <div class="leftBox">
-    <div id="left-tree-box">
-      <el-tree
-        :props="props"
-        :load="fetchChapterListFun"
-        :default-expanded-keys="[1]"
-        node-key="volume_id"
-        lazy
-        accordion
-        highlight-current
-        class="treeBox"
-        @node-expand="openNode"
-        @node-click="handleNodeClick"
-      />
+  <transition name="list">
+    <div v-if="listVisible" class="aside-box">
+      <div id="left-tree-box">
+        <el-tree
+          :props="props"
+          :load="fetchChapterListFun"
+          :default-expanded-keys="[1]"
+          node-key="volume_id"
+          lazy
+          accordion
+          highlight-current
+          class="treeBox"
+          @node-expand="openNode"
+          @node-click="handleNodeClick"
+        />
+        <div class="list-visible-btn" @click="handelAsideHidden">
+          <el-icon>
+            <caret-left v-if="listVisible" />
+            <caret-right v-if="!listVisible" />
+          </el-icon>
+        </div>
+      </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
-  import { ElTree } from "element-plus"
   import { fetchVolumeList } from '@/api/volume'
   import { fetchVolumesChapterList } from '@/api/chapter'
   import { fetchOneChapter } from '@/api/chapter'
+  import { CaretLeft } from '@element-plus/icons'
+  import { CaretRight } from '@element-plus/icons'
 
   export default {
     components: {
-      ElTree
+      CaretLeft, CaretRight
     },
     data () {
       return {
@@ -34,6 +43,7 @@
           children: '',
           isLeaf: 'leaf'
         },
+        listVisible: true,
         currentVolumeID: 1,
         volumeList: [],
         chapterList: [],
@@ -76,7 +86,9 @@
       },
       handleNodeClick(data, node) { // 树形节点点击事件
         if (node.level === 2) {
-          this.fetchChapter(data.chapter_id)
+          // console.log(data.chapter_id)
+          // this.fetchChapter(data.chapter_id)
+          this.$emit('fetchOneChapter', data.chapter_id)
         }
       },
       fetchChapter(chapterID) { // 获取章节
@@ -92,20 +104,42 @@
           }
         })
       },
+      handelAsideHidden() { // 章节列表显示隐藏
+        this.listVisible = false
+      }
     }
   }
 </script>
 
 <style lang="scss" scoped>
-  .leftBox {
+  .aside-box {
     display: flex;
     padding: 10px;
-    height: calc(100vh - 50px);
+    height: calc(100vh - 61px);
     background: #f3f3f3;
     box-sizing: border-box;
     overflow: hidden;
   }
   #left-tree-box {
     width: 190px;
+    position: relative;
+  }
+  .list-enter-active, .list-leave-active {
+    width: 190px;
+    transition: .8s ease;
+  }
+  .list-enter-from, .list-leave-to {
+    width: 10px;
+  }
+  .list-visible-btn {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    width: 10px;
+    background: #cacaca;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px 0 0 8px;
   }
 </style>

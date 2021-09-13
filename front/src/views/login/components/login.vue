@@ -22,13 +22,9 @@
 
 <script>
 import { ref } from 'vue'
-import { ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus'
 
 export default {
   name: 'LoginFrom',
-  components: {
-    ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton
-  },
   props: {
     formType: {
       type: Boolean,
@@ -51,12 +47,12 @@ export default {
   methods: {
     handleLogin() {
       if (this.form.username === '') {
-        ElMessage({
+        this.$message({
           message: '请输入用户名',
           type: 'warning'
         })
       } else if (this.form.password === '') {
-        ElMessage({
+        this.$message({
           message: '请输入密码',
           type: 'warning'
         })
@@ -65,7 +61,7 @@ export default {
         this.$store.dispatch('user/login', this.form).then(res => {
           this.$router.push({ path: '/book' })
           this.loading = false
-          ElMessage({
+          this.$message({
             message: res.msg,
             type: 'success'
           })

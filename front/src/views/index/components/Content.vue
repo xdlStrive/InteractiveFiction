@@ -1,43 +1,49 @@
 <!-- 主页 -->
 <template>
   <div class="content-box">
-    <!-- <h3>{{chapterTitle}}</h3> -->
-    <!-- <vue-typed-js :strings="['First text', 'Second Text']">
-      <h1 class="typing">这是测试打字机文字</h1>
-    </vue-typed-js> -->
-    <div class="abc">{{ obj.output }}</div>
-    <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textBox" class="text-box">
-        <div class="list-placeholder-box" style="display: block"></div>
-        <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
-        <div class="list-placeholder-box" style="display: block"></div>
-        <div class="list-placeholder-box" style="display: block"></div>
-        <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
-    </el-scrollbar>
-    
-    <transition name="mask">
-      <div class="mask-layer" v-if="maskVisible" @click="closeMask">
-        <div class="aphorism-box">
-          <p class="aphorism-text">{{aphorism.text}}</p>
-          <p class="aphorism-author">—— {{aphorism.author}}</p>
+    <List @fetchOneChapter="fetchOneChapterFun" />
+    <div class="chapter-box" ref="chapterBox">
+      <!-- <h3>{{chapterTitle}}</h3> -->
+      <!-- <vue-typed-js :strings="['First text', 'Second Text']">
+        <h1 class="typing">这是测试打字机文字</h1>
+      </vue-typed-js> -->
+      <div class="abc">{{ obj.output }}</div>
+      <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textBox" class="text-box" :style="{width: textBox.width + 'px', height: textBox.height + 'px', top: textBox.top + 'px', left: textBox.left + 'px'}">
+          <div class="list-placeholder-box" style="display: block"></div>
+          <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
+          <div class="list-placeholder-box" style="display: block"></div>
+          <div class="list-placeholder-box" style="display: block"></div>
+          <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
+      </el-scrollbar>
+      
+      <transition name="mask">
+        <div class="mask-layer" v-if="maskVisible" @click="closeMask">
+          <transition name="mask">
+            <div class="aphorism-box">
+              <p class="aphorism-text">{{aphorism.text}}</p>
+              <p class="aphorism-author">—— {{aphorism.author}}</p>
+            </div>
+          </transition>
         </div>
-      </div>
-    </transition>
-    
-		<SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" />
+      </transition>
+      
+      <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" />
+    </div>
   </div>
 </template>
 
 <script>
-import { ElScrollbar, ElMessage } from 'element-plus'
+import List from './List'
+import SelectLayer from './SelectLayer'
 import { fetchOneChapter } from '@/api/chapter'
 import { fetchBranch } from '@/api/branch'
 import { fetchAphorism } from '@/api/aphorism'
-import SelectLayer from './SelectLayer'
+
 
 export default {
 	components: {
-    ElScrollbar, SelectLayer
-  },
+    List, SelectLayer
+  }, 
   data () {
     return {
       typerOptions: {
@@ -50,6 +56,7 @@ export default {
         singleBack: false,
         sentencePause: false
       },
+      chapterID: 1,
       chapterTitle: '',
       chapterDataList: [],
       chapterList: [],
@@ -71,6 +78,12 @@ export default {
         singleBack: false,
         sentencePause: false
       },
+      textBox: {
+        width: 1150,
+        height: 570,
+        top: 22,
+        left: 30 ,
+      },
       pargaraphType: null,
       maskVisible: false,
       aphorism: {
@@ -82,7 +95,7 @@ export default {
 	watch: {
 		selectIndex(val) {
       const currentParagraphIndex = this.currentParagraphID
-      const currentData = this.chapterDataList[currentParagraphIndex]
+      // const currentData = this.chapterDataList[currentParagraphIndex]
 
       fetchBranch({branch_id: val}).then((res) => {
         console.log(res)
@@ -105,7 +118,7 @@ export default {
         })
       })
       this.selectVisible = false
-		}
+		},
 	},
   created() {
     this.initLoad()
@@ -113,28 +126,15 @@ export default {
   methods: {
     // 获取章节
     initLoad() {
-      fetchOneChapter({ chapter_id: '1' }).then(res => {
-        const { chapter_id, paragraph_list, title } = res.data
-        console.log(paragraph_list)
-        this.chapterTitle = title
-        this.chapterDataList = paragraph_list
-				this.chapterDataList.forEach((item, index) => {
-					if (item.content.length === 1) { // 普通段落
-						this.chapterList.push(item.content)
-					} else if (item.selects.length > 1) { // 带选项的段落
-						this.currentSelect = {
-							select: item.selects,
-							content: item.selects_key
-						}
-            this.chapterList = this.chapterList.concat(item.content) // 合并数组
-					}
-				})
-        console.log(this.chapterList)
-        this.loadParagraph() // 自动加载第一段
-      })
+      this.fetchOneChapterFun()
     },
     // 加载段落
     loadParagraph() {
+      this.textBox.width = this.$refs.chapterBox.offsetWidth * 0.5989583
+      this.textBox.height = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.622222
+      this.textBox.top = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + (this.$refs.chapterBox.offsetHeight - this.$refs.chapterBox.offsetWidth * 0.46875)
+      this.textBox.left = this.$refs.chapterBox.offsetWidth * 0.2135416
+
       const index = this.currentParagraphID
       const currentData = this.chapterDataList[index]
       
@@ -164,20 +164,49 @@ export default {
         }
       } else {
         if (this.pargaraphType === 0) {
+          this.currentParagraphID = 0
           fetchAphorism().then(res => { // 获取名言
             console.log(res)
             this.aphorism.text = res.data.text
             this.aphorism.author = res.data.author
             this.maskVisible = true
+            this.pargaraphType = null
           })
         } else {
-          ElMessage({
+          this.$message({
             message: '本章已结束',
             type: 'warning',
             duration: 1000
           })
         }
       }
+    },
+    fetchOneChapterFun(id) { // 获取章节
+      if (id) {
+        this.chapterID = id
+      }
+      this.chapterList = []
+      this.chapterDataList = []
+      this.currentParagraphID = 0
+      fetchOneChapter({ chapter_id: this.chapterID }).then(res => {
+        const { chapter_id, paragraph_list, title } = res.data
+        console.log(chapter_id)
+        this.chapterTitle = title
+        this.chapterDataList = paragraph_list
+				this.chapterDataList.forEach((item) => {
+					if (item.content.length === 1) { // 普通段落
+						this.chapterList.push(item.content)
+					} else if (item.selects.length > 1) { // 带选项的段落
+						this.currentSelect = {
+							select: item.selects,
+							content: item.selects_key
+						}
+            this.chapterList = this.chapterList.concat(item.content) // 合并数组
+					}
+				})
+        console.log(this.chapterList)
+        this.loadParagraph() // 自动加载第一段
+      })
     },
     closeMask() {
       this.maskVisible = false
@@ -192,16 +221,20 @@ export default {
     src: url('../../../assets/fonts/fz-wzmxk.TTF');
   }
   .content-box {
-    height: calc(100% - 61px);
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+  }
+  .chapter-box {
+    width: calc(100% - 210px);
+    height: 100%;
     background: url('../../../assets/typewriter.png') no-repeat bottom;
+    position: relative;
+    background-size: contain;
   }
   .text-box {
     padding: 10px 30px;
     position: absolute;
-    top: 19%;
-    left: 23.3%;
-    width: 1150px;
-    height: 570px;
     box-sizing: border-box;
     transition: all 0.8s ease;
   }

@@ -15,11 +15,7 @@
 </template>
 
 <script>
-import { ElDialog, ElButton } from 'element-plus'
-export default {
-  components: {
-    ElDialog, ElButton
-  },
+export default ({
   props: ['selectItem', 'selectIndex'],
   data() {
     return {
@@ -34,7 +30,7 @@ export default {
       this.$emit('update:selectIndex', this.selectItem.select[index])
     }
   }
-}
+})
 </script>
 
 <style>

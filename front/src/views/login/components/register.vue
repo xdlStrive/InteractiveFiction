@@ -23,14 +23,10 @@
 </template>
 
 <script>
-import { ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton, ElMessage } from 'element-plus'
 import { userRegister } from '@/api/user'
 
 export default {
   name: 'registerForm',
-  components: {
-    ElRow, ElCol, ElForm, ElFormItem, ElInput, ElButton
-  },
   props: {
     formType: {
       type: Boolean,
@@ -49,23 +45,23 @@ export default {
   methods: {
     handleRegister() {
       if (this.form.username === '') {
-        ElMessage({
+        this.$message({
           message: '请输入用户名',
           type: 'warning'
         })
       } else if (this.form.password === '') {
-        ElMessage({
+        this.$message({
           message: '请输入密码',
           type: 'warning'
         })
       } else if (this.form.secondPassword === '' || this.form.secondPassword !== this.form.password) {
-        ElMessage({
+        this.$message({
           message: '两次输入密码不一致',
           type: 'warning'
         })
       } else {
         userRegister(this.form).then(res => {
-          ElMessage({
+          this.$message({
             message: res.msg,
             type: 'success'
           })
