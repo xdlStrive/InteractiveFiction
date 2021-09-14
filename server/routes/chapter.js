@@ -117,7 +117,7 @@ router.get('/volumesList', (req, res) => {
     }
   ], (err, docs) => {
     if (!err && docs) {
-      console.log(docs)
+      // console.log(docs)
       return res.json({ code: 20000, msg: '章节列表获取成功！', data: docs })
     }
   })

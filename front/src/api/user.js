@@ -18,3 +18,29 @@ export function userLogin(data) {
   })
 }
 
+// 获取用户信息
+export function getInfo(params) {
+  return request({
+    url: '/users/profile',
+    method: 'get',
+    params
+  })
+}
+
+// 获取存档
+export function fetchArchive() {
+  return request({
+    url: '/users/fetchArchive',
+    method: 'get'
+  })
+}
+
+// 存档
+export function saveArchive(data) {
+  return request({
+    url: '/users/update',
+    method: 'post',
+    data
+  })
+}
+

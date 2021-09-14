@@ -40,7 +40,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'public/images/default.gif'
   },
-  archive: String,  // 存档
+  archive: [],  // 存档
   create_time: { 
     type: Date, 
     default: new Date,

@@ -1,7 +1,7 @@
 <!-- 主页 -->
 <template>
   <div class="content-box">
-    <List @fetchOneChapter="fetchOneChapterFun" />
+    <List ref="tree" @fetchOneChapter="fetchOneChapterFun" />
     <div class="chapter-box" ref="chapterBox">
       <!-- <h3>{{chapterTitle}}</h3> -->
       <!-- <vue-typed-js :strings="['First text', 'Second Text']">
@@ -38,6 +38,7 @@ import SelectLayer from './SelectLayer'
 import { fetchOneChapter } from '@/api/chapter'
 import { fetchBranch } from '@/api/branch'
 import { fetchAphorism } from '@/api/aphorism'
+import { saveArchive, fetchArchive } from '@/api/user'
 
 
 export default {
@@ -121,13 +122,13 @@ export default {
 		},
 	},
   created() {
-    this.initLoad()
+    fetchArchive().then(res => { // 获取章节
+      this.fetchOneChapterFun(res.data[0])
+      console.log(this.$refs.tree)
+      this.$refs.tree.setNodeCheacked(res.data[0])
+    })
   },
   methods: {
-    // 获取章节
-    initLoad() {
-      this.fetchOneChapterFun()
-    },
     // 加载段落
     loadParagraph() {
       this.textBox.width = this.$refs.chapterBox.offsetWidth * 0.5989583
@@ -152,6 +153,13 @@ export default {
           })
           if (currentData.type === 0) { // bad-end结局
             this.pargaraphType = 0
+            const params = {
+              archive: [this.chapterID, this.chapterID]
+            }
+            console.log(this.$store.state)
+            saveArchive(params).then(res => { // bad-end 存档
+              console.log(res)
+            })
           }
         } else if (currentData.selects.length > 1) { // 选择
           this.currentSelect = {
@@ -206,10 +214,21 @@ export default {
 				})
         console.log(this.chapterList)
         this.loadParagraph() // 自动加载第一段
+        const params = {
+          archive: [this.chapterID]
+        }
+        console.log(this.$store.state)
+        saveArchive(params).then(res => {
+          console.log(res)
+        })
       })
     },
-    closeMask() {
+    closeMask() { // 关闭名言事件
       this.maskVisible = false
+      fetchArchive().then(res => { // 获取章节
+        this.fetchOneChapterFun(res.data[1])
+        this.$refs.tree.setNodeCheacked(res.data[1])
+      })
     }
   }
 }

@@ -19,7 +19,7 @@ router.post('/register', function (req, res) {
     }
     res.json({ code: 20000, msg: '注册成功！' });
   });
-});
+})
 
 // 登录接口
 router.post('/login', function (req, res) {
@@ -44,7 +44,7 @@ router.post('/login', function (req, res) {
   })
 })
 
-// 用户信息接口
+// 查询用户信息接口
 router.get("/profile", async (req, res) => {
   const raw = String(req.headers.authorization) //获取前端请求头中的token
   const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
@@ -59,7 +59,6 @@ router.get("/profile", async (req, res) => {
     }
     return decoded // 返回解密token得到的id
   })
-  console.log(id)
   // 根据解密的id去查找对应的用户
   const us = await UserModel.findById(id);
   res.send({ 'code': 20000, 'data': us })
@@ -70,10 +69,10 @@ router.get('/logout', (req, res) => {
   res.json({ code: 20000, msg: '成功登出' })
 })
 
-// 查询接口
+// 查询用户列表接口
 router.get('/fetchList', function (req, res) {
-  const pageNum = req.query.pageNum,
-    pageSize = req.query.pageSize;
+  const pageNum = req.query.pageNum;
+  const pageSize = req.query.pageSize;
 
   UserModel.count({}, (err, count) => {
     UserModel.find()
@@ -82,26 +81,55 @@ router.get('/fetchList', function (req, res) {
         res.json({ code: 20000, msg: '用户列表获取成功！', data: docs, count: count })
     })
   })
-  
-});
+})
 
-// 修改接口
-router.get('/find', function (req, res) {
-  // var params = URL.parse(req.url.true).query;
-  UserModel.find({ username: req.query.id }, function (err, data) {
-    var str = { length: data.length };
-    res.send(data);
+// 获取用户存档接口
+router.get('/fetchArchive', function (req, res) {
+  const raw = String(req.headers.authorization) //获取前端请求头中的token
+  const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
+    if(err) {
+      switch(err.name) {
+        case 'JsonWebTokenError':
+          res.status(403).send({ code: 5008, msg: '无效的token' })
+          break
+        case 'TokenExpiredError':
+          res.status(403).send({ code: 50014, msg: 'token已过期' })
+      }
+    }
+    return decoded // 返回解密token得到的id
+  })
+
+  UserModel.findById(id, function (err, data) {
+    res.json({ code: 20000, msg: '获取成功！', data: data.archive})
   })
 })
 
 // 更新接口
 router.post('/update', function (req, res) {
-  UserModel.findById(req.body._id, function (err, data) {
-    data.content = req.body.content;
-    data.updated_at = Date.now();
-    data.save();
+  const raw = String(req.headers.authorization) //获取前端请求头中的token
+  const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
+    if(err) {
+      switch(err.name) {
+        case 'JsonWebTokenError':
+          res.status(403).send({ code: 5008, msg: '无效的token' })
+          break
+        case 'TokenExpiredError':
+          res.status(403).send({ code: 50014, msg: 'token已过期' })
+      }
+    }
+    return decoded // 返回解密token得到的id
   })
-  res.redirect('/'); //返回首页
+
+  let params = null
+  if (req.body.archive) {
+    params = { 'archive.0': req.body.archive[0], 'archive.1': req.body.archive[1]}
+  }
+  UserModel.findByIdAndUpdate(id, {
+    $set: params
+  }, function (err, doc) {
+    if (err) return 'err' + err
+    res.json({ code: 20000, msg: '更新成功！'})
+  })
 })
 
 // 删除接口

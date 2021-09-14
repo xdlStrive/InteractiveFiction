@@ -6,9 +6,10 @@
           :props="props"
           :load="fetchChapterListFun"
           :default-expanded-keys="[1]"
-          node-key="volume_id"
+          node-key="n_id"
           lazy
           accordion
+          ref="tree"
           highlight-current
           class="treeBox"
           @node-expand="openNode"
@@ -66,27 +67,29 @@
           })
         })
       },
-      async fetchChapterListFun(node, resolve) { // 获取章节列表
-        if (node.level === 0) {
+      async fetchChapterListFun(node, resolve) { // 获取列表
+        if (node.level === 0) { // 卷列表
           this.treeNode = node
           this.treeResolve = resolve
           await this.fetchVolumeListFun()
           return resolve(this.volumeList)
-        } else {
+        } else { // 章节列表
           const params = {
-            volume_id: node.data.volume_id
+            volume_id: node.data.n_id
           }
-          fetchVolumesChapterList(params).then(res => {
-            if (res.code === 20000) {
-              this.chapterList = res.data
-            }
-            return resolve(res.data)
-          })
+          console.log(node)
+          // fetchVolumesChapterList(params).then(res => {
+          //   if (res.code === 20000) {
+          //     this.chapterList = res.data
+          //   }
+          //   console.log(res.data)
+          //   return resolve(res.data)
+          // })
         }
       },
       handleNodeClick(data, node) { // 树形节点点击事件
         if (node.level === 2) {
-          // console.log(data.chapter_id)
+          console.log( node)
           // this.fetchChapter(data.chapter_id)
           this.$emit('fetchOneChapter', data.chapter_id)
         }
@@ -106,6 +109,9 @@
       },
       handelAsideHidden() { // 章节列表显示隐藏
         this.listVisible = false
+      },
+      setNodeCheacked(id) { // 设置树节点选中状态
+        this.$refs.tree.setCurrentKey(id)
       }
     }
   }

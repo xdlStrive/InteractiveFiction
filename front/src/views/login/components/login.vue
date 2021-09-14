@@ -58,12 +58,11 @@ export default {
         })
       } else {
         this.loading = true
-        this.$store.dispatch('user/login', this.form).then(res => {
-          this.$router.push({ path: '/book' })
+        this.$store.dispatch('user/login', this.form).then(() => {
           this.loading = false
-          this.$message({
-            message: res.msg,
-            type: 'success'
+          this.$router.push({ path: '/book' })
+          this.$store.dispatch('user/getInfo', this.$store.state.user.token).then(res => {
+            console.log(res)
           })
         }).catch(() => {
           this.loading = false

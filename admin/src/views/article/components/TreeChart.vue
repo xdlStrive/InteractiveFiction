@@ -697,7 +697,7 @@ export default {
       rgba(255, 255, 255, 0.2) 75%,
       transparent 75%,
       transparent
-  );
+    );
   }
   #left-chart-box::-webkit-scrollbar-track {
     /*滚动条里面轨道*/
