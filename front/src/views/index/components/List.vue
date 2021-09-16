@@ -5,7 +5,7 @@
         <el-tree
           :props="props"
           :load="fetchChapterListFun"
-          :default-expanded-keys="[1]"
+          :default-expanded-keys="[1.1]"
           node-key="n_id"
           lazy
           accordion
@@ -37,6 +37,9 @@
     components: {
       CaretLeft, CaretRight
     },
+    props: [
+      'archiveId'
+    ],
     data () {
       return {
         props: {
@@ -72,26 +75,23 @@
           this.treeNode = node
           this.treeResolve = resolve
           await this.fetchVolumeListFun()
-          return resolve(this.volumeList)
+          resolve(this.volumeList)
         } else { // 章节列表
           const params = {
             volume_id: node.data.n_id
           }
-          console.log(node)
-          // fetchVolumesChapterList(params).then(res => {
-          //   if (res.code === 20000) {
-          //     this.chapterList = res.data
-          //   }
-          //   console.log(res.data)
-          //   return resolve(res.data)
-          // })
+          fetchVolumesChapterList(params).then(res => {
+            if (res.code === 20000) {
+              this.chapterList = res.data
+            }
+            resolve(res.data)
+            this.setNodeCheacked()
+          })
         }
       },
       handleNodeClick(data, node) { // 树形节点点击事件
         if (node.level === 2) {
-          console.log( node)
-          // this.fetchChapter(data.chapter_id)
-          this.$emit('fetchOneChapter', data.chapter_id)
+          this.$emit('fetchOneChapter', data.n_id)
         }
       },
       fetchChapter(chapterID) { // 获取章节
@@ -111,7 +111,12 @@
         this.listVisible = false
       },
       setNodeCheacked(id) { // 设置树节点选中状态
-        this.$refs.tree.setCurrentKey(id)
+        if (id) {
+          console.log('id')
+          this.$refs.tree.setCurrentKey(id)
+        } else {
+          this.$refs.tree.setCurrentKey(this.archiveId)
+        }
       }
     }
   }

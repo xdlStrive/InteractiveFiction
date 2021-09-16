@@ -128,7 +128,7 @@ router.post('/update', function (req, res) {
     $set: params
   }, function (err, doc) {
     if (err) return 'err' + err
-    res.json({ code: 20000, msg: '更新成功！'})
+    res.json({ code: 20000, msg: '更新用户信息成功！'})
   })
 })
 

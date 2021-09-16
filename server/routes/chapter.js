@@ -107,7 +107,7 @@ router.get('/volumesList', (req, res) => {
     }, {
       $project: {
           _id: 0,
-          chapter_id: 1,
+          n_id: '$chapter_id',
           title: 1
       }
     }, {

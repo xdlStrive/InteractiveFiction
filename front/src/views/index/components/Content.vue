@@ -1,19 +1,15 @@
 <!-- 主页 -->
 <template>
   <div class="content-box">
-    <List ref="tree" @fetchOneChapter="fetchOneChapterFun" />
+    <List ref="tree" :archive-id="archiveID" @fetchOneChapter="fetchOneChapterFun" />
     <div class="chapter-box" ref="chapterBox">
-      <!-- <h3>{{chapterTitle}}</h3> -->
-      <!-- <vue-typed-js :strings="['First text', 'Second Text']">
-        <h1 class="typing">这是测试打字机文字</h1>
-      </vue-typed-js> -->
-      <div class="abc">{{ obj.output }}</div>
       <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textBox" class="text-box" :style="{width: textBox.width + 'px', height: textBox.height + 'px', top: textBox.top + 'px', left: textBox.left + 'px'}">
           <div class="list-placeholder-box" style="display: block"></div>
           <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
           <div class="list-placeholder-box" style="display: block"></div>
           <div class="list-placeholder-box" style="display: block"></div>
           <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
+
       </el-scrollbar>
       
       <transition name="mask">
@@ -40,11 +36,10 @@ import { fetchBranch } from '@/api/branch'
 import { fetchAphorism } from '@/api/aphorism'
 import { saveArchive, fetchArchive } from '@/api/user'
 
-
 export default {
 	components: {
     List, SelectLayer
-  }, 
+  },
   data () {
     return {
       typerOptions: {
@@ -69,46 +64,39 @@ export default {
 			selectVisible: false,
 			selectIndex: null,
       paragraphHeight: 0,
-      obj: {
-        output: '',
-        type: 'normal',
-        isEnd: true,
-        speed: 800,
-        backSpeed: 800,
-        sleep: 500,
-        singleBack: false,
-        sentencePause: false
-      },
       textBox: {
-        width: 1150,
-        height: 570,
-        top: 22,
-        left: 30 ,
+        screenWidth: document.body.clientWidth,
+        screenHeight: document.body.clientHeight,
+        width: null,
+        height: null,
+        top: null,
+        left: null ,
       },
       pargaraphType: null,
       maskVisible: false,
       aphorism: {
         text: '',
         author: ''
-      }
+      },
+      archiveID: null
     };
+  },
+  computed: {
+    screenWidth() { // 监听screenWidth这个属性
+      return this.textBox.screenWidth
+    }
   },
 	watch: {
 		selectIndex(val) {
       const currentParagraphIndex = this.currentParagraphID
-      // const currentData = this.chapterDataList[currentParagraphIndex]
 
       fetchBranch({branch_id: val}).then((res) => {
-        console.log(res)
         res.data.paragraph_list.forEach((item, index) => {
           this.chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
           this.chapterDataList.push(item)
         })
         
-        // console.log(this.chapterList)
       })
-
-      // this.chapterList.push(currentData.content[val])
       this.currentParagraphID += 1
       this.$nextTick(() => {
         this.$refs[`listItemBox${currentParagraphIndex}`].style.display = 'block'
@@ -120,22 +108,30 @@ export default {
       })
       this.selectVisible = false
 		},
+    screenWidth: {
+      handler() {
+        this.calculateReadingAreaSize() // 重计算阅读区大小
+      },
+      immediate: true
+    },
+    // chapterList(value) {
+    //   // console.log(value)
+    //   // console.log(value.length)
+    //   // this.typerFun(value[value.length - 1])
+    // }
 	},
   created() {
     fetchArchive().then(res => { // 获取章节
       this.fetchOneChapterFun(res.data[0])
-      console.log(this.$refs.tree)
-      this.$refs.tree.setNodeCheacked(res.data[0])
+      this.archiveID = res.data[0]
     })
+    window.onresize = () => { // 监听窗口大小变化
+      this.textBox.screenWidth = document.body.clientWidth
+    }
   },
   methods: {
     // 加载段落
     loadParagraph() {
-      this.textBox.width = this.$refs.chapterBox.offsetWidth * 0.5989583
-      this.textBox.height = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.622222
-      this.textBox.top = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + (this.$refs.chapterBox.offsetHeight - this.$refs.chapterBox.offsetWidth * 0.46875)
-      this.textBox.left = this.$refs.chapterBox.offsetWidth * 0.2135416
-
       const index = this.currentParagraphID
       const currentData = this.chapterDataList[index]
       
@@ -144,7 +140,8 @@ export default {
           this.chapterList.push(currentData.content)
           this.currentParagraphID += 1
           this.$nextTick(() => {
-            this.$refs[`listItemBox${index}`].style.display = 'block'
+            this.typerFun(this.$refs[`listItemBox${index}`])
+            // this.$refs[`listItemBox${index}`].style.display = 'block'
             this.$refs[`listItemBox${index}`].scrollTop = 100
             this.$refs[`listItemBox${index}`].scrollIntoView({
               block: 'end',
@@ -217,7 +214,6 @@ export default {
         const params = {
           archive: [this.chapterID]
         }
-        console.log(this.$store.state)
         saveArchive(params).then(res => {
           console.log(res)
         })
@@ -228,6 +224,33 @@ export default {
       fetchArchive().then(res => { // 获取章节
         this.fetchOneChapterFun(res.data[1])
         this.$refs.tree.setNodeCheacked(res.data[1])
+      })
+    },
+    calculateReadingAreaSize() { // 计算阅读区大小
+      this.$nextTick(() => {
+        this.textBox.width = this.$refs.chapterBox.offsetWidth * 0.5989583
+        this.textBox.height = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.622222
+        this.textBox.top = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + (this.$refs.chapterBox.offsetHeight - this.$refs.chapterBox.offsetWidth * 0.46875)
+        this.textBox.left = this.$refs.chapterBox.offsetWidth * 0.2135416
+      })
+    },
+    typerFun(target) { // 打字机效果
+      Array.from(target.children).forEach((value) => {
+        const textArr = value.innerHTML.split('')
+        let indexs = 0
+        let text = ''
+        
+        value.innerHTML = 0
+        target.style.display = 'block'
+  
+        const timer = setInterval(() => {
+          text += textArr[indexs]
+          value.innerHTML = text
+          indexs++
+          if (indexs >= textArr.length) {
+            clearInterval(timer)
+          }
+        }, 50)
       })
     }
   }
