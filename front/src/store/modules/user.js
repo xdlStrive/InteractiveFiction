@@ -43,7 +43,7 @@ const actions = {
         if (!data) {
           reject('验证失败，请重新登录！')
         }
-        const { _id, roles, username, avatar, introduction } = data
+        const { _id, roles, username, avatar } = data
         // 角色必须是非空数组
         if (!roles || roles.length <= 0) {
           reject('getInfo: 角色必须是非空数组！')

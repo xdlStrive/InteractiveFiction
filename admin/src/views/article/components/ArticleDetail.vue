@@ -130,12 +130,13 @@ export default {
   },
   methods: {
     openNode(data) { // 绑定树形卷的展开事件
-      this.currentVolumeID = data.volume_id
+      console.log(data)
+      this.currentVolumeID = data.n_id
       console.log(this.currentVolumeID)
     },
     handleNodeClick(data, node) { // 树形节点点击事件
       if (node.level === 2) {
-        this.fetchChapter(data.chapter_id)
+        this.fetchChapter(data.n_id)
       }
     },
     fetchVolumeListFun() { // 获取卷列表
@@ -174,8 +175,9 @@ export default {
         return resolve(this.volumeList)
       } else {
         const params = {
-          volume_id: node.data.volume_id
+          volume_id: node.data.n_id
         }
+        console.log(node)
         fetchVolumesChapterList(params).then(res => {
           if (res.code === 20000) {
             this.chapterList = res.data

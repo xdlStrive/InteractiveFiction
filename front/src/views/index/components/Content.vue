@@ -23,7 +23,7 @@
         </div>
       </transition>
       
-      <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" />
+      <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex.sync="selectIndex" /><!--  eslint-disable-line vue/no-custom-modifiers-on-v-model vue/no-v-model-argument 忽略eslint报错 -->
     </div>
   </div>
 </template>
@@ -336,7 +336,7 @@ export default {
     text-align: right;
   }
   .mask-enter-active, .mask-leave-active {
-    transition: opacity .8s ease;
+    transition: opacity 1s ease;
     transition-delay: .1s;
   }
   .mask-enter-from, .mask-leave-to {

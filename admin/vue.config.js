@@ -45,17 +45,12 @@ module.exports = {
       [process.env.VUE_APP_BASE_API]: {
         target: 'http://localhost:3000/',
         ws: true,
-        // bypass: function (req, res, proxyOptions) {
-        //   req.headers.referer = 'http://47.97.230.150:3000'
-        //   req.headers.host = '47.97.230.150:3000'
-        // },
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
       }
-    } // string | Object
-    // after: require('./mock/mock-server.js')
+    }
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

@@ -178,6 +178,7 @@ router.get('/oneChapter', (req, res) => {
   })
 })
 
+//#region 
 // //富文本上传图片接口
 // router.post('/images', function (req, res) {
 //   let form = new formidable.IncomingForm();
@@ -360,5 +361,6 @@ router.get('/oneChapter', (req, res) => {
 //     })
 //   })
 // })
+//#endregion
 
 module.exports = router;
