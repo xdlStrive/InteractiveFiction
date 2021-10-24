@@ -4,12 +4,11 @@
     <List ref="tree" :archive-id="archiveID" @fetchOneChapter="fetchOneChapterFun" />
     <div class="chapter-box" ref="chapterBox">
       <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textBox" class="text-box" :style="{width: textBox.width + 'px', height: textBox.height + 'px', top: textBox.top + 'px', left: textBox.left + 'px'}">
-          <div class="list-placeholder-box" style="display: block"></div>
-          <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
-          <div class="list-placeholder-box" style="display: block"></div>
-          <div class="list-placeholder-box" style="display: block"></div>
-          <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
-
+        <div class="list-placeholder-box" style="display: block"></div>
+        <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
+        <div class="list-placeholder-box" style="display: block"></div>
+        <div class="list-placeholder-box" style="display: block"></div>
+        <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
       </el-scrollbar>
       
       <transition name="mask">
