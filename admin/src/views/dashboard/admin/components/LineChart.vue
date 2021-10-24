@@ -91,10 +91,10 @@ export default {
           }
         },
         legend: {
-          data: ['平均占用率', '最高占用率']
+          data: ['CPU平均占用率', 'CPU最高占用率']
         },
         series: [{
-          name: '平均占用率',
+          name: 'CPU平均占用率',
           lineStyle: {
             color: '#EF8B88',
             width: 2
@@ -106,7 +106,7 @@ export default {
           animationEasing: 'cubicInOut'
         },
         {
-          name: '最高占用率',
+          name: 'CPU最高占用率',
           smooth: true,
           type: 'line',
           lineStyle: {
