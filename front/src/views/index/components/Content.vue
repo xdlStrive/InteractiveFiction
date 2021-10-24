@@ -23,7 +23,7 @@
         </div>
       </transition>
       
-      <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex.sync="selectIndex" /><!--  eslint-disable-line vue/no-custom-modifiers-on-v-model vue/no-v-model-argument 忽略eslint报错 -->
+      <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" /><!--  eslint-disable-line vue/no-v-model-argument 忽略eslint报错 -->
     </div>
   </div>
 </template>
