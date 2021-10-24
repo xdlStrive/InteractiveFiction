@@ -16,5 +16,5 @@ a online interactive fiction system project
 
 后端使用Nodejs + Mongoose，实现了后台路由和接口、数据库的CRUD、用户JWT验证等
 
-安装提示
+# 安装提示
 安装时若遇sass-loader报错，则使用npm install node-sass来安装该依赖，然后再使用yarn install
