@@ -1,5 +1,5 @@
-import router from './router'
-import store from './store'
+import router from '@/router'
+import store from '@/store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // 进度条
 import 'nprogress/nprogress.css' // 进度条样式
@@ -10,6 +10,7 @@ NProgress.configure({ showSpinner: false }) // NProgress 配置
 
 const whiteList = ['/login'] // 在白名单重定向中
 
+// 全局路由前置守卫
 router.beforeEach(async(to, from, next) => {
   // 开始进度条
   NProgress.start()
@@ -37,14 +38,13 @@ router.beforeEach(async(to, from, next) => {
         } catch (error) {
           // 移除token并转到登录页以重新登录
           await store.dispatch('user/resetToken')
-          Message.error(error || 'Has Error')
+          Message.error(error || '抱歉出错了...')
           next(`/login?redirect=${to.path}`)
           NProgress.done()
         }
       }
     }
-  } else {
-    /* 没有token*/
+  } else { /* 没有token*/
     if (whiteList.indexOf(to.path) !== -1) {
       // 在免登录的白名单中，直接进入
       next()
@@ -56,6 +56,7 @@ router.beforeEach(async(to, from, next) => {
   }
 })
 
+// 路由后置守卫
 router.afterEach(() => {
   // 完成进度条
   NProgress.done()

@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-button class="add-aphorism-btn" type="primary" @click="addDialogVisible = true; dialogTitle = '新增名言'; btnType = true">新增名言</el-button>
+    <el-button v-permission="'audience'" class="add-aphorism-btn" type="primary" @click="addDialogVisible = true; dialogTitle = '新增名言'; btnType = true">新增名言</el-button>
     <el-table
       v-loading="loading"
       :data="listData"
@@ -33,6 +33,7 @@
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
           <el-button
+            v-permission="'audience'"
             type="primary"
             size="small"
             icon="el-icon-edit"
@@ -45,7 +46,7 @@
           >
             修改
           </el-button>
-          <el-button type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button v-permission="'audience'" type="danger" size="small" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -79,8 +80,12 @@
 
 <script>
 import { fetchAphorismList, addAphorism, modifyAphorism, deleteAphorism } from '@/api/aphorism'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 
 export default {
+  directives: {
+    permission
+  },
   filters: {
     statusFilter(status) {
       const statusMap = {

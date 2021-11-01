@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '@/store'
+import NProgress from 'nprogress' // 进度条
 
 Vue.use(Router)
 
@@ -48,34 +50,6 @@ export const constantRoutes = [
       component: () => import('@/views/dashboard/index'),
       meta: { title: '仪表盘', icon: 'dashboard' }
     }]
-  },
-  // 文章管理
-  {
-    path: '/article',
-    component: Layout,
-    name: 'Article',
-    meta: { title: '文章管理', icon: 'documentation' },
-    children: [
-      {
-        path: 'create',
-        name: 'CreateArticles',
-        component: () => import('@/views/article/create'),
-        meta: { title: '新增文章', icon: 'edit' }
-      },
-      {
-        path: 'revise/:id', // 表示路径格式为edit/:id(数字)，\\d+表示必须为数字类型，如果掺入其他字符（包括英文）会报404
-        name: 'ReviseArticles',
-        component: () => import('@/views/article/revise'),
-        meta: { title: '修改文章', noCache: true, activeMenu: '/article/list' },
-        hidden: true
-      },
-      {
-        path: 'list',
-        name: 'ArticleList',
-        component: () => import('@/views/article/list'),
-        meta: { title: '章节列表', icon: 'list' }
-      }
-    ]
   },
   // 选择列表
   {
@@ -146,6 +120,46 @@ export const constantRoutes = [
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
+  }
+]
+
+export const asyncRoutes = [
+  // 文章管理
+  {
+    path: '/article',
+    component: Layout,
+    name: 'Article',
+    meta: { title: '文章管理', icon: 'documentation' },
+    children: [
+      {
+        path: 'create',
+        name: 'CreateArticles',
+        component: () => import('@/views/article/create'),
+        meta: { title: '新增文章', icon: 'edit', roles: ['admin'] },
+        beforeEnter(to, from, next) {
+          console.log(store.getters.roles)
+          if (store.getters.roles === 'admin') {
+            next()
+          } else {
+            NProgress.done()
+            router.push({ name: 'ArticleList' })
+          }
+        }
+      },
+      {
+        path: 'revise/:id', // 表示路径格式为edit/:id(数字)，\\d+表示必须为数字类型，如果掺入其他字符（包括英文）会报404
+        name: 'ReviseArticles',
+        component: () => import('@/views/article/revise'),
+        meta: { title: '修改文章', noCache: true, activeMenu: '/article/list' },
+        hidden: true
+      },
+      {
+        path: 'list',
+        name: 'ArticleList',
+        component: () => import('@/views/article/list'),
+        meta: { title: '章节列表', icon: 'list' }
+      }
+    ]
   }
 ]
 

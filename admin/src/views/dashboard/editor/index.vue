@@ -1,72 +1,162 @@
 <template>
   <div class="dashboard-editor-container">
-    <div class=" clearfix">
-      <pan-thumb :image="avatar" style="float: left">
-        你的角色
-        <span v-for="item in roles" :key="item" class="pan-info-roles">{{ item }}</span>
-      </pan-thumb>
-      <div class="info-container">
-        <span class="display_name">{{ name }}</span>
-        <span style="font-size:20px;padding-top:20px;display:inline-block;">仪表盘编辑器</span>
-      </div>
-    </div>
-    <div>
-      <img :src="emptyGif" class="emptyGif">
-    </div>
+
+    <panel-group @handleSetLineChartData="handleSetLineChartData" />
+
+    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
+      <line-chart :chart-data="lineChartData" />
+    </el-row>
+
+    <el-row :gutter="32">
+      <el-col :xs="24" :sm="24" :lg="8">
+        <div class="chart-wrapper">
+          <raddar-chart />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :lg="8">
+        <div class="chart-wrapper">
+          <pie-chart />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :lg="8">
+        <div class="chart-wrapper">
+          <bar-chart />
+        </div>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="8">
+      <!-- <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
+        <transaction-table />
+      </el-col> -->
+      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
+        <todo-list />
+      </el-col>
+      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
+        <box-card />
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import PanThumb from '@/components/PanThumb'
+/* eslint-disable */
+import PanelGroup from './components/PanelGroup'
+import LineChart from './components/LineChart'
+import RaddarChart from './components/RaddarChart'
+import PieChart from './components/PieChart'
+import BarChart from './components/BarChart'
+// import TransactionTable from './components/TransactionTable'
+import TodoList from './components/TodoList'
+import BoxCard from './components/BoxCard'
+import { getCPUUtilizationList } from '@/api/aly-api'
+
+const lineChartData = {
+  newVisitis: {
+    expectedData: [100, 120, 161, 134, 105, 160, 165],
+    actualData: [120, 82, 91, 154, 162, 140, 145]
+  },
+  messages: {
+    expectedData: [],
+    actualData: [],
+    date: []
+  },
+  purchases: {
+    expectedData: [80, 100, 121, 104, 105, 90, 100],
+    actualData: [120, 90, 100, 138, 142, 130, 130]
+  },
+  shoppings: {
+    expectedData: [130, 140, 141, 142, 145, 150, 160],
+    actualData: [120, 82, 91, 154, 162, 140, 130]
+  }
+}
 
 export default {
-  name: 'DashboardEditor',
-  components: { PanThumb },
+  name: 'DashboardAdmin',
+  components: {
+    PanelGroup,
+    LineChart,
+    RaddarChart,
+    PieChart,
+    BarChart,
+    // TransactionTable,
+    TodoList,
+    BoxCard
+  },
   data() {
     return {
-      emptyGif: 'https://wpimg.wallstcn.com/0e03b7da-db9e-4819-ba10-9016ddfdaed3'
+      lineChartData: lineChartData.messages,
+      currentTime: '',
+      startTime: ''
     }
   },
-  computed: {
-    ...mapGetters([
-      'name',
-      'avatar',
-      'roles'
-    ])
+  created: function() {
+    this.getTime()
+    this.fetchData()
+  },
+  filters: {  //格式化时间戳的过滤器
+    formatDate: function(time) {
+      var date = new Date(time)
+      let Y = date.getFullYear() + '-'
+      let M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-'
+      let D = date.getDate() + ' '
+      let h = date.getHours() + ':'
+      let m = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes())
+      let s = date.getSeconds()
+      return h + m
+    }
+  },
+  methods: {
+    getTime() {
+      var _this = this
+      const yy = new Date().getFullYear()
+      const mm = new Date().getMonth() + 1
+      const dd = new Date().getDate()
+      const hh = new Date().getHours()
+      const mf = new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes()
+      const ss = new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds()
+      _this.currentTime = yy + '-' + mm + '-' + dd + ' ' + hh + ':' + mf + ':' + ss
+      _this.startTime = yy + '-' + mm + '-' + dd + ' ' + (hh - 1) + ':' + mf + ':' + ss
+    },
+    fetchData() {
+      const params = {
+        QueryItems: 'DescribeMetricData',
+        EndTime: this.currentTime,
+        StartTime: this.startTime
+      }
+      getCPUUtilizationList(params).then(res => {
+        let jsonDataOutside = JSON.parse(res.data)
+        let jsonDataInside = JSON.parse(jsonDataOutside.Datapoints)
+        for (var i = 0; i < jsonDataInside.length; i++) {
+          this.lineChartData.expectedData.push(jsonDataInside[i].Average)
+          this.lineChartData.actualData.push(jsonDataInside[i].Maximum)
+          this.lineChartData.date.push(this.$options.filters['formatDate'](jsonDataInside[i].timestamp))// 调用过滤器的值
+        }
+      })
+    },
+    handleSetLineChartData(type) {
+      this.lineChartData = lineChartData[type]
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  .emptyGif {
-    display: block;
-    width: 45%;
-    margin: 0 auto;
-  }
+.dashboard-editor-container {
+  padding: 32px;
+  background-color: rgb(240, 242, 245);
+  position: relative;
 
-  .dashboard-editor-container {
-    background-color: #e3e3e3;
-    min-height: 100vh;
-    padding: 50px 60px 0px;
-    .pan-info-roles {
-      font-size: 12px;
-      font-weight: 700;
-      color: #333;
-      display: block;
-    }
-    .info-container {
-      position: relative;
-      margin-left: 190px;
-      height: 150px;
-      line-height: 200px;
-      .display_name {
-        font-size: 48px;
-        line-height: 48px;
-        color: #212121;
-        position: absolute;
-        top: 25px;
-      }
-    }
+  .chart-wrapper {
+    background: #fff;
+    padding: 16px 16px 0;
+    margin-bottom: 32px;
   }
+}
+
+@media (max-width:1024px) {
+  .chart-wrapper {
+    padding: 8px;
+  }
+}
 </style>

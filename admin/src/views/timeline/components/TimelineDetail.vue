@@ -1,7 +1,7 @@
 <template>
   <div id="timelineBox">
     <el-row>
-      <el-button type="primary" icon="el-icon-plus" circle @click="dialogTableVisible = true" />
+      <el-button v-permission="'audience'" type="primary" icon="el-icon-plus" circle @click="dialogTableVisible = true" />
     </el-row>
     <el-dialog title="新增时间轴节点" width="40%" :visible.sync="dialogTableVisible">
       <el-form :model="form">
@@ -37,9 +37,13 @@
 <script>
 import { postTimelineItem } from '@/api/timeline'
 import { fetchTimelineList } from '@/api/timeline'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 
 export default {
   name: 'Timeline',
+  directives: {
+    permission
+  },
   props: {
     isRevise: {
       type: Boolean,
