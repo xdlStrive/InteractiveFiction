@@ -35,6 +35,9 @@ router.post('/login', function (req, res) {
     if (!isPass) {  //如果比对不匹配
       return res.status(422).json({ msg: "您输入的密码不正确" })
     }
+    if (obj.state === 'frozen') { // 如果账号被冻结
+      return res.json({ code: 50010, msg: "您的账号已被冻结，请联系管理员进行解封" })
+    }
     const token = jwt.sign({  //比对成功则进行token签名
       id: String(obj._id)  //第一个参数为要签名的字段，最好为唯一的主键
     }, 'secret', {
@@ -106,28 +109,32 @@ router.get('/fetchArchive', function (req, res) {
 
 // 更新接口
 router.post('/update', function (req, res) {
-  const raw = String(req.headers.authorization) //获取前端请求头中的token
-  const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
-    if(err) {
-      switch(err.name) {
-        case 'JsonWebTokenError':
-          res.status(403).send({ code: 5008, msg: '无效的token' })
-          break
-        case 'TokenExpiredError':
-          res.status(403).send({ code: 50014, msg: 'token已过期' })
-      }
-    }
-    return decoded // 返回解密token得到的id
-  })
+  // const raw = String(req.headers.authorization) //获取前端请求头中的token
+  // const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
+  //   if(err) {
+  //     switch(err.name) {
+  //       case 'JsonWebTokenError':
+  //         res.status(403).send({ code: 5008, msg: '无效的token' })
+  //         break
+  //       case 'TokenExpiredError':
+  //         res.status(403).send({ code: 50014, msg: 'token已过期' })
+  //     }
+  //   }
+  //   return decoded // 返回解密token得到的id
+  // })
 
-  let params = null
-  if (req.body.archive) {
+  let params = JSON.parse(JSON.stringify(req.body))
+  if (req.body.archive) { // 如果是更新存档
     params = { 'archive.0': req.body.archive[0], 'archive.1': req.body.archive[1]}
   }
-  UserModel.findByIdAndUpdate(id, {
-    $set: params
+  delete params.id
+  console.log(req.body.id)
+  console.log(params)
+  UserModel.findByIdAndUpdate(req.body.id, {
+    $set: req.body
   }, function (err, doc) {
     if (err) return 'err' + err
+    console.log(doc)
     res.json({ code: 20000, msg: '更新用户信息成功！'})
   })
 })

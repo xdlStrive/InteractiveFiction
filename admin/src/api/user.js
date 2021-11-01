@@ -30,3 +30,12 @@ export function fetchUsersList() {
     method: 'get'
   })
 }
+
+// 冻结用户
+export function frozenUser(data) {
+  return request({
+    url: '/users/update',
+    method: 'post',
+    data
+  })
+}

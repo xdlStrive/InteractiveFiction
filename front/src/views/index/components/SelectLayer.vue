@@ -16,7 +16,7 @@
 
 <script>
 export default ({
-  props: ['selectItem', 'selectIndex'],
+  props: ['selectItem'],
   data() {
     return {
       dialogVisible: true

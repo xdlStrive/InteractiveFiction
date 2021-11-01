@@ -94,18 +94,19 @@ export default {
           this.chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
           this.chapterDataList.push(item)
         })
-        
+        this.loadParagraph()
       })
-      this.currentParagraphID += 1
+      this.currentParagraphID++
       this.$nextTick(() => {
         this.$refs[`listItemBox${currentParagraphIndex}`].style.display = 'block'
-        this.$refs[`listItemBox${currentParagraphIndex}`].scrollTop = 100
+        this.$refs[`listItemBox${currentParagraphIndex}`].scrollTop = 200
         this.$refs[`listItemBox${currentParagraphIndex}`].scrollIntoView({
           block: 'end',
           behavior: 'smooth'
         })
       })
       this.selectVisible = false
+      
 		},
     screenWidth: {
       handler() {
@@ -133,11 +134,11 @@ export default {
     loadParagraph() {
       const index = this.currentParagraphID
       const currentData = this.chapterDataList[index]
-      
+
       if (index < this.chapterDataList.length) {
         if (currentData.selects === undefined || currentData.selects.length === 0) { // 文本段落
           this.chapterList.push(currentData.content)
-          this.currentParagraphID += 1
+          this.currentParagraphID++
           this.$nextTick(() => {
             this.typerFun(this.$refs[`listItemBox${index}`])
             // this.$refs[`listItemBox${index}`].style.display = 'block'
@@ -152,7 +153,6 @@ export default {
             const params = {
               archive: [this.chapterID, this.chapterID]
             }
-            console.log(this.$store.state)
             saveArchive(params).then(res => { // bad-end 存档
               console.log(res)
             })
@@ -164,7 +164,7 @@ export default {
           }
           this.selectVisible = true // 显示选择弹框
           // 根据选择的结果加载对应的段落
-          this.currentParagraphID += 1
+          this.currentParagraphID++
         }
       } else {
         if (this.pargaraphType === 0) {
@@ -194,7 +194,7 @@ export default {
       this.currentParagraphID = 0
       fetchOneChapter({ chapter_id: this.chapterID }).then(res => {
         const { chapter_id, paragraph_list, title } = res.data
-        console.log(chapter_id)
+        chapter_id
         this.chapterTitle = title
         this.chapterDataList = paragraph_list
 				this.chapterDataList.forEach((item) => {
@@ -208,13 +208,13 @@ export default {
             this.chapterList = this.chapterList.concat(item.content) // 合并数组
 					}
 				})
-        console.log(this.chapterList)
         this.loadParagraph() // 自动加载第一段
         const params = {
           archive: [this.chapterID]
         }
         saveArchive(params).then(res => {
-          console.log(res)
+          // console.log(res)
+          res
         })
       })
     },
@@ -233,23 +233,30 @@ export default {
         this.textBox.left = this.$refs.chapterBox.offsetWidth * 0.2135416
       })
     },
-    typerFun(target) { // 打字机效果
-      Array.from(target.children).forEach((value) => {
+    async typerFun(target) { // 打字机效果
+      for (let [index, value] of Object.entries(target.children)) {
+        await this.loadTyperText(target, index, value)
+      }
+    },
+    loadTyperText(target, index, value) { // 加载打字文字
+      return new Promise(resolve => {
         const textArr = value.innerHTML.split('')
         let indexs = 0
         let text = ''
-        
+          
         value.innerHTML = 0
-        target.style.display = 'block'
-  
+        target.children[index].style.display = 'block'
+
         const timer = setInterval(() => {
           text += textArr[indexs]
           value.innerHTML = text
           indexs++
           if (indexs >= textArr.length) {
             clearInterval(timer)
+            resolve(timer)
           }
-        }, 50)
+        }, 50) // 文字加载延迟
+        return timer
       })
     }
   }
@@ -292,10 +299,10 @@ export default {
   }
   .list-item-box {
     margin-bottom: 20px;
-    display: none;
     transition: all 0.7s ease;
   }
   .list-item-box > p {
+    display: none;
     text-indent: 2rem;
     letter-spacing: .5px;
     user-select: none;

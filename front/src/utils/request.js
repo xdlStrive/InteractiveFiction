@@ -32,11 +32,7 @@ service.interceptors.response.use(
     const res = response.data
     // 如果自定义code不是20000，则将其判断为错误
     if (res.code !== 20000) {
-      ElMessage({
-        message: res.message || 'Error',
-        type: 'error',
-        duration: 5 * 1000
-      })
+      
 
       // 50008: 无效Token; 50012: 该账号已登录; 50014: Token 过期;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
@@ -50,8 +46,20 @@ service.interceptors.response.use(
             location.reload()
           })
         })
+      } else if (res.code === 50010) { // 账号被冻结
+        ElMessage({
+          message: res.msg || 'Error',
+          type: 'warning',
+          duration: 3 * 1000
+        })
+      } else {
+        ElMessage({
+          message: res.msg || 'Error',
+          type: 'error',
+          duration: 5 * 1000
+        })
       }
-      return Promise.reject(new Error(res.message || 'Error'))
+      return Promise.reject(new Error(res.msg || 'Error'))
     } else {
       return res
     }

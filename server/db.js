@@ -30,6 +30,10 @@ db.once('open', () => { // 监听一次打开
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  state: { // 账号状态
+    type: String,
+    default: 'valid' // 默认有效状态
+  },
   email: String,
   roles: { // 权限（必须）
     type:String,
