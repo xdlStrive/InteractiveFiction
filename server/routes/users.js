@@ -31,33 +31,33 @@ router.post('/login', function (req, res) {
       // 返回给前台错误信息
       return res.status(422).json({ msg: "您输入的用户名有误" })
     }
-    const isPass = bcrypt.compareSync(req.body.password, obj.password)  //将前端传入的密码和数据库中保存的密码进行比对
-    if (!isPass) {  //如果比对不匹配
+    const isPass = bcrypt.compareSync(req.body.password, obj.password)  // 将前端传入的密码和数据库中保存的密码进行比对
+    if (!isPass) {  // 如果比对不匹配
       return res.status(422).json({ msg: "您输入的密码不正确" })
     }
     if (obj.state === 'frozen') { // 如果账号被冻结
       return res.json({ code: 50010, msg: "您的账号已被冻结，请联系管理员进行解封" })
     }
-    const token = jwt.sign({  //比对成功则进行token签名
-      id: String(obj._id)  //第一个参数为要签名的字段，最好为唯一的主键
-    }, 'secret', {
-      expiresIn: '1d'
-    })  //第二个参数为秘钥
-    res.status(201).json({ code: 20000, msg: '登录成功', token: token })  //返回给前端
+    const token = jwt.sign({  // 比对成功则进行token签名
+      id: String(obj._id)  // 第一个参数为要签名的字段，最好为唯一的主键
+    }, 'Praise the peculiar night', { // 第二个参数为秘钥
+      expiresIn: '7day' // 第三个参数是过期时间
+    })  
+    res.status(201).json({ code: 20000, msg: '登录成功', token: token })  // 返回给前端
   })
 })
 
 // 查询用户信息接口
 router.get("/profile", async (req, res) => {
   const raw = String(req.headers.authorization) //获取前端请求头中的token
-  const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
+  const { id } = jwt.verify(raw, 'Praise the peculiar night', (err, decoded) => {
     if(err) {
       switch(err.name) {
         case 'JsonWebTokenError':
-          res.status(403).send({ code: 5008, msg: '无效的token' })
+          res.send({ code: 50008, msg: '无效的token' })
           break
         case 'TokenExpiredError':
-          res.status(403).send({ code: 50014, msg: 'token已过期' })
+          res.send({ code: 50014, msg: 'token已过期' })
       }
     }
     return decoded // 返回解密token得到的id
@@ -88,15 +88,15 @@ router.get('/fetchList', function (req, res) {
 
 // 获取用户存档接口
 router.get('/fetchArchive', function (req, res) {
-  const raw = String(req.headers.authorization) //获取前端请求头中的token
-  const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
+  const raw = String(req.headers.authorization) // 获取前端请求头中的token
+  const { id } = jwt.verify(raw, 'Praise the peculiar night', (err, decoded) => {
     if(err) {
       switch(err.name) {
         case 'JsonWebTokenError':
-          res.status(403).send({ code: 5008, msg: '无效的token' })
+          res.send({ code: 50008, msg: '无效的token' })
           break
         case 'TokenExpiredError':
-          res.status(403).send({ code: 50014, msg: 'token已过期' })
+          res.send({ code: 50014, msg: 'token已过期' })
       }
     }
     return decoded // 返回解密token得到的id
@@ -110,11 +110,11 @@ router.get('/fetchArchive', function (req, res) {
 // 更新接口
 router.post('/update', function (req, res) {
   // const raw = String(req.headers.authorization) //获取前端请求头中的token
-  // const { id } = jwt.verify(raw, 'secret', (err, decoded) => {
+  // const { id } = jwt.verify(raw, 'Praise the peculiar night', (err, decoded) => {
   //   if(err) {
   //     switch(err.name) {
   //       case 'JsonWebTokenError':
-  //         res.status(403).send({ code: 5008, msg: '无效的token' })
+  //         res.status(403).send({ code: 50008, msg: '无效的token' })
   //         break
   //       case 'TokenExpiredError':
   //         res.status(403).send({ code: 50014, msg: 'token已过期' })

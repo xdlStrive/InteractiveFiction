@@ -44,3 +44,10 @@ export function saveArchive(data) {
   })
 }
 
+// 登出接口
+export function logout() {
+  return request({
+    url: '/users/logout',
+    method: 'get'
+  })
+}

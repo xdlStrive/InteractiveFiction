@@ -1,8 +1,8 @@
 {
-  "name": "vue-admin-template",
+  "name": "if-project",
   "version": "4.2.1",
-  "description": "A vue admin template with Element UI & axios & iconfont & permission control & lint",
-  "author": "Pan <panfree23@gmail.com>",
+  "description": "An online interactive fiction project",
+  "author": "Weird cat",
   "license": "MIT",
   "scripts": {
     "dev": "vue-cli-service serve",

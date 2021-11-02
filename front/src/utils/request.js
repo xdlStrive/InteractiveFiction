@@ -33,13 +33,12 @@ service.interceptors.response.use(
     // 如果自定义code不是20000，则将其判断为错误
     if (res.code !== 20000) {
       
-
       // 50008: 无效Token; 50012: 该账号已登录; 50014: Token 过期;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         // to re-login
-        ElMessageBox.confirm('您已注销，您可以取消以停留在此页，或重新登录', 'Confirm logout', {
-          confirmButtonText: 'Re-Login',
-          cancelButtonText: 'Cancel',
+        ElMessageBox.confirm('您已注销，您可以取消以停留在此页，或重新登录', '登出提示', {
+          confirmButtonText: '重新登录',
+          cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           store.dispatch('user/resetToken').then(() => {

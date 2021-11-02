@@ -110,10 +110,8 @@ export default {
         }
       }
     }
-
     .avatar-container {
       margin-right: 30px;
-
       .avatar-wrapper {
         margin-top: 5px;
         position: relative;
@@ -136,4 +134,9 @@ export default {
     }
   }
 }
+</style>
+<style lang="css">
+  .user-dropdown {
+    text-align: center;
+  }
 </style>

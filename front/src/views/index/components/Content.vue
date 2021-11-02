@@ -10,7 +10,7 @@
         <div class="list-placeholder-box" style="display: block"></div>
         <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
       </el-scrollbar>
-      
+
       <transition name="mask">
         <div class="mask-layer" v-if="maskVisible" @click="closeMask">
           <transition name="mask">
@@ -21,7 +21,7 @@
           </transition>
         </div>
       </transition>
-      
+
       <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" /><!--  eslint-disable-line vue/no-v-model-argument 忽略eslint报错 -->
     </div>
   </div>
