@@ -6,7 +6,7 @@ const ChapterModel = mongoose.model('chapter');
 const selectModel = mongoose.model('select');
 const CounterModel = mongoose.model('counter');
 
-mongoose.set('useFindAndModify', false)
+// mongoose.set('useFindAndModify', false)
 
 // 新增章节接口
 router.post('/add', (req, res) => {

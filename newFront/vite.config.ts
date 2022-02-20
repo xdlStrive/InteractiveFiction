@@ -24,5 +24,16 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
     }),
-  ]
+  ],
+  server: {
+    port: 8080,
+    proxy: {
+      '/users': {
+        target: 'http://localhost:3000',
+        ws: true,
+        changeOrigin: true,
+        rewrite: (path) => path.replace('^', ''),
+      }
+    }
+  }
 })

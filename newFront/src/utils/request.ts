@@ -2,17 +2,16 @@
   2月7日问题：userinfo中用到了api方法，而api又调用了request，导致在userinfo加载完成前就加载了request；
   但在request中又调用了userinfo，导致了未加载完成userinfo之前，就使用了userinfo的情况，导致报错。
 */
-console.log(222)
 import axios from 'axios'
 import userInfo from '@/store/userInfo'
 import { getToken } from './auth'
 
-// const userInfoStore = userInfo()
-
+const userInfoStore = userInfo()
+console.log(import.meta.env.BASE_URL)
 // 创建axios实例
 const service = axios.create({
-  baseUrl: '',
-  timeout: 5000
+  baseUrl: import.meta.env.BASE_URL,
+  timeout: 5000 // 超时时间
 })
 
 
@@ -20,7 +19,7 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     // 发出请求前执行事件
-    if (userInfoStore.token) {
+    if (userInfoStore.token) { // 检查是否储存有token
       // 让每个请求携带token
       config.headers.authorization = getToken()
     }
@@ -28,7 +27,7 @@ service.interceptors.request.use(
   },
   error => {
     // 处理请求错误
-    console.log(error) // for debug
+    console.log(error)
     return Promise.reject(error)
   }
 )

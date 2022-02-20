@@ -10,7 +10,7 @@
       <div class="titleBox">
         <h2 class="title">愚 者</h2>
       </div>
-      <el-form :model="form">
+      <el-form :model="form" :rules="rules">
         <el-form-item>
           <el-input prefix-icon="el-icon-user" placeholder="用户名" v-model="form.username" />
         </el-form-item>
@@ -35,8 +35,14 @@
 import { ref, reactive } from 'vue'
 import userInfo from '@/store/userInfo'
 import { useRouter } from 'vue-router';
+import { userLogin } from '@/api/user'
 const userInfoStore = userInfo()
 const router = useRouter()
+
+const rules = {
+  username: [{required: true, message: '用户名不能为空', trigger: 'blur'}],
+  password: [{required: true, message: '密码不能为空', trigger: 'blur'}]
+}
 
 let loading = ref(true)
 const form = reactive({
@@ -45,37 +51,32 @@ const form = reactive({
 })
 
 const handleLogin = () => {
-  if (form.username === '') {
-    ElMessage({
-      message: '请输入用户名',
-      type: 'warning'
-    })
-  } else if (form.password === '') {
-    ElMessage({
-      message: '请输入密码',
-      type: 'warning'
-    })
-  } else {
-    loading.value = true
-    userInfoStore.login(form).then(() => {
-      loading.value = false
-      router.push({ path: '/book' })
-      // userInfoStore.dispatch('user/getInfo', userInfoStore.state.user.token).then(res => {
-      //   console.log(res)
-      // })
-    }).catch(() => {
-      loading.value = false
-    })
-    userInfoStore.login(form).then(() => {
-      loading.value = false
-      router.push({ path: '/book' })
-      // userInfoStore.dispatch('user/getInfo', userInfoStore.state.user.token).then(res => {
-      //   console.log(res)
-      // })
-    }).catch(() => {
-      loading.value = false
-    })
-  }
+  loading.value = true
+  userLogin(form).then((res) => {
+    if (res.code === 20000) {
+      userInfoStore.login(res)
+      router.push({name: 'book'})
+    }
+  })
+  // userInfoStore.login(form).then(() => {
+  //   loading.value = false
+  //   router.push({ path: '/book' })
+  //   // userInfoStore.dispatch('user/getInfo', userInfoStore.state.user.token).then(res => {
+  //   //   console.log(res)
+  //   // })
+  // }).catch(() => {
+  //   loading.value = false
+  // })
+  // userInfoStore.login(form).then(() => {
+  //   loading.value = false
+  //   router.push({ path: '/book' })
+  //   // userInfoStore.dispatch('user/getInfo', userInfoStore.state.user.token).then(res => {
+  //   //   console.log(res)
+  //   // })
+  // }).catch(() => {
+  //   loading.value = false
+  // })
+
 }
 
 </script>

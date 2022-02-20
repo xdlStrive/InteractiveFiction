@@ -26,12 +26,14 @@ router.post('/login', function (req, res) {
   UserModel.findOne({
     username: req.body.username
   }, function (err, obj) {
-    // console.log(obj)
-    if (obj === null) {
-      // 返回给前台错误信息
+    console.log(obj)
+    if (obj === null) { // 如果未查询到
       return res.status(422).json({ msg: "您输入的用户名有误" })
     }
-    const isPass = bcrypt.compareSync(req.body.password, obj.password)  // 将前端传入的密码和数据库中保存的密码进行比对
+    console.log(req.body.password)
+    console.log(obj.password)
+    const isPass = bcrypt.compareSync(req.body.password, obj.password) // 将前端传入的密码和数据库中保存的密码进行比对
+    console.log(isPass)
     if (!isPass) {  // 如果比对不匹配
       return res.status(422).json({ msg: "您输入的密码不正确" })
     }

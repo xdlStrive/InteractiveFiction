@@ -1,7 +1,12 @@
-console.log(666);
 import request from '@/utils/request'
+
+type userInfo = { // 定义login函数参数类型
+  username: string,
+  password: string
+}
+
 // 用户注册接口
-export function userRegister(data) {
+export function userRegister(data: userInfo) {
   return request({
     url: '/users/register',
     method: 'post',
@@ -10,7 +15,7 @@ export function userRegister(data) {
 }
 
 // 用户登录接口
-export function userLogin(data) {
+export function userLogin(data: userInfo) {
   return request({
     url: '/users/login',
     method: 'post',
