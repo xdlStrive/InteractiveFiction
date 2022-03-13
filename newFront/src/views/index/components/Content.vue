@@ -28,186 +28,189 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
-import List from './List.vue'
-import SelectLayer from './SelectLayer.vue'
-import { fetchOneChapter } from '@/api/chapter'
-import { fetchBranch } from '@/api/branch'
-import { fetchAphorism } from '@/api/aphorism'
-import { saveArchive, fetchArchive } from '@/api/user'
+  import { ref, reactive } from 'vue'
+  import List from './List.vue'
+  import SelectLayer from './SelectLayer.vue'
+  import { fetchOneChapter } from '@/api/chapter'
+  import { fetchBranch } from '@/api/branch'
+  import { fetchAphorism } from '@/api/aphorism'
+  import { saveArchive, fetchArchive } from '@/api/user'
 
-const typerOptions = reactive({
-  output: '',
-  type: 'normal',
-  isEnd: false,
-  speed: 10,
-  backSpeed: 40,
-  sleep: 100,
-  singleBack: false,
-  sentencePause: false
-})
+  const typerOptions = reactive({
+    output: '',
+    type: 'normal',
+    isEnd: false,
+    speed: 10,
+    backSpeed: 40,
+    sleep: 100,
+    singleBack: false,
+    sentencePause: false
+  })
 
-let chapterID = ref(1)
-let chapterTitle = ''
-let chapterDataList = []
-let chapterList = []
-let currentParagraphID = 0
-let	currentSelect = reactive({
-  select: [],
-  content: []
-})
-let	selectVisible = false
-let selectIndex = null
-let paragraphHeight = 0
-let textBox = reactive({
-  screenWidth: document.body.clientWidth,
-  screenHeight: document.body.clientHeight,
-  width: null,
-  height: null,
-  top: null,
-  left: null ,
-})
-let pargaraphType = null
-let maskVisible = false
-let aphorism = reactive({
-  text: '',
-  author: ''
-})
-let archiveID = null
+  let chapterID = ref(1)
+  let chapterTitle = ref('')
+  let chapterDataList = reactive([])
+  let chapterList = reactive([])
+  let currentParagraphID = ref(0)
+  let	currentSelect = reactive({
+    select: [],
+    content: []
+  })
+  let	selectVisible = ref(false)
+  let selectIndex = ref(null)
+  let paragraphHeight = ref(0)
+  let textBox = reactive({
+    screenWidth: document.body.clientWidth,
+    screenHeight: document.body.clientHeight,
+    width: null,
+    height: null,
+    top: null,
+    left: null ,
+  })
+  let pargaraphType = ref(null)
+  let maskVisible = ref(false)
+  let aphorism = reactive({
+    text: '',
+    author: ''
+  })
+  let archiveID = ref(null)
 
-// 加载段落
-//     loadParagraph() {
-//       const index = this.currentParagraphID
-//       const currentData = this.chapterDataList[index]
+  // 加载段落
+  function loadParagraph() {
+    const index = currentParagraphID.value
+    const currentData = chapterDataList[index]
 
-//       if (index < this.chapterDataList.length) {
-//         if (currentData.selects === undefined || currentData.selects.length === 0) { // 文本段落
-//           this.chapterList.push(currentData.content)
-//           this.currentParagraphID++
-//           this.$nextTick(() => {
-//             this.typerFun(this.$refs[`listItemBox${index}`])
-//             // this.$refs[`listItemBox${index}`].style.display = 'block'
-//             this.$refs[`listItemBox${index}`].scrollTop = 100
-//             this.$refs[`listItemBox${index}`].scrollIntoView({
-//               block: 'end',
-//               behavior: 'smooth'
-//             })
-//           })
-//           if (currentData.type === 0) { // bad-end结局
-//             this.pargaraphType = 0
-//             const params = {
-//               archive: [this.chapterID, this.chapterID]
-//             }
-//             saveArchive(params).then(res => { // bad-end 存档
-//               console.log(res)
-//             })
-//           }
-//         } else if (currentData.selects.length > 1) { // 选择
-//           this.currentSelect = {
-//             select: currentData.selects,
-//             content: currentData.selects_key
-//           }
-//           this.selectVisible = true // 显示选择弹框
-//           // 根据选择的结果加载对应的段落
-//           this.currentParagraphID++
-//         }
-//       } else {
-//         if (this.pargaraphType === 0) {
-//           this.currentParagraphID = 0
-//           fetchAphorism().then(res => { // 获取名言
-//             console.log(res)
-//             this.aphorism.text = res.data.text
-//             this.aphorism.author = res.data.author
-//             this.maskVisible = true
-//             this.pargaraphType = null
-//           })
-//         } else {
-//           this.$message({
-//             message: '本章已结束',
-//             type: 'warning',
-//             duration: 1000
-//           })
-//         }
-//       }
-//     },
-//     fetchOneChapterFun(id) { // 获取章节
-//       if (id) {
-//         this.chapterID = id
-//       }
-//       this.chapterList = []
-//       this.chapterDataList = []
-//       this.currentParagraphID = 0
-//       fetchOneChapter({ chapter_id: this.chapterID }).then(res => {
-//         const { chapter_id, paragraph_list, title } = res.data
-//         chapter_id
-//         this.chapterTitle = title
-//         this.chapterDataList = paragraph_list
-// 				this.chapterDataList.forEach((item) => {
-// 					if (item.content.length === 1) { // 普通段落
-// 						this.chapterList.push(item.content)
-// 					} else if (item.selects.length > 1) { // 带选项的段落
-// 						this.currentSelect = {
-// 							select: item.selects,
-// 							content: item.selects_key
-// 						}
-//             this.chapterList = this.chapterList.concat(item.content) // 合并数组
-// 					}
-// 				})
-//         this.loadParagraph() // 自动加载第一段
-//         const params = {
-//           archive: [this.chapterID]
-//         }
-//         saveArchive(params).then(res => {
-//           // console.log(res)
-//           res
-//         })
-//       })
-//     },
-//     closeMask() { // 关闭名言事件
-//       this.maskVisible = false
-//       fetchArchive().then(res => { // 获取章节
-//         this.fetchOneChapterFun(res.data[1])
-//         this.$refs.tree.setNodeCheacked(res.data[1])
-//       })
-//     },
-//     calculateReadingAreaSize() { // 计算阅读区大小
-//       this.$nextTick(() => {
-//         this.textBox.width = this.$refs.chapterBox.offsetWidth * 0.5989583
-//         this.textBox.height = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.622222
-//         this.textBox.top = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + (this.$refs.chapterBox.offsetHeight - this.$refs.chapterBox.offsetWidth * 0.46875)
-//         this.textBox.left = this.$refs.chapterBox.offsetWidth * 0.2135416
-//       })
-//     },
-//     async typerFun(target) { // 打字机效果
-//       for (let [index, value] of Object.entries(target.children)) {
-//         await this.loadTyperText(target, index, value)
-//       }
-//     },
-//     loadTyperText(target, index, value) { // 加载打字文字
-//       return new Promise(resolve => {
-//         const textArr = value.innerHTML.split('')
-//         let indexs = 0
-//         let text = ''
-          
-//         value.innerHTML = 0
-//         target.children[index].style.display = 'block'
+    if (index < chapterDataList.length) {
+      if (currentData.selects === undefined || currentData.selects.length === 0) { // 文本段落
+        chapterList.push(currentData.content)
+        currentParagraphID.value++
+        $nextTick(() => {
+          typerFun($refs[`listItemBox${index}`])
+          // $refs[`listItemBox${index}`].style.display = 'block'
+          $refs[`listItemBox${index}`].scrollTop = 100
+          $refs[`listItemBox${index}`].scrollIntoView({
+            block: 'end',
+            behavior: 'smooth'
+          })
+        })
+        if (currentData.type === 0) { // bad-end结局
+          pargaraphType.value = 0
+          const params = {
+            archive: [chapterID, chapterID]
+          }
+          saveArchive(params).then(res => { // bad-end 存档
+            console.log(res)
+          })
+        }
+      } else if (currentData.selects.length > 1) { // 选择
+        currentSelect = {
+          select: currentData.selects,
+          content: currentData.selects_key
+        }
+        selectVisible.value = true // 显示选择弹框
+        // 根据选择的结果加载对应的段落
+        currentParagraphID.value++
+      }
+    } else {
+      if (pargaraphType.value === 0) {
+        currentParagraphID.value = 0
+        fetchAphorism().then(res => { // 获取名言
+          console.log(res)
+          aphorism.text = res.data.text
+          aphorism.author = res.data.author
+          maskVisible.value = true
+          pargaraphType.value = null
+        })
+      } else {
+        ElMessage({
+          message: '本章已结束',
+          type: 'warning',
+          duration: 1000
+        })
+      }
+    }
+  }
 
-//         const timer = setInterval(() => {
-//           text += textArr[indexs]
-//           value.innerHTML = text
-//           indexs++
-//           if (indexs >= textArr.length) {
-//             clearInterval(timer)
-//             resolve(timer)
-//           }
-//         }, 50) // 文字加载延迟
-//         return timer
-//       })
+  function fetchOneChapterFun(id:number) { // 获取章节
+    if (id) {
+      chapterID.value = id
+    }
+    chapterList = []
+    chapterDataList = []
+    currentParagraphID.value = 0
+    fetchOneChapter({ chapter_id: chapterID }).then(res => {
+      const { chapter_id, paragraph_list, title } = res.data
+      chapter_id
+      chapterTitle = title
+      chapterDataList = paragraph_list
+      chapterDataList.forEach((item) => {
+        if (item.content.length === 1) { // 普通段落
+          chapterList.push(item.content)
+        } else if (item.selects.length > 1) { // 带选项的段落
+          currentSelect = {
+            select: item.selects,
+            content: item.selects_key
+          }
+          chapterList = chapterList.concat(item.content) // 合并数组
+        }
+      })
+      loadParagraph() // 自动加载第一段
+      const params = {
+        archive: [chapterID]
+      }
+      saveArchive(params).then(res => {
+        // console.log(res)
+        res
+      })
+    })
+  }
 
-// export default {
-// 	components: {
-//     List, SelectLayer
-//   },
+  function closeMask() { // 关闭名言事件
+    maskVisible.value = false
+    fetchArchive().then(res => { // 获取章节
+      fetchOneChapterFun(res.data[1])
+      $refs.tree.setNodeCheacked(res.data[1])
+    })
+  }
+
+  function calculateReadingAreaSize() { // 计算阅读区大小
+    $nextTick(() => {
+      textBox.width = $refs.chapterBox.offsetWidth * 0.5989583
+      textBox.height = $refs.chapterBox.offsetWidth * 0.46875 * 0.622222
+      textBox.top = $refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + ($refs.chapterBox.offsetHeight - $refs.chapterBox.offsetWidth * 0.46875)
+      textBox.left = $refs.chapterBox.offsetWidth * 0.2135416
+    })
+  }
+
+  async function typerFun(target) { // 打字机效果
+    for (let [index, value] of Object.entries(target.children)) {
+      await loadTyperText(target, index, value)
+    }
+  }
+
+  function loadTyperText(target, index, value) { // 加载打字文字
+    return new Promise(resolve => {
+      const textArr = value.innerHTML.split('')
+      let indexs = 0
+      let text = ''
+        
+      value.innerHTML = 0
+      target.children[index].style.display = 'block'
+
+      const timer = setInterval(() => {
+        text += textArr[indexs]
+        value.innerHTML = text
+        indexs++
+        if (indexs >= textArr.length) {
+          clearInterval(timer)
+          resolve(timer)
+        }
+      }, 50) // 文字加载延迟
+      return timer
+    })
+  }
+
+// 
 //   data () {
 //     return {
 //       typerOptions: {
@@ -251,102 +254,102 @@ let archiveID = null
 //   },
 //   computed: {
 //     screenWidth() { // 监听screenWidth这个属性
-//       return this.textBox.screenWidth
+//       return textBox.screenWidth
 //     }
 //   },
 // 	watch: {
 // 		selectIndex(val) {
-//       const currentParagraphIndex = this.currentParagraphID
+//       const currentParagraphIndex = currentParagraphID
 
 //       fetchBranch({branch_id: val}).then((res) => {
 //         res.data.paragraph_list.forEach((item, index) => {
-//           this.chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
-//           this.chapterDataList.push(item)
+//           chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
+//           chapterDataList.push(item)
 //         })
-//         this.loadParagraph()
+//         loadParagraph()
 //       })
-//       this.currentParagraphID++
-//       this.$nextTick(() => {
-//         this.$refs[`listItemBox${currentParagraphIndex}`].style.display = 'block'
-//         this.$refs[`listItemBox${currentParagraphIndex}`].scrollTop = 200
-//         this.$refs[`listItemBox${currentParagraphIndex}`].scrollIntoView({
+//       currentParagraphID++
+//       $nextTick(() => {
+//         $refs[`listItemBox${currentParagraphIndex}`].style.display = 'block'
+//         $refs[`listItemBox${currentParagraphIndex}`].scrollTop = 200
+//         $refs[`listItemBox${currentParagraphIndex}`].scrollIntoView({
 //           block: 'end',
 //           behavior: 'smooth'
 //         })
 //       })
-//       this.selectVisible = false
+//       selectVisible = false
       
 // 		},
 //     screenWidth: {
 //       handler() {
-//         this.calculateReadingAreaSize() // 重计算阅读区大小
+//         calculateReadingAreaSize() // 重计算阅读区大小
 //       },
 //       immediate: true
 //     },
 //     // chapterList(value) {
 //     //   // console.log(value)
 //     //   // console.log(value.length)
-//     //   // this.typerFun(value[value.length - 1])
+//     //   // typerFun(value[value.length - 1])
 //     // }
 // 	},
 //   created() {
 //     fetchArchive().then(res => { // 获取章节
-//       this.fetchOneChapterFun(res.data[0])
-//       this.archiveID = res.data[0]
+//       fetchOneChapterFun(res.data[0])
+//       archiveID = res.data[0]
 //     })
 //     window.onresize = () => { // 监听窗口大小变化
-//       this.textBox.screenWidth = document.body.clientWidth
+//       textBox.screenWidth = document.body.clientWidth
 //     }
 //   },
 //   methods: {
 //     // 加载段落
 //     loadParagraph() {
-//       const index = this.currentParagraphID
-//       const currentData = this.chapterDataList[index]
+//       const index = currentParagraphID
+//       const currentData = chapterDataList[index]
 
-//       if (index < this.chapterDataList.length) {
+//       if (index < chapterDataList.length) {
 //         if (currentData.selects === undefined || currentData.selects.length === 0) { // 文本段落
-//           this.chapterList.push(currentData.content)
-//           this.currentParagraphID++
-//           this.$nextTick(() => {
-//             this.typerFun(this.$refs[`listItemBox${index}`])
-//             // this.$refs[`listItemBox${index}`].style.display = 'block'
-//             this.$refs[`listItemBox${index}`].scrollTop = 100
-//             this.$refs[`listItemBox${index}`].scrollIntoView({
+//           chapterList.push(currentData.content)
+//           currentParagraphID++
+//           $nextTick(() => {
+//             typerFun($refs[`listItemBox${index}`])
+//             // $refs[`listItemBox${index}`].style.display = 'block'
+//             $refs[`listItemBox${index}`].scrollTop = 100
+//             $refs[`listItemBox${index}`].scrollIntoView({
 //               block: 'end',
 //               behavior: 'smooth'
 //             })
 //           })
 //           if (currentData.type === 0) { // bad-end结局
-//             this.pargaraphType = 0
+//             pargaraphType = 0
 //             const params = {
-//               archive: [this.chapterID, this.chapterID]
+//               archive: [chapterID, chapterID]
 //             }
 //             saveArchive(params).then(res => { // bad-end 存档
 //               console.log(res)
 //             })
 //           }
 //         } else if (currentData.selects.length > 1) { // 选择
-//           this.currentSelect = {
+//           currentSelect = {
 //             select: currentData.selects,
 //             content: currentData.selects_key
 //           }
-//           this.selectVisible = true // 显示选择弹框
+//           selectVisible = true // 显示选择弹框
 //           // 根据选择的结果加载对应的段落
-//           this.currentParagraphID++
+//           currentParagraphID++
 //         }
 //       } else {
-//         if (this.pargaraphType === 0) {
-//           this.currentParagraphID = 0
+//         if (pargaraphType === 0) {
+//           currentParagraphID = 0
 //           fetchAphorism().then(res => { // 获取名言
 //             console.log(res)
-//             this.aphorism.text = res.data.text
-//             this.aphorism.author = res.data.author
-//             this.maskVisible = true
-//             this.pargaraphType = null
+//             aphorism.text = res.data.text
+//             aphorism.author = res.data.author
+//             maskVisible = true
+//             pargaraphType = null
 //           })
 //         } else {
-//           this.$message({
+//           $message({
 //             message: '本章已结束',
 //             type: 'warning',
 //             duration: 1000
@@ -356,30 +359,30 @@ let archiveID = null
 //     },
 //     fetchOneChapterFun(id) { // 获取章节
 //       if (id) {
-//         this.chapterID = id
+//         chapterID = id
 //       }
-//       this.chapterList = []
-//       this.chapterDataList = []
-//       this.currentParagraphID = 0
-//       fetchOneChapter({ chapter_id: this.chapterID }).then(res => {
+//       chapterList = []
+//       chapterDataList = []
+//       currentParagraphID = 0
+//       fetchOneChapter({ chapter_id: chapterID }).then(res => {
 //         const { chapter_id, paragraph_list, title } = res.data
 //         chapter_id
-//         this.chapterTitle = title
-//         this.chapterDataList = paragraph_list
-// 				this.chapterDataList.forEach((item) => {
+//         chapterTitle = title
+//         chapterDataList = paragraph_list
+// 				chapterDataList.forEach((item) => {
 // 					if (item.content.length === 1) { // 普通段落
-// 						this.chapterList.push(item.content)
+// 						chapterList.push(item.content)
 // 					} else if (item.selects.length > 1) { // 带选项的段落
-// 						this.currentSelect = {
+// 						currentSelect = {
 // 							select: item.selects,
 // 							content: item.selects_key
 // 						}
-//             this.chapterList = this.chapterList.concat(item.content) // 合并数组
+//             chapterList = chapterList.concat(item.content) // 合并数组
 // 					}
 // 				})
-//         this.loadParagraph() // 自动加载第一段
+//         loadParagraph() // 自动加载第一段
 //         const params = {
-//           archive: [this.chapterID]
+//           archive: [chapterID]
 //         }
 //         saveArchive(params).then(res => {
 //           // console.log(res)
@@ -388,23 +391,23 @@ let archiveID = null
 //       })
 //     },
 //     closeMask() { // 关闭名言事件
-//       this.maskVisible = false
+//       maskVisible = false
 //       fetchArchive().then(res => { // 获取章节
-//         this.fetchOneChapterFun(res.data[1])
-//         this.$refs.tree.setNodeCheacked(res.data[1])
+//         fetchOneChapterFun(res.data[1])
+//         $refs.tree.setNodeCheacked(res.data[1])
 //       })
 //     },
 //     calculateReadingAreaSize() { // 计算阅读区大小
-//       this.$nextTick(() => {
-//         this.textBox.width = this.$refs.chapterBox.offsetWidth * 0.5989583
-//         this.textBox.height = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.622222
-//         this.textBox.top = this.$refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + (this.$refs.chapterBox.offsetHeight - this.$refs.chapterBox.offsetWidth * 0.46875)
-//         this.textBox.left = this.$refs.chapterBox.offsetWidth * 0.2135416
+//       $nextTick(() => {
+//         textBox.width = $refs.chapterBox.offsetWidth * 0.5989583
+//         textBox.height = $refs.chapterBox.offsetWidth * 0.46875 * 0.622222
+//         textBox.top = $refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + ($refs.chapterBox.offsetHeight - $refs.chapterBox.offsetWidth * 0.46875)
+//         textBox.left = $refs.chapterBox.offsetWidth * 0.2135416
 //       })
 //     },
 //     async typerFun(target) { // 打字机效果
 //       for (let [index, value] of Object.entries(target.children)) {
-//         await this.loadTyperText(target, index, value)
+//         await loadTyperText(target, index, value)
 //       }
 //     },
 //     loadTyperText(target, index, value) { // 加载打字文字
@@ -432,7 +435,7 @@ let archiveID = null
 // }
 </script>
 
-<style lang='scss'>
+<style>
   @font-face {
     font-family: fzWzmxk;
     src: url('../../../assets/fonts/fz-wzmxk.TTF');

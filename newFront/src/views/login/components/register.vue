@@ -15,7 +15,8 @@
           <el-input prefix-icon="el-icon-lock" placeholder="再次确认密码" v-model="form.secondPassword" show-password />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="registerBtn" @click="handleRegister">注 册</el-button>
+          <div class="registerLink" @click="$emit('update:formType', true)">我已创建，切换登录</div>
+          <el-button type="primary" class="registerBtn" @click="handleRegister">创建身份</el-button>
         </el-form-item>
       </el-form>
     </el-col>
@@ -23,7 +24,45 @@
 </template>
 
 <script lang="ts" setup>
-import { userRegister } from '@/api/user'
+  import { reactive } from 'vue'
+  import { userRegister } from '@/api/user'
+
+  const props = defineProps<{
+    formType?: boolean
+  }>()
+
+  const form = reactive({
+    username: '',
+    password: '',
+    secondPassword: ''
+  })
+
+  function handleRegister() {
+    if (form.username === '') {
+      ElMessage({
+        message: '请输入用户名',
+        type: 'warning'
+      })
+    } else if (form.password === '') {
+      ElMessage({
+        message: '请输入密码',
+        type: 'warning'
+      })
+    } else if (form.secondPassword === '' || form.secondPassword !== form.password) {
+      ElMessage({
+        message: '两次输入密码不一致',
+        type: 'warning'
+      })
+    } else {
+      userRegister(form).then(res => {
+        ElMessage({
+          message: res.msg,
+          type: 'success'
+        })
+        $emit('update:props.formType', true)
+      })
+    }
+  }
 
 // export default {
 //   name: 'registerForm',
@@ -44,28 +83,28 @@ import { userRegister } from '@/api/user'
 //   },
 //   methods: {
 //     handleRegister() {
-//       if (this.form.username === '') {
-//         this.$message({
+//       if (form.username === '') {
+//         ElMessage({
 //           message: '请输入用户名',
 //           type: 'warning'
 //         })
-//       } else if (this.form.password === '') {
-//         this.$message({
+//       } else if (form.password === '') {
+//         ElMessage({
 //           message: '请输入密码',
 //           type: 'warning'
 //         })
-//       } else if (this.form.secondPassword === '' || this.form.secondPassword !== this.form.password) {
-//         this.$message({
+//       } else if (form.secondPassword === '' || form.secondPassword !== form.password) {
+//         ElMessage({
 //           message: '两次输入密码不一致',
 //           type: 'warning'
 //         })
 //       } else {
-//         userRegister(this.form).then(res => {
-//           this.$message({
+//         userRegister(form).then(res => {
+//           ElMessage({
 //             message: res.msg,
 //             type: 'success'
 //           })
-//           this.$emit('update:formType', true)
+//           $emit('update:formType', true)
 //         })
 //       }
 //     }

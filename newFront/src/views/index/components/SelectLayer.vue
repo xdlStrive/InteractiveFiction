@@ -10,7 +10,7 @@
       :close-on-press-escape="false"
     >
       <el-button
-        v-for="(item, index) in selectItem.content"
+        v-for="(item, index) in props.selectItem.content"
         :key="index"
         class="select-item"
         @click="handleSelect(index)"
@@ -20,22 +20,23 @@
 </template>
 
 <script lang="ts" setup>
-export default ({
-  props: ['selectItem'],
-  data() {
-    return {
-      dialogVisible: true
-    }
-  },
-  created() {
-    console.log(this.selectItem)
-  },
-  methods: {
-    handleSelect(index) {
-      this.$emit('update:selectIndex', this.selectItem.select[index])
-    }
+  import { ref } from 'vue'
+
+  const props = defineProps<{
+    selectItem: string
+  }>()
+
+  const emits = defineEmits<{
+    (e: 'update:selectIndex', data: string): void
+  }>()
+
+  let dialogVisible = ref(true)
+
+  console.log(props.selectItem)
+
+  function handleSelect(index:number) {
+    emits('update:selectIndex', props.selectItem.select[index])
   }
-})
 </script>
 
 <style>

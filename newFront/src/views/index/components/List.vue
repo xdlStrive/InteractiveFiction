@@ -27,94 +27,115 @@
 </template>
 
 <script lang="ts" setup>
+  import { ref, reactive } from 'vue'
   import { fetchVolumeList } from '@/api/volume'
   import { fetchVolumesChapterList } from '@/api/chapter'
   import { fetchOneChapter } from '@/api/chapter'
 
-  export default {
-    props: [
-      'archiveId'
-    ],
-    data () {
-      return {
-        props: {
-          label: 'title', // 这里设置的值需要与后台传回的值一一对应
-          children: '',
-          isLeaf: 'leaf'
-        },
-        listVisible: true,
-        currentVolumeID: 1,
-        volumeList: [],
-        chapterList: [],
-        treeNode: {},
-        treeResolve: {},
+  const props = reactive({
+    label: 'title', // 这里设置的值需要与后台传回的值一一对应
+    children: '',
+    isLeaf: 'leaf'
+  })
+
+  let listVisible = ref(true)
+  let currentVolumeID = ref(1)
+  let volumeList = reactive([])
+  let chapterList = reactive([])
+  let treeNode = reactive({})
+  let treeResolve = reactive({})
+
+  function openNode(data) { // 绑定树形卷的展开事件
+    currentVolumeID.value = data.volume_id
+    console.log(currentVolumeID.value)
+  }
+
+  function fetchVolumeListFun() { // 获取卷列表
+    return new Promise(resolve => {
+      fetchVolumeList().then(res => {
+        if (res.code === 20000) {
+          volumeList = res.data
+          resolve()
+        }
+      })
+    })
+  }
+
+  async function fetchChapterListFun(node, resolve) { // 获取列表
+    if (node.level === 0) { // 卷列表
+      treeNode = node
+      treeResolve = resolve
+      await fetchVolumeListFun()
+      resolve(volumeList)
+    } else { // 章节列表
+      const params = {
+        volume_id: node.data.n_id
       }
-    },
-    methods: {
-      openNode(data) { // 绑定树形卷的展开事件
-        this.currentVolumeID = data.volume_id
-        console.log(this.currentVolumeID)
-      },
-      fetchVolumeListFun() { // 获取卷列表
-        return new Promise(resolve => {
-          fetchVolumeList().then(res => {
-            if (res.code === 20000) {
-              this.volumeList = res.data
-              resolve()
-            }
-          })
-        })
-      },
-      async fetchChapterListFun(node, resolve) { // 获取列表
-        if (node.level === 0) { // 卷列表
-          this.treeNode = node
-          this.treeResolve = resolve
-          await this.fetchVolumeListFun()
-          resolve(this.volumeList)
-        } else { // 章节列表
-          const params = {
-            volume_id: node.data.n_id
-          }
-          fetchVolumesChapterList(params).then(res => {
-            if (res.code === 20000) {
-              this.chapterList = res.data
-            }
-            resolve(res.data)
-            this.setNodeCheacked()
-          })
+      fetchVolumesChapterList(params).then(res => {
+        if (res.code === 20000) {
+          chapterList = res.data
         }
-      },
-      handleNodeClick(data, node) { // 树形节点点击事件
-        if (node.level === 2) {
-          this.$emit('fetchOneChapter', data.n_id)
-        }
-      },
-      fetchChapter(chapterID) { // 获取章节
-        this.chapterID = chapterID
-        const params = {
-          chapter_id: chapterID
-        }
-        fetchOneChapter(params).then(res => {
-          if (res.code === 20000) {
-            this.editTextVisible = true
-            this.chapterTitle = res.data.title
-            this.paragraphList = res.data.paragraph_list
-          }
-        })
-      },
-      handelAsideHidden() { // 章节列表显示隐藏
-        this.listVisible = false
-      },
-      setNodeCheacked(id) { // 设置树节点选中状态
-        if (id) {
-          console.log('id')
-          this.$refs.tree.setCurrentKey(id)
-        } else {
-          this.$refs.tree.setCurrentKey(this.archiveId)
-        }
-      }
+        resolve(res.data)
+        setNodeCheacked(0)
+      })
     }
   }
+
+  function handleNodeClick(data, node) { // 树形节点点击事件
+    if (node.level === 2) {
+      $emit('fetchOneChapter', data.n_id)
+    }
+  }
+
+  function fetchChapter(chapterID) { // 获取章节
+    chapterID.value = chapterID
+    const params = {
+      chapter_id: chapterID
+    }
+    fetchOneChapter(params).then(res => {
+      if (res.code === 20000) {
+        editTextVisible = true
+        chapterTitle = res.data.title
+        paragraphList = res.data.paragraph_list
+      }
+    })
+  }
+  function handelAsideHidden() { // 章节列表显示隐藏
+    listVisible.value = false
+  }
+
+  function setNodeCheacked(id: number) { // 设置树节点选中状态
+    if (id) {
+      console.log('id')
+      $refs.tree.setCurrentKey(id)
+    } else {
+      $refs.tree.setCurrentKey(archiveId)
+    }
+  }
+
+  // export default {
+  //   props: [
+  //     'archiveId'
+  //   ],
+  //   data () {
+  //     return {
+  //       props: {
+  //         label: 'title', // 这里设置的值需要与后台传回的值一一对应
+  //         children: '',
+  //         isLeaf: 'leaf'
+  //       },
+  //       listVisible: true,
+  //       currentVolumeID: 1,
+  //       volumeList: [],
+  //       chapterList: [],
+  //       treeNode: {},
+  //       treeResolve: {},
+  //     }
+  //   },
+  //   methods: {
+      
+  //   }
+  // }
 </script>
 
 <style lang="scss" scoped>

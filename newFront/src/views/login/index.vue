@@ -13,21 +13,13 @@ import RegisterForm from './components/register.vue'
 import { ref } from 'vue'
 
 const formType = ref(true);
-const show = ref(true);
-
-// export default {
-//   name: 'Login',
-//   components: { LoginFrom, RegisterForm },
-//   data () {
-//     return {
-//       formType: true,
-//       show: true
-//     }
-//   },
-//   methods: {}
-// }
 
 </script>
 <style>
-
+  .registerLink {
+    text-align: right;
+    line-height: 25px;
+    color: #409eff;
+    cursor: pointer;
+  }
 </style>

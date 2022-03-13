@@ -7,7 +7,6 @@ import userInfo from '@/store/userInfo'
 import { getToken } from './auth'
 
 const userInfoStore = userInfo()
-console.log(import.meta.env.BASE_URL)
 // 创建axios实例
 const service = axios.create({
   baseUrl: import.meta.env.BASE_URL,
@@ -16,12 +15,11 @@ const service = axios.create({
 
 
 // request 拦截器
-service.interceptors.request.use(
-  (config) => {
+service.interceptors.request.use((config) => {
     // 发出请求前执行事件
     if (userInfoStore.token) { // 检查是否储存有token
       // 让每个请求携带token
-      config.headers.authorization = getToken()
+      config.headers!.authorization = getToken()
     }
     return config
   },
@@ -72,7 +70,7 @@ service.interceptors.response.use(
   error => {
     console.log('错误' + error)
     ElMessage({ // 返回错误
-      message: error.response.data.msg,
+      message: error.response ? error?.response?.data?.msg : error,
       type: 'error',
       duration: 5 * 1000
     })
