@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询一章章节
 export function fetchOneChapter(query) {
   return request({
-    url: '/chapter/oneChapter',
+    url: '/api/chapter/oneChapter',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function fetchOneChapter(query) {
 // 查询某卷的章节列表
 export function fetchVolumesChapterList(query) {
   return request({
-    url: '/chapter/volumesList',
+    url: '/api/chapter/volumesList',
     method: 'get',
     params: query
   })

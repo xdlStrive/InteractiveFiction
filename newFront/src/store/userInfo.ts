@@ -3,9 +3,11 @@ import { getToken, setTokens, removeToken } from '@/utils/auth'
 // import { userLogin, getInfoApi, logoutApi } from '@/api/user'
 import router, { resetRouter } from '@/router'
 
-type userInfo = { // 定义login函数参数类型
-  username: string,
+export type userInfoType = { // 定义login函数参数类型
+  code: number
+  username: string
   password: string
+  token: string
 }
 
 // 定义并导出状态容器，参数1为该容器的
@@ -23,7 +25,8 @@ export default defineStore('userInfo', {
   actions: {
     setToken(token: string) {
       this.token = token
-      setTokens(token)
+      localStorage.setItem('token', token)
+      console.log('查看token：', localStorage.getItem('token'))
     },
     // 获取用户信息
     // getInfo() {
@@ -51,11 +54,12 @@ export default defineStore('userInfo', {
     //   })
     // },
     // 登录方法
-    login(userData: Partial<userInfo>) {
+    login(userData: Partial<userInfoType>) {
       this.$state = {
         ...this.$state,
         ...userData,
       }
+      userData.token && this.setToken(userData.token)
     },
     // async login({ username, password }: loginParams) {
     //   return await userLogin({ username: username.trim(), password: password.trim() }).then(res => {

@@ -8,7 +8,7 @@ type userInfo = { // 定义login函数参数类型
 // 用户注册接口
 export function userRegister(data: userInfo) {
   return request({
-    url: '/users/register',
+    url: '/api/users/register',
     method: 'post',
     data
   })
@@ -17,7 +17,7 @@ export function userRegister(data: userInfo) {
 // 用户登录接口
 export function userLogin(data: userInfo) {
   return request({
-    url: '/users/login',
+    url: '/api/users/login',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function userLogin(data: userInfo) {
 // 获取用户信息
 export function getInfoApi(params: string) {
   return request({
-    url: '/users/profile',
+    url: '/api/users/profile',
     method: 'get',
     params
   })
@@ -35,7 +35,7 @@ export function getInfoApi(params: string) {
 // 获取存档
 export function fetchArchive() {
   return request({
-    url: '/users/fetchArchive',
+    url: '/api/users/fetchArchive',
     method: 'get'
   })
 }
@@ -43,7 +43,7 @@ export function fetchArchive() {
 // 存档
 export function saveArchive(data) {
   return request({
-    url: '/users/update',
+    url: '/api/users/update',
     method: 'post',
     data
   })
@@ -52,7 +52,7 @@ export function saveArchive(data) {
 // 登出接口
 export function logoutApi(params: string) {
   return request({
-    url: '/users/logout',
+    url: '/api/users/logout',
     method: 'get'
   })
 }

@@ -1,15 +1,16 @@
 /*
-  2月7日问题：userinfo中用到了api方法，而api又调用了request，导致在userinfo加载完成前就加载了request；
+  2月7日问题：userinfo中用到了api方法，而api又调用了request，导致在userinfo加载完成前就加载了request
   但在request中又调用了userinfo，导致了未加载完成userinfo之前，就使用了userinfo的情况，导致报错。
 */
 import axios from 'axios'
+import router from '@/router'
 import userInfo from '@/store/userInfo'
-import { getToken } from './auth'
 
 const userInfoStore = userInfo()
+const userToken = localStorage.getItem('token')
 // 创建axios实例
 const service = axios.create({
-  baseUrl: import.meta.env.BASE_URL,
+  baseURL: import.meta.env.BASE_URL,
   timeout: 5000 // 超时时间
 })
 
@@ -17,9 +18,11 @@ const service = axios.create({
 // request 拦截器
 service.interceptors.request.use((config) => {
     // 发出请求前执行事件
-    if (userInfoStore.token) { // 检查是否储存有token
+  if (userToken) { // 检查是否储存有token
       // 让每个请求携带token
-      config.headers!.authorization = getToken()
+      config.headers!.authorization = userToken
+    } else { // 没带token的请求重定向到login页面，让重新登录
+      router.push({ name: 'login' })
     }
     return config
   },
@@ -37,7 +40,7 @@ service.interceptors.response.use(
     // 如果自定义code不是20000，则将其判断为错误
     if (res.code !== 20000) {
       
-      // 50008: 无效Token; 50012: 该账号已登录; 50014: Token 过期;
+      // 50008: 无效Token; 50012: 该账号已登录; 50014: Token过期;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         // to re-login
         ElMessageBox.confirm('您已注销，您可以取消以停留在此页，或重新登录', '登出提示', {
@@ -68,9 +71,8 @@ service.interceptors.response.use(
     }
   },
   error => {
-    console.log('错误' + error)
     ElMessage({ // 返回错误
-      message: error.response ? error?.response?.data?.msg : error,
+      message: error.response.data ? error?.response?.data?.msg : error,
       type: 'error',
       duration: 5 * 1000
     })
