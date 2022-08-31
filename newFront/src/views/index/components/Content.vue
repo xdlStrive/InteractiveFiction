@@ -1,7 +1,7 @@
 <!-- 主页 -->
 <template>
   <div class="content-box">
-    <List ref="tree" :archive-id="archiveID" @fetchOneChapter="fetchOneChapterFun" />
+    <List ref="tree" :archive-id="archiveId" @fetchOneChapter="fetchOneChapterFun" />
     <div class="chapter-box" ref="chapterBox">
       <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textBox" class="text-box" :style="{width: textBox.width + 'px', height: textBox.height + 'px', top: textBox.top + 'px', left: textBox.left + 'px'}">
         <div class="list-placeholder-box" style="display: block"></div>
@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue'
+  import { ref, reactive, onMounted } from 'vue'
   import List from './List.vue'
   import SelectLayer from './SelectLayer.vue'
   import { fetchOneChapter } from '@/api/chapter'
@@ -73,7 +73,17 @@
     text: '',
     author: ''
   })
-  let archiveID = ref(null)
+  let archiveId = ref(null)
+
+  onMounted(() => {
+    fetchArchive().then(res => { // 获取章节
+      if (res.code === 20000) {
+        // fetchOneChapterFun(res.data[0])
+        archiveId.value = res.data[0]
+        // console.log('archiveId: ', archiveId.value)
+      }
+    })
+  })
 
   // 加载段落
   function loadParagraph() {
@@ -249,7 +259,7 @@
 //         text: '',
 //         author: ''
 //       },
-//       archiveID: null
+//       archiveId: null
 //     };
 //   },
 //   computed: {
@@ -295,7 +305,7 @@
 //   created() {
 //     fetchArchive().then(res => { // 获取章节
 //       fetchOneChapterFun(res.data[0])
-//       archiveID = res.data[0]
+//       archiveId = res.data[0]
 //     })
 //     window.onresize = () => { // 监听窗口大小变化
 //       textBox.screenWidth = document.body.clientWidth

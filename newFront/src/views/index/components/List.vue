@@ -3,7 +3,7 @@
     <div v-if="listVisible" class="aside-box">
       <div id="left-tree-box">
         <el-tree
-          :props="props"
+          :props="treeProps"
           :load="fetchChapterListFun"
           :default-expanded-keys="[1.1]"
           node-key="n_id"
@@ -27,23 +27,32 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue'
+  import { ref, reactive, watchEffect } from 'vue'
+  import { ElTree } from 'element-plus'
   import { fetchVolumeList } from '@/api/volume'
   import { fetchVolumesChapterList } from '@/api/chapter'
   import { fetchOneChapter } from '@/api/chapter'
 
-  const props = reactive({
+  
+  const props = defineProps(['archiveId'])
+  watchEffect(() => {
+    console.log('props: ', props)
+  })
+
+  const treeProps = reactive({
     label: 'title', // 这里设置的值需要与后台传回的值一一对应
     children: '',
     isLeaf: 'leaf'
   })
 
-  let listVisible = ref(true)
+  const listVisible = ref(true)
   let currentVolumeID = ref(1)
   let volumeList = reactive([])
   let chapterList = reactive([])
   let treeNode = reactive({})
   let treeResolve = reactive({})
+  
+  const treeRef = ref<InstanceType<typeof ElTree>>()
 
   function openNode(data) { // 绑定树形卷的展开事件
     currentVolumeID.value = data.volume_id
@@ -106,10 +115,10 @@
 
   function setNodeCheacked(id: number) { // 设置树节点选中状态
     if (id) {
-      console.log('id')
-      $refs.tree.setCurrentKey(id)
+      console.log('id', id)
+      treeRef.value!.setCurrentKey(id)
     } else {
-      $refs.tree.setCurrentKey(archiveId)
+      // treeRef.value!.setCurrentKey(archiveId)
     }
   }
 
