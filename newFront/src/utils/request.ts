@@ -7,6 +7,7 @@ import router from '@/router'
 import userInfo from '@/store/userInfo'
 
 const userInfoStore = userInfo()
+console.log('userToken: ', localStorage.getItem('token'))
 const userToken = localStorage.getItem('token')
 // 创建axios实例
 const service = axios.create({
@@ -43,9 +44,9 @@ service.interceptors.response.use(
       // 50008: 无效Token; 50012: 该账号已登录; 50014: Token过期;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         // to re-login
-        ElMessageBox.confirm('您已注销，您可以取消以停留在此页，或重新登录', '登出提示', {
+        ElMessageBox.confirm('您已注销，请重新登录', '登出提示', {
           confirmButtonText: '重新登录',
-          cancelButtonText: '取消',
+          showCancelButton: false,
           type: 'warning'
         }).then(() => {
           userInfoStore.resetToken().then(() => {

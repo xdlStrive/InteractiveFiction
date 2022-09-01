@@ -148,7 +148,7 @@
     chapterList = []
     chapterDataList = []
     currentParagraphID.value = 0
-    fetchOneChapter({ chapter_id: chapterID }).then(res => {
+    fetchOneChapter({ chapter_id: chapterID.value }).then(res => {
       const { chapter_id, paragraph_list, title } = res.data
       chapter_id
       chapterTitle = title

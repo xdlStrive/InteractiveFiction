@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { getToken, setTokens, removeToken } from '@/utils/auth'
 // import { userLogin, getInfoApi, logoutApi } from '@/api/user'
 import router, { resetRouter } from '@/router'
 
@@ -14,7 +13,7 @@ export type userInfoType = { // 定义login函数参数类型
 export default defineStore('userInfo', {
   state: () => {
     return {
-      token: getToken(),
+      token: '',
       name: '',
       avatar: ''
     }
@@ -70,19 +69,19 @@ export default defineStore('userInfo', {
     // },
 
     // 用户登出
-    logout() {
+    logout() { // 注销
       return new Promise((resolve, reject) => {
         logoutApi(this.token).then(() => {
           // commit('SET_TOKEN', '')
           // commit('SET_ROLES', [])
           // commit('SET_NAME', '') // 需要清空store.getter中的name
-          removeToken()
+          // removeToken()
           resetRouter()
           // reset visited views and cached views
           // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
           // dispatch('tagsView/delAllViews', null, { root: true })
           resolve('')
-        }).catch(error => {
+        }).catch((error: any) => {
           reject(error)
         })
       })
@@ -93,7 +92,7 @@ export default defineStore('userInfo', {
       return new Promise(resolve => {
         // commit('SET_TOKEN', '')
         // commit('SET_ROLES', [])
-        removeToken()
+        // removeToken()
         router.push('/login')
         resolve('')
       })

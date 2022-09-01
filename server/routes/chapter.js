@@ -147,8 +147,7 @@ router.get('/oneChapter', (req, res) => {
     }
   ], (err, doc) => {
     if (!err && doc) {
-      return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
-      
+      // return res.json({ code: 20000, msg: '章节获取成功！', data: doc[0] })
       const lengths = doc[0].paragraph_list.length
       new Promise((resolve, reject) => {
         async function getSelect(index, length) {

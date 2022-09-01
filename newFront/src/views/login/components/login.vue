@@ -67,6 +67,7 @@
         await userLogin(form).then((res) => {
           if (res.code === 20000) {
             userInfoStore.login(res)
+            console.log('存完了')
             router.push({name: 'book'})
           } else {
             loading.value = false

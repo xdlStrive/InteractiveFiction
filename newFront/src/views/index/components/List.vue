@@ -35,6 +35,8 @@
 
   
   const props = defineProps(['archiveId'])
+  const emit = defineEmits(['fetchOneChapter'])
+
   watchEffect(() => {
     console.log('props: ', props)
   })
@@ -92,7 +94,7 @@
 
   function handleNodeClick(data, node) { // 树形节点点击事件
     if (node.level === 2) {
-      $emit('fetchOneChapter', data.n_id)
+      emit('fetchOneChapter', data.n_id)
     }
   }
 
