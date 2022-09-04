@@ -7,7 +7,7 @@ import router from '@/router'
 import userInfo from '@/store/userInfo'
 
 const userInfoStore = userInfo()
-console.log('userToken: ', localStorage.getItem('token'))
+// console.log('userToken: ', localStorage.getItem('token'))
 const userToken = localStorage.getItem('token')
 // 创建axios实例
 const service = axios.create({

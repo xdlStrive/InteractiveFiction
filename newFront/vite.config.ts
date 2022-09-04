@@ -5,11 +5,13 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
+const pathSrc = path.resolve(__dirname, 'src')
+
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      '@': pathSrc,
       '@com': path.resolve(__dirname, 'src/components'),
       '@api': path.resolve(__dirname, 'src/api'),
       '@utils': path.resolve(__dirname, 'src/utils'),
@@ -19,10 +21,18 @@ export default defineConfig({
     vue(),
     // ElementPlus自动导入配置
     AutoImport({
-      resolvers: [ElementPlusResolver()],
+      // 自动导入 Vue 相关函数，如：ref, reactive, toRef 等
+      imports: ['vue'],
+      resolvers: [
+        ElementPlusResolver(),
+      ],
+      dts: path.resolve(pathSrc, 'auto-imports.d.ts'),
     }),
     Components({
-      resolvers: [ElementPlusResolver()],
+      resolvers: [
+        ElementPlusResolver(),
+      ],
+      dts: path.resolve(pathSrc, 'components.d.ts'),
     }),
   ],
   server: {

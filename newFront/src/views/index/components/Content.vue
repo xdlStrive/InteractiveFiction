@@ -1,14 +1,16 @@
 <!-- 主页 -->
 <template>
   <div class="content-box">
-    <List ref="tree" :archive-id="archiveId" @fetchOneChapter="fetchOneChapterFun" />
-    <div class="chapter-box" ref="chapterBox">
-      <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textBox" class="text-box" :style="{width: textBox.width + 'px', height: textBox.height + 'px', top: textBox.top + 'px', left: textBox.left + 'px'}">
+    <List ref="treeRef" :archive-id="archiveId" @fetchOneChapter="fetchOneChapterFun" />
+    <div class="chapter-box" ref="chapterRef">
+      <el-scrollbar v-if="!maskVisible" @click="loadParagraph()" ref="textRef" class="text-box"
+        :style="{ width: textBox.width + 'px', height: textBox.height + 'px', top: textBox.top + 'px', left: textBox.left + 'px'}">
         <div class="list-placeholder-box" style="display: block"></div>
         <div class="list-placeholder-box chapter-title" style="display: block">{{chapterTitle}}</div>
         <div class="list-placeholder-box" style="display: block"></div>
         <div class="list-placeholder-box" style="display: block"></div>
-        <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box" :ref="`listItemBox${index}`"></div>
+        <div v-for="(item, index) in chapterList" :key="index" v-html="item" class="list-item-box"
+          :ref="`listItemBox`"></div>
       </el-scrollbar>
 
       <transition name="mask">
@@ -22,13 +24,14 @@
         </div>
       </transition>
 
-      <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" /><!--  eslint-disable-line vue/no-v-model-argument 忽略eslint报错 -->
+      <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" />
+      <!--  eslint-disable-line vue/no-v-model-argument 忽略eslint报错 -->
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, onMounted } from 'vue'
+  import { ref, reactive, onMounted, nextTick } from 'vue'
   import List from './List.vue'
   import SelectLayer from './SelectLayer.vue'
   import { fetchOneChapter } from '@/api/chapter'
@@ -47,6 +50,17 @@
     sentencePause: false
   })
 
+  const listItemRef = reactive([])
+
+const treeRef = ref()
+const chapterRef = ref()
+const textRef = ref()
+const listItemBox = (el) => {
+  if (el) {
+    listItemRef.push(el)
+  }
+}
+console.log('listItemBox: ', listItemRef)
   let chapterID = ref(1)
   let chapterTitle = ref('')
   let chapterDataList = reactive([])
@@ -89,13 +103,16 @@
   function loadParagraph() {
     const index = currentParagraphID.value
     const currentData = chapterDataList[index]
+    console.log('currentData: ', currentData)
 
     if (index < chapterDataList.length) {
       if (currentData.selects === undefined || currentData.selects.length === 0) { // 文本段落
+        console.log('jinlaile')
         chapterList.push(currentData.content)
         currentParagraphID.value++
-        $nextTick(() => {
-          typerFun($refs[`listItemBox${index}`])
+        nextTick(() => {
+          console.log('listItemRef: ', listItemRef)
+          typerFun(listItemRef[0])
           // $refs[`listItemBox${index}`].style.display = 'block'
           $refs[`listItemBox${index}`].scrollTop = 100
           $refs[`listItemBox${index}`].scrollIntoView({
@@ -164,6 +181,7 @@
           chapterList = chapterList.concat(item.content) // 合并数组
         }
       })
+      console.log('加载了第一段')
       loadParagraph() // 自动加载第一段
       const params = {
         archive: [chapterID]
@@ -179,16 +197,16 @@
     maskVisible.value = false
     fetchArchive().then(res => { // 获取章节
       fetchOneChapterFun(res.data[1])
-      $refs.tree.setNodeCheacked(res.data[1])
+      treeRef.value.setNodeCheacked(res.data[1])
     })
   }
 
   function calculateReadingAreaSize() { // 计算阅读区大小
-    $nextTick(() => {
-      textBox.width = $refs.chapterBox.offsetWidth * 0.5989583
-      textBox.height = $refs.chapterBox.offsetWidth * 0.46875 * 0.622222
-      textBox.top = $refs.chapterBox.offsetWidth * 0.46875 * 0.088888 + ($refs.chapterBox.offsetHeight - $refs.chapterBox.offsetWidth * 0.46875)
-      textBox.left = $refs.chapterBox.offsetWidth * 0.2135416
+    nextTick(() => {
+      textBox.width = chapterRef.value.offsetWidth * 0.5989583
+      textBox.height = chapterRef.value.offsetWidth * 0.46875 * 0.622222
+      textBox.top = chapterRef.value.offsetWidth * 0.46875 * 0.088888 + (chapterRef.value.offsetHeight - chapterRef.value.offsetWidth * 0.46875)
+      textBox.left = chapterRef.value.offsetWidth * 0.2135416
     })
   }
 

@@ -4,7 +4,7 @@ export const defaultRoutes = [
   // 首页
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/book'
   },
   // 登录
   {

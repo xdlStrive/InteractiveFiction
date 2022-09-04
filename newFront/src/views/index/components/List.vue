@@ -2,23 +2,13 @@
   <transition name="list">
     <div v-if="listVisible" class="aside-box">
       <div id="left-tree-box">
-        <el-tree
-          :props="treeProps"
-          :load="fetchChapterListFun"
-          :default-expanded-keys="[1.1]"
-          node-key="n_id"
-          lazy
-          accordion
-          ref="tree"
-          highlight-current
-          class="treeBox"
-          @node-expand="openNode"
-          @node-click="handleNodeClick"
-        />
+        <el-tree :props="treeProps" :load="fetchChapterListFun" :default-expanded-keys="[1.1]" node-key="n_id" lazy
+          accordion ref="tree" highlight-current class="treeBox" @node-expand="openNode"
+          @node-click="handleNodeClick" />
         <div class="list-visible-btn" @click="handelAsideHidden">
           <el-icon>
-            <caret-left v-if="listVisible" />
-            <caret-right v-if="!listVisible" />
+            <CaretLeft v-if="listVisible" />
+            <CaretRight v-if="!listVisible" />
           </el-icon>
         </div>
       </div>
