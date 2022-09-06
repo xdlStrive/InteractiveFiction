@@ -86,15 +86,17 @@ let aphorism = reactive({
   author: ''
 })
 let archiveId = ref(null)
-let listItemRefs = reactive([])
+let listItemRefs: Array<HTMLDivElement> = reactive([])
+let typerFlag = ref(false)
 
 const treeRef = ref()
 const chapterRef = ref()
 const textRef = ref()
-const listItemRef = el => {
+const listItemRef = (el: HTMLDivElement) => {
   if (!listItemRefs.find(item => item === el)) {
     listItemRefs.push(el)
   }
+  return undefined
 }
 
 onMounted(() => {
@@ -123,18 +125,30 @@ function loadParagraph() {
   const index = currentParagraphID.value
   const currentData = chapterDataList[index]
 
+  // 先判断如果上一段还在加载，将上一段替换成完整的段落，然后接着加载当前段落
+  if (listItemRefs[index - 1] && typerFlag.value) {
+    const parentNode = listItemRefs[index - 1].parentElement
+    if (parentNode) {
+      const fullTextNode = listItemRefs[index - 1]
+      // 上一段未加载完的文字替换成完整的段落
+      fullTextNode.innerHTML = chapterDataList[index - 1].content[0]
+      fullTextNode.children[0].style.display = 'block'
+      // 将完整的段落替换掉还未加载完的段落
+      parentNode.replaceChild(fullTextNode, parentNode.children[index + 3])
+    }
+  }
+
   if (index < chapterDataList.length) {
     if (currentData.selects === undefined || currentData?.selects.length === 0) { // 文本段落
       chapterList.push(currentData.content)
       currentParagraphID.value++
       nextTick(() => {
         typerFun(listItemRefs[index])
-        // $refs[`listItemBox${index}`].style.display = 'block'
-        // $refs[`listItemBox${index}`].scrollTop = 100
-        // $refs[`listItemBox${index}`].scrollIntoView({
-        //   block: 'end',
-        //   behavior: 'smooth'
-        // })
+        listItemRefs[index].scrollTop = 100
+        listItemRefs[index].scrollIntoView({
+          block: 'end',
+          behavior: 'smooth'
+        })
       })
       if (currentData.type === 0) { // bad-end结局
         pargaraphType.value = 0
@@ -241,12 +255,14 @@ function loadTyperText(target, index, value) { // 加载打字文字
     target.children[index].style.display = 'block'
 
     const timer = setInterval(() => {
+      typerFlag.value = true
       text += textArr[indexs]
       value.innerHTML = text
       indexs++
       if (indexs >= textArr.length) {
         clearInterval(timer)
         resolve(timer)
+        typerFlag.value = false
       }
     }, 50) // 文字加载延迟
     return timer
