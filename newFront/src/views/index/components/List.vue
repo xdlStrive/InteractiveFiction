@@ -113,30 +113,6 @@
       // treeRef.value!.setCurrentKey(archiveId)
     }
   }
-
-  // export default {
-  //   props: [
-  //     'archiveId'
-  //   ],
-  //   data () {
-  //     return {
-  //       props: {
-  //         label: 'title', // 这里设置的值需要与后台传回的值一一对应
-  //         children: '',
-  //         isLeaf: 'leaf'
-  //       },
-  //       listVisible: true,
-  //       currentVolumeID: 1,
-  //       volumeList: [],
-  //       chapterList: [],
-  //       treeNode: {},
-  //       treeResolve: {},
-  //     }
-  //   },
-  //   methods: {
-      
-  //   }
-  // }
 </script>
 
 <style lang="scss" scoped>

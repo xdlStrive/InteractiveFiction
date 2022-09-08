@@ -38,6 +38,7 @@ import { fetchOneChapter } from '@/api/chapter'
 import { fetchBranch } from '@/api/branch'
 import { fetchAphorism } from '@/api/aphorism'
 import { saveArchive, fetchArchive } from '@/api/user'
+import { valueEquals } from 'element-plus'
 
 interface TextBox {
   screenWidth: number
@@ -46,6 +47,12 @@ interface TextBox {
   height: number
   top: number
   left: number
+}
+
+interface PervParagraph {
+  timer: number
+  value: HTMLDivElement | null
+  valueCopy: string
 }
 
 const typerOptions = reactive({
@@ -88,6 +95,11 @@ let aphorism = reactive({
 let archiveId = ref(null)
 let listItemRefs: Array<HTMLDivElement> = reactive([])
 let typerFlag = ref(false)
+const pervParagraph: PervParagraph = reactive({
+  timer: 0,
+  value: null,
+  valueCopy: '',
+})
 
 const treeRef = ref()
 const chapterRef = ref()
@@ -126,16 +138,22 @@ function loadParagraph() {
   const currentData = chapterDataList[index]
 
   // 先判断如果上一段还在加载，将上一段替换成完整的段落，然后接着加载当前段落
-  if (listItemRefs[index - 1] && typerFlag.value) {
-    const parentNode = listItemRefs[index - 1].parentElement
-    if (parentNode) {
-      const fullTextNode = listItemRefs[index - 1]
-      // 上一段未加载完的文字替换成完整的段落
-      fullTextNode.innerHTML = chapterDataList[index - 1].content[0]
-      fullTextNode.children[0].style.display = 'block'
-      // 将完整的段落替换掉还未加载完的段落
-      parentNode.replaceChild(fullTextNode, parentNode.children[index + 3])
-    }
+  // if (listItemRefs[index - 1] && typerFlag.value) {
+  //   const parentNode = listItemRefs[index - 1].parentElement
+  //   if (parentNode) {
+  //     const fullTextNode = listItemRefs[index - 1]
+  //     // 上一段未加载完的文字替换成完整的段落
+  //     fullTextNode.innerHTML = chapterDataList[index - 1].content[0]
+  //     fullTextNode.children[0].style.display = 'block'
+  //     // 将完整的段落替换掉还未加载完的段落
+  //     parentNode.replaceChild(fullTextNode, parentNode.children[index + 3])
+  //   }
+  // }
+
+  if (listItemRefs[index - 1] && typerFlag.value && pervParagraph.timer) {
+    clearTimeout(pervParagraph.timer);
+    const { value, valueCopy } = pervParagraph
+    value.innerHTML = valueCopy
   }
 
   if (index < chapterDataList.length) {
@@ -189,9 +207,11 @@ function loadParagraph() {
 }
 
 function fetchOneChapterFun(id: number) { // 获取章节
+  console.log('到了这里')
   if (id) {
     chapterID.value = id
   }
+  listItemRefs = []
   let chapterList = []
   chapterDataList = []
   currentParagraphID.value = 0
@@ -239,20 +259,16 @@ function calculateReadingAreaSize() { // 计算阅读区大小
   })
 }
 
-async function typerFun(target) { // 打字机效果
-  for (let [index, value] of Object.entries(target.children)) {
-    await loadTyperText(target, index, value)
-  }
-}
-
-function loadTyperText(target, index, value) { // 加载打字文字
-  return new Promise(resolve => {
+function typerFun(target: HTMLDivElement) { // 打字机效果
+  for (let [index, value] of Object.entries(target.children)) { // 只写一段的话，不需要这个for of循环
+    console.log('index: ', typeof index, index)
+    const valueCopy = value.innerHTML
     const textArr = value.innerHTML.split('')
     let indexs = 0
     let text = ''
 
-    value.innerHTML = 0
-    target.children[index].style.display = 'block'
+    value.innerHTML = ''
+    target.children[Number(index)].style.display = 'block'
 
     const timer = setInterval(() => {
       typerFlag.value = true
@@ -261,13 +277,17 @@ function loadTyperText(target, index, value) { // 加载打字文字
       indexs++
       if (indexs >= textArr.length) {
         clearInterval(timer)
-        resolve(timer)
+        // resolve(timer)
         typerFlag.value = false
       }
     }, 50) // 文字加载延迟
-    return timer
-  })
+    console.log(typeof timer)
+    pervParagraph.timer = timer as unknown as number
+    pervParagraph.value = value as HTMLDivElement
+    pervParagraph.valueCopy = valueCopy
+  }
 }
+
 </script>
 
 <style>
