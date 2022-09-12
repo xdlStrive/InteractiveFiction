@@ -9,8 +9,7 @@
         <div class="list-placeholder-box chapter-title">{{ chapterTitle }}</div>
         <div class="list-placeholder-box"></div>
         <div class="list-placeholder-box"></div>
-        <div v-for="(item, index) in chapterList" :key="index" v-html="item" :ref="listItemRef" class="list-item-box">
-        </div>
+        <div v-for="(item, index) in chapterList" :key="index" v-html="item" :ref="listItemRef" class="list-item-box" />
       </el-scrollbar>
 
       <transition name="mask">
@@ -38,7 +37,6 @@ import { fetchOneChapter } from '@/api/chapter'
 import { fetchBranch } from '@/api/branch'
 import { fetchAphorism } from '@/api/aphorism'
 import { saveArchive, fetchArchive } from '@/api/user'
-import { valueEquals } from 'element-plus'
 
 interface TextBox {
   screenWidth: number
@@ -55,6 +53,20 @@ interface PervParagraph {
   valueCopy: string
 }
 
+interface ChapterDataListItem {
+  chapter_id: number
+  paragraph_id: number
+  content: Array<string>
+  create_time: string
+  selects: undefined | Array<string>
+  selects_key: undefined | Array<string>
+}
+
+interface CurrentSelect {
+  select: Array<string>
+  content: Array<string>
+}
+
 const typerOptions = reactive({
   output: '',
   type: 'normal',
@@ -68,10 +80,10 @@ const typerOptions = reactive({
 
 let chapterID = ref(1)
 let chapterTitle = ref('')
-let chapterDataList = reactive([])
-let chapterList = reactive([])
+let chapterDataList: Array<ChapterDataListItem> = reactive([])
+let chapterList: Array<Array<string>> = reactive([])
 let currentParagraphID = ref(0)
-let currentSelect = reactive({
+let currentSelect: CurrentSelect = reactive({
   select: [],
   content: []
 })
@@ -105,7 +117,8 @@ const treeRef = ref()
 const chapterRef = ref()
 const textRef = ref()
 const listItemRef = (el: HTMLDivElement) => {
-  if (!listItemRefs.find(item => item === el)) {
+  // console.log('el: ', el)
+  if (el && !listItemRefs.find(item => item === el)) {
     listItemRefs.push(el)
   }
   return undefined
@@ -114,7 +127,7 @@ const listItemRef = (el: HTMLDivElement) => {
 onMounted(() => {
   fetchArchive().then(res => { // 获取章节
     if (res.code === 20000) {
-      // fetchOneChapterFun(res.data[0])
+      fetchOneChapterFun(res.data[0]) // 默认加载第一章
       archiveId.value = res.data[0]
       // console.log('archiveId: ', archiveId.value)
     }
@@ -131,11 +144,38 @@ watch(screenWidth, () => {
 }, {
   immediate: true
 })
+watch(selectIndex, () => {
+  console.log('selectIndex: ', selectIndex.value)
+  console.log('currentParagraphID: ', currentParagraphID.value)
+  let currentParagraphIndex = currentParagraphID.value
+  fetchBranch({ branch_id: selectIndex.value }).then((res) => {
+    // console.log('res: ', res)
+    res.data.paragraph_list.forEach((item, index) => {
+      chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
+      chapterDataList.push(item)
+    })
+    loadParagraph()
+    console.log('currentParagraphIndex: ', currentParagraphIndex)
+    currentParagraphID.value = currentParagraphIndex++
+    nextTick(() => {
+      // listItemRefs[currentParagraphIndex].style.display = 'block'
+      console.log('listItemRefs: ', listItemRefs, currentParagraphIndex, listItemRefs[currentParagraphIndex])
+      // debugger
+      listItemRefs[currentParagraphIndex].scrollTop = 100
+      listItemRefs[currentParagraphIndex].scrollIntoView({
+        block: 'end',
+        behavior: 'smooth'
+      })
+    })
+  })
+  selectVisible.value = false
+})
 
 // 加载段落
 function loadParagraph() {
   const index = currentParagraphID.value
   const currentData = chapterDataList[index]
+  // console.log('currentData: ', currentData)
 
   // 先判断如果上一段还在加载，将上一段替换成完整的段落，然后接着加载当前段落
   // if (listItemRefs[index - 1] && typerFlag.value) {
@@ -153,7 +193,7 @@ function loadParagraph() {
   if (listItemRefs[index - 1] && typerFlag.value && pervParagraph.timer) {
     clearTimeout(pervParagraph.timer);
     const { value, valueCopy } = pervParagraph
-    value.innerHTML = valueCopy
+    value!.innerHTML = valueCopy
   }
 
   if (index < chapterDataList.length) {
@@ -161,6 +201,7 @@ function loadParagraph() {
       chapterList.push(currentData.content)
       currentParagraphID.value++
       nextTick(() => {
+        // console.log('listItemRefs[index]: ', listItemRefs, listItemRefs[index], index)
         typerFun(listItemRefs[index])
         listItemRefs[index].scrollTop = 100
         listItemRefs[index].scrollIntoView({
@@ -178,10 +219,12 @@ function loadParagraph() {
         })
       }
     } else if (currentData.selects.length > 1) { // 选择
-      currentSelect = {
-        select: currentData.selects,
-        content: currentData.selects_key
-      }
+      // currentSelect = {
+      //   select: currentData.selects,
+      //   content: currentData.selects_key
+      // }
+      currentSelect.select = currentData.selects
+      currentSelect.content = currentData.selects_key
       selectVisible.value = true // 显示选择弹框
       // 根据选择的结果加载对应的段落
       currentParagraphID.value++
@@ -207,35 +250,39 @@ function loadParagraph() {
 }
 
 function fetchOneChapterFun(id: number) { // 获取章节
-  console.log('到了这里')
   if (id) {
     chapterID.value = id
   }
-  listItemRefs = []
-  let chapterList = []
-  chapterDataList = []
-  currentParagraphID.value = 0
+  const loadingInstance = ElLoading.service({})
+  listItemRefs.forEach(item => {
+    item.remove()
+  })
+  listItemRefs.length = 0
+  chapterList.length = 0 // 加载章节时先置空之前章节的段落
+  currentParagraphID.value = 0 // 重置当前段落ID
   fetchOneChapter({ chapter_id: chapterID.value }).then(res => {
     const { chapter_id, paragraph_list, title } = res.data
     chapter_id
     chapterTitle.value = title
     chapterDataList = paragraph_list
-    chapterDataList.forEach((item) => {
-      if (item.content.length === 1) { // 普通段落
-        chapterList.push(item.content)
-      } else if (item.selects.length > 1) { // 带选项的段落
-        currentSelect = {
-          select: item.selects,
-          content: item.selects_key
-        }
-        chapterList = chapterList.concat(item.content) // 合并数组
-      }
-    })
+    // chapterDataList.forEach((item) => {
+    //   console.log('itemssss: ', item)
+    //   if (item.content.length === 1) { // 普通段落
+    //     // chapterList.push(item.content)
+    //   } else if (item.selects.length > 1) { // 带选项的段落
+    //     currentSelect = {
+    //       select: item.selects,
+    //       content: item.selects_key
+    //     }
+    //     // chapterList = chapterList.concat(item.content) // 合并数组
+    //   }
+    // })
     loadParagraph() // 自动加载第一段
+      loadingInstance.close()
     const params = {
       archive: [chapterID]
     }
-    saveArchive(params).then(res => {
+    saveArchive(params).then(res => { // 存档
       // console.log(res)
       res
     })
@@ -245,8 +292,8 @@ function fetchOneChapterFun(id: number) { // 获取章节
 function closeMask() { // 关闭名言事件
   maskVisible.value = false
   fetchArchive().then(res => { // 获取章节
-    fetchOneChapterFun(res.data[1])
-    treeRef.value.setNodeCheacked(res.data[1])
+    fetchOneChapterFun(res.data[0])
+    treeRef.value.setNodeCheacked(res.data[0]) // 调用List子组件的方法设置树的节点选中
   })
 }
 
@@ -261,7 +308,6 @@ function calculateReadingAreaSize() { // 计算阅读区大小
 
 function typerFun(target: HTMLDivElement) { // 打字机效果
   for (let [index, value] of Object.entries(target.children)) { // 只写一段的话，不需要这个for of循环
-    console.log('index: ', typeof index, index)
     const valueCopy = value.innerHTML
     const textArr = value.innerHTML.split('')
     let indexs = 0
@@ -281,7 +327,6 @@ function typerFun(target: HTMLDivElement) { // 打字机效果
         typerFlag.value = false
       }
     }, 50) // 文字加载延迟
-    console.log(typeof timer)
     pervParagraph.timer = timer as unknown as number
     pervParagraph.value = value as HTMLDivElement
     pervParagraph.valueCopy = valueCopy

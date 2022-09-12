@@ -3,7 +3,7 @@
     <div v-if="listVisible" class="aside-box">
       <div id="left-tree-box">
         <el-tree :props="treeProps" :load="fetchChapterListFun" :default-expanded-keys="[1.1]" node-key="n_id" lazy
-          accordion ref="tree" highlight-current class="treeBox" @node-expand="openNode"
+          accordion ref="treeRef" highlight-current class="treeBox" @node-expand="openNode"
           @node-click="handleNodeClick" />
         <div class="list-visible-btn" @click="handelAsideHidden">
           <el-icon>
@@ -27,9 +27,9 @@
   const props = defineProps(['archiveId'])
   const emit = defineEmits(['fetchOneChapter'])
 
-  watchEffect(() => {
-    console.log('props: ', props)
-  })
+  // watchEffect(() => {
+  //   console.log('props: ', props)
+  // })
 
   const treeProps = reactive({
     label: 'title', // 这里设置的值需要与后台传回的值一一对应
@@ -113,6 +113,10 @@
       // treeRef.value!.setCurrentKey(archiveId)
     }
   }
+
+defineExpose({ // 使用了<script setup>的子组件必须defineExpose导出属性/方法之后，才能被父组件调用到
+  setNodeCheacked
+})
 </script>
 
 <style lang="scss" scoped>

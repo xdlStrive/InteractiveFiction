@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function addBranch(data) {
   return request({
-    url: '/branch/add',
+    url: '/api/branch/add',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export function addBranch(data) {
 
 export function modifyBranch(data) {
   return request({
-    url: '/branch/modify',
+    url: '/api/branch/modify',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function modifyBranch(data) {
 
 export function fetchBranch(data) {
   return request({
-    url: '/branch/fetch',
+    url: '/api/branch/fetch',
     method: 'post',
     data
   })
