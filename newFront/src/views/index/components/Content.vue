@@ -11,7 +11,6 @@
         <div class="list-placeholder-box"></div>
         <div v-for="(item, index) in chapterList" :key="index" v-html="item" :ref="listItemRef" class="list-item-box" />
       </el-scrollbar>
-
       <transition name="mask">
         <div class="mask-layer" v-if="maskVisible" @click="closeMask">
           <transition name="mask">
@@ -22,9 +21,7 @@
           </transition>
         </div>
       </transition>
-
       <SelectLayer :selectItem="currentSelect" v-if="selectVisible" v-model:selectIndex="selectIndex" />
-      <!--  eslint-disable-line vue/no-v-model-argument 忽略eslint报错 -->
     </div>
   </div>
 </template>
@@ -88,7 +85,7 @@ let currentSelect: CurrentSelect = reactive({
   content: []
 })
 let selectVisible = ref(false)
-let selectIndex = ref(null)
+let selectIndex = ref(0)
 let paragraphHeight = ref(0)
 let textBox: TextBox = reactive({
   screenWidth: document.body.clientWidth,
@@ -145,30 +142,29 @@ watch(screenWidth, () => {
   immediate: true
 })
 watch(selectIndex, () => {
-  console.log('selectIndex: ', selectIndex.value)
-  console.log('currentParagraphID: ', currentParagraphID.value)
-  let currentParagraphIndex = currentParagraphID.value
-  fetchBranch({ branch_id: selectIndex.value }).then((res) => {
-    // console.log('res: ', res)
-    res.data.paragraph_list.forEach((item, index) => {
-      chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
-      chapterDataList.push(item)
-    })
-    loadParagraph()
-    console.log('currentParagraphIndex: ', currentParagraphIndex)
-    currentParagraphID.value = currentParagraphIndex++
-    nextTick(() => {
-      // listItemRefs[currentParagraphIndex].style.display = 'block'
-      console.log('listItemRefs: ', listItemRefs, currentParagraphIndex, listItemRefs[currentParagraphIndex])
-      // debugger
-      listItemRefs[currentParagraphIndex].scrollTop = 100
-      listItemRefs[currentParagraphIndex].scrollIntoView({
-        block: 'end',
-        behavior: 'smooth'
+  if (selectIndex.value) {
+    let currentParagraphIndex = currentParagraphID.value
+    fetchBranch({ branch_id: selectIndex.value }).then((res) => {
+      // console.log('res: ', res)
+      res.data.paragraph_list.forEach((item, index) => {
+        chapterList.splice(currentParagraphIndex + index, 0, item.content[0])
+        chapterDataList.push(item)
+      })
+      loadParagraph()
+      currentParagraphID.value = currentParagraphIndex++
+      nextTick(() => {
+        // listItemRefs[currentParagraphIndex].style.display = 'block'
+        console.log('listItemRefs: ', listItemRefs, currentParagraphIndex, listItemRefs[currentParagraphIndex])
+        // debugger
+        listItemRefs[currentParagraphIndex].scrollTop = 100
+        listItemRefs[currentParagraphIndex].scrollIntoView({
+          block: 'end',
+          behavior: 'smooth'
+        })
       })
     })
-  })
-  selectVisible.value = false
+    selectVisible.value = false
+  }
 })
 
 // 加载段落
@@ -250,6 +246,7 @@ function loadParagraph() {
 }
 
 function fetchOneChapterFun(id: number) { // 获取章节
+  selectIndex.value = 0 // 重置选项，否则无法二次触发watch
   if (id) {
     chapterID.value = id
   }
